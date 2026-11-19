@@ -445,6 +445,9 @@ function desenhaMenu(){
     texto(prox?'EXP '+(b.exp||0)+' / '+prox:'Nível máximo',sx,cy+96,13,'#c8d8f0');
     [['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crítico %'],['esq','Esquiva %']].forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(String(s[k]),sx+140,yy,15,'#fff','right');
       const extra=s[k]-s.base[k];if(extra)texto((extra>0?'+':'')+extra,sx+188,yy,13,extra>0?'#7dffa8':'#ff9a9a','right');});
+    // atributos de base (crescem com o nivel), embaixo do retrato igual ao Jux
+    [['for','FOR'],['vig','VIG'],['mag','MAG'],['esp','ESP'],['vel','VEL'],['sor','SOR']].forEach(([k,n],i)=>{const bx=cx+8+(i%3)*68,by=cy+218+Math.floor(i/3)*22;
+      texto(n,bx,by,12,'#9fb3d9');texto(String(s[k]),bx+60,by,12,'#e8f6ff','right');});
     const ex=sx+260;texto('Função',ex,cy+26,16,'#9fe8ff');texto('Bárbaro tanque',ex,cy+48,15,'#fff');
     texto('Arma',ex,cy+84,15,'#9fe8ff');texto(nomeArmaDe('bino'),ex,cy+104,15,'#fff');
     texto('Só dano físico, sem elemento.',ex,cy+140,13,'#c8d8f0');texto('Protege o time e aguenta os golpes.',ex,cy+158,13,'#c8d8f0');

@@ -36,7 +36,9 @@ function statusBino(n, semEquip) {   // semEquip: so a base do nivel (o equipame
   n = Math.max(1, Math.min(100, n | 0));
   const r = {hp: Math.round(400 + 17 * (n - 1)), mp: Math.round(40 + 1.2 * (n - 1)), atk: Math.round(40 + 2.2 * (n - 1)),
     def: Math.round(14 + 2 * (n - 1)), atkm: 6, defm: Math.round(10 + 1.2 * (n - 1)), vel: Math.round(8 + .3 * (n - 1)),
-    sor: 8, crit: 6, critd: 150, esq: 2, esp_: {}};
+    sor: 8, crit: 6, critd: 150, esq: 2, esp_: {},
+    // atributos de base do menu Status (pedido 2026-11-19: 'igual o Jux'): barbaro = muita FOR e VIG, pouca MAG
+    for: Math.round(14 + 2 * (n - 1)), vig: Math.round(14 + 1.8 * (n - 1)), mag: Math.round(4 + .3 * (n - 1)), esp: Math.round(7 + .8 * (n - 1))};
   r.base = Object.assign({}, r);
   if (!semEquip && typeof JOGO === 'object' && typeof bonusEquipDe === 'function') {
     const e = bonusEquipDe('bino');
