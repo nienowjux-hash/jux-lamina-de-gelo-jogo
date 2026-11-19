@@ -485,11 +485,11 @@ function desenhaMenu(){
   }else if(UI.aba===ABA_BESTA){desenhaBestiario(cx,cy,w,h,y);
   }else if(UI.aba===ABA_MAPA){desenhaMapa(x,y,w,h);
   }else if(UI.aba===2){   // Equipar
-    const EQ=equipDe(UI.quem);SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*50,id=EQ[s];linhaSel(cx,yy,w-48,46,i===UI.sel);texto(n,cx+24,yy+29,16,'#9fe8ff');
-      if(id){iconeItem(ctx,id,cx+150,yy+10,28);texto(ITENS[id].nome,cx+190,yy+30,17,'#fff');if(ITENS[id])texto(ITENS[id].desc,cx+w-70,yy+30,13,'#7dffa8','right');}
-      else texto(s==='arma'?nomeArmaDe(UI.quem)+' (arma de base)':'— vazio —',cx+190,yy+30,16,'#7a8aa8');
-      texto('◀ ▶',cx+w-56,yy+52,11,'rgba(255,255,255,.4)','right');
-      ZONAS.push([cx,yy,cx+w-48,yy+48,()=>{UI.sel=i;trocaSlot(s,1);}]);});
+    const EQ=equipDe(UI.quem),LH=40;SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*LH,id=EQ[s];linhaSel(cx,yy,w-48,LH-4,i===UI.sel);texto(n,cx+24,yy+24,16,'#9fe8ff');
+      if(id){iconeItem(ctx,id,cx+150,yy+5,26);texto(ITENS[id].nome,cx+190,yy+25,17,'#fff');if(ITENS[id])texto(ITENS[id].desc,cx+w-90,yy+25,13,'#7dffa8','right');}
+      else texto(s==='arma'?nomeArmaDe(UI.quem)+' (arma de base)':'— vazio —',cx+190,yy+25,16,'#7a8aa8');
+      texto('◀ ▶',cx+w-56,yy+24,11,'rgba(255,255,255,.4)','right');
+      ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;trocaSlot(s,1);}]);});
     texto('◀ ▶ ou toque: trocar o equipamento (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-20,13,'#c8d8f0');
   }else{   // Salvar
     SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*50;linhaSel(cx,yy,560,42,i===UI.sel);texto(o,cx+30,yy+28,18,i===4?'#ff9a9a':'#fff');

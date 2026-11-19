@@ -37,9 +37,9 @@ const ITENS={
   elmo_ferro: {nome:'Elmo de Ferro',       tipo:'elmo',preco:340,req:{nivel:6}, cor:'#a9b4c4',desc:'DEF +5, DEF.M +3, HP +12.',bonus:{def:5,defm:3,hp:12}},
   casaco_pele:{nome:'Casaco Forrado',      tipo:'armadura',preco:200, cor:'#8a6a4a',desc:'DEF +4, DEF.M +2, HP +20.',bonus:{def:4,defm:2,hp:20}},
   cota_malha: {nome:'Cota de Malha',       tipo:'armadura',preco:550,req:{nivel:10,espada:true}, cor:'#9aa7b8',desc:'DEF +10, VEL -1.',bonus:{def:10,vel:-1}},
-  luvas_ferr: {nome:'Luvas de Ferreiro',   tipo:'acessorio',preco:260,req:{nivel:6}, cor:'#c48a3a',desc:'ATQ +3, Crítico +1%.',bonus:{atk:3,crit:1}},
+  luvas_ferr: {nome:'Luvas de Ferreiro',   tipo:'luvas',preco:260,req:{nivel:6}, cor:'#c48a3a',desc:'ATQ +3, Crítico +1%.',bonus:{atk:3,crit:1}},
   anel_gelo:  {nome:'Anel de Gelo',        tipo:'acessorio',preco:310,req:{espada:true}, cor:'#9fe8ff',desc:'ATQ.M +5, MP +6.',bonus:{atkm:5,mp:6}},
-  botas_neve: {nome:'Botas de Neve',       tipo:'acessorio',preco:230, cor:'#d8e6f2',desc:'VEL +1, Esquiva +1%.',bonus:{vel:1,esq:1}},
+  botas_neve: {nome:'Botas de Neve',       tipo:'botas',preco:230, cor:'#d8e6f2',desc:'VEL +1, Esquiva +1%.',bonus:{vel:1,esq:1}},
   anel_goblin:{nome:'Anel do Goblin',      tipo:'acessorio',preco:0,venda:60, cor:'#9adf5a',desc:'Roubado de alguém. VEL +1, Esquiva +2%, SOR +2.',bonus:{vel:1,esq:2,sor:2}},
   presa_anciao:{nome:'Presa do Ancião',   tipo:'acessorio',preco:0,venda:120, cor:'#cfe6ff',desc:'Um dente do Lobo Ancião, dado por respeito. ATQ +5, Crítico +2%.',bonus:{atk:5,crit:2}},
   amuleto_vida:{nome:'Amuleto da Vida',    tipo:'acessorio',preco:420,req:{nivel:8}, cor:'#ff7a8a',desc:'HP +40.',bonus:{hp:40}},
@@ -59,14 +59,15 @@ const ITENS={
   machado_halvard:{nome:'Machado do Halvard',tipo:'material',preco:0,venda:0,cor:'#c8d0dc',desc:'O machado da família do caçador Halvard, de volta. O Bino não larga a marreta, mas olha para ele de vez em quando.'},
   cristal: {nome:'Cristal de Gelo',  tipo:'material',preco:0,venda:25,cor:'#9ff0ff',desc:'Cristal que guarda frio antigo. O Borin compra.'},
 };
-const SLOTS_EQ=[['arma','Arma'],['elmo','Elmo'],['armadura','Armadura'],['acessorio','Acessório 1'],['acessorio2','Acessório 2']];
+// um espaco por tipo (pedido 2026-11-19: 'nao da para por duas botas'); so os ACESSORIOS (aneis, amuletos, colares) tem dois espacos
+const SLOTS_EQ=[['arma','Arma'],['elmo','Elmo'],['armadura','Armadura'],['luvas','Luvas'],['botas','Botas'],['acessorio','Acessório 1'],['acessorio2','Acessório 2']];
 const tipoDoSlot=s=>s.startsWith('acessorio')?'acessorio':s;
-const EQUIPAVEL=['arma','elmo','armadura','acessorio'];
+const EQUIPAVEL=['arma','elmo','armadura','luvas','botas','acessorio'];
 // em qual espaço o item entra: acessório vai para o 1º vazio (senão troca o Acessório 1)
 function slotPara(it,q){const E=equipDe(q||donoItem(it));if(it.tipo!=='acessorio')return it.tipo;return !E.acessorio?'acessorio':!E.acessorio2?'acessorio2':'acessorio';}
 // ---------- GRUPO (MENU_GRUPO.md): cada personagem tem o seu equipamento. Jux: JOGO.equip; companheiros: JOGO.equipDe[id]
 // arma e de cada um (it.para: espadas = Jux, marretas = Bino); elmo, armadura e acessorios servem em qualquer um, mas um de cada vez
-const EQ_VAZIO=()=>({arma:null,elmo:null,armadura:null,acessorio:null,acessorio2:null});
+const EQ_VAZIO=()=>({arma:null,elmo:null,armadura:null,luvas:null,botas:null,acessorio:null,acessorio2:null});
 function equipDe(q){if(!q||q==='jux')return JOGO.equip;JOGO.equipDe=JOGO.equipDe||{};const E=JOGO.equipDe[q]=JOGO.equipDe[q]||{};for(const k in EQ_VAZIO())if(!(k in E))E[k]=null;return E;}   // sempre o MESMO objeto (mexer nele salva)
 const donoItem=it=>(it&&it.tipo==='arma')?(it.para||'jux'):'jux';
 const serveEm=(it,q)=>!!it&&(it.tipo!=='arma'||(it.para||'jux')===(q||'jux'));
@@ -87,7 +88,7 @@ const JOGO={
   versao:1,
   nivel:1,exp:0,gil:120,
   inv:{pocao:3},
-  equip:{arma:null,elmo:null,armadura:null,acessorio:null,acessorio2:null},
+  equip:{arma:null,elmo:null,armadura:null,luvas:null,botas:null,acessorio:null,acessorio2:null},
   buff:null,                 // {id, lutas}
   pegos:[],                  // brilhos e baús já abertos (e coisas de missão pegas)
   missoes:{},                // {id:{st:'ativa'|'feita',v0}} (missoes.js)
@@ -109,10 +110,17 @@ function mudaVol(tipo,v){VOL[tipo]=Math.max(0,Math.min(1,Math.round(v*10)/10));t
   for(const a of AUDIOS_VIVOS)if(!a.paused)a.volume=a._volPedido;   // reaplica no que esta tocando agora
   for(const ac of (window.__acs||[]))if(ac._saida)ac._saida.gain.value=VOL.sfx;}
 function acSaida(ac){if(!ac._saida){ac._saida=ac.createGain();ac._saida.gain.value=VOL.sfx;ac._saida.connect(ac.destination);(window.__acs=window.__acs||[]).push(ac);}return ac._saida;}
+// ERROS NA TELA (pedido 2026-11-19: 'da uma crachada'): qualquer erro aparece num cantinho por 20 s, para o usuario mandar print
+function mostraErro(e,onde){try{const m=(e&&(e.message||e.reason&&e.reason.message))||String(e);if(/AbortError|NotAllowedError|NotSupportedError|play\(\) request|ResizeObserver/.test(((e&&e.name)||'')+' '+m))return;   // avisos de som/navegador: nao e erro do jogo
+  let b=document.getElementById('erro_jux');
+  if(!b){b=document.createElement('div');b.id='erro_jux';b.style.cssText='position:fixed;left:8px;bottom:8px;z-index:99;max-width:60vw;background:rgba(80,0,10,.9);color:#fff;font:12px monospace;padding:6px 9px;border-radius:6px;pointer-events:none';document.body.appendChild(b);}
+  const st=(e&&e.stack)||'';b.textContent='⚠ erro: '+m+(onde?' ('+onde+')':'')+(st?' | '+st.split(String.fromCharCode(10)).slice(1,3).join(' ').replace(/https?:[^ )]*[/]/g,''):'');b.style.display='block';clearTimeout(b._t);b._t=setTimeout(()=>{b.style.display='none';},20000);console.error(e);}catch(_){}}
+addEventListener('error',ev=>mostraErro(ev.error||ev.message,(ev.filename||'').split('/').pop()+':'+ev.lineno));
+addEventListener('unhandledrejection',ev=>mostraErro(ev.reason));
 const SAVE_J='jux_save';
 function carregaJogo(){
   try{const s=JSON.parse(localStorage.getItem(SAVE_J)||'null');
-    if(s&&s.versao){Object.assign(JOGO,s);JOGO.inv=s.inv||{};JOGO.equip=Object.assign({arma:null,elmo:null,armadura:null,acessorio:null,acessorio2:null},s.equip||{});if(JOGO.equip.arma==='aurora')JOGO.equip.arma=null;return true;}   // a Aurora Gelida NAO e item: e so o visual da espada do heroi (os status base dela ficam em AURORA)
+    if(s&&s.versao){Object.assign(JOGO,s);JOGO.inv=s.inv||{};JOGO.equip=Object.assign(EQ_VAZIO(),s.equip||{});if(JOGO.equip.arma==='aurora')JOGO.equip.arma=null;arrumaEquip();return true;}   // a Aurora Gelida NAO e item: e so o visual da espada do heroi (os status base dela ficam em AURORA)
     const v=JSON.parse(localStorage.getItem('jux_progresso')||'null');   // progresso antigo da batalha
     if(v&&v.nivel){JOGO.nivel=v.nivel|0;JOGO.exp=v.exp|0;}
   }catch(e){}
@@ -122,6 +130,11 @@ function salvaJogo(){if(window.LAB_FIXO)return;try{localStorage.setItem(SAVE_J,J
 function temSave(){try{return !!localStorage.getItem(SAVE_J);}catch(e){return false;}}
 function novoJogo(){try{localStorage.removeItem(SAVE_J);localStorage.removeItem('jux_progresso');localStorage.removeItem('jux_abertura_vista');}catch(e){}}
 const qtd=id=>JOGO.inv[id]||0;
+// saves antigos: luvas e botas eram acessorios. Sai do espaco de acessorio e vai para o espaco dele (ocupado: volta para a bolsa)
+function arrumaEquip(){const lista=[JOGO.equip,...Object.values(JOGO.equipDe||{})];
+  for(const E of lista){for(const k in EQ_VAZIO())if(!(k in E))E[k]=null;
+    for(const s of ['acessorio','acessorio2']){const id=E[s],it=id&&ITENS[id];if(!it||it.tipo==='acessorio')continue;
+      if(EQUIPAVEL.includes(it.tipo)&&!E[it.tipo])E[it.tipo]=id;else JOGO.inv[id]=(JOGO.inv[id]||0)+1;E[s]=null;}}}
 function daItem(id,n){JOGO.inv[id]=qtd(id)+(n||1);}
 function tiraItem(id,n){JOGO.inv[id]=Math.max(0,qtd(id)-(n||1));if(!JOGO.inv[id])delete JOGO.inv[id];}
 
@@ -173,6 +186,7 @@ function iconeItem(c,id,x,y,s){
   else if(it.tipo==='comida'){c.fillStyle=cor;c.beginPath();c.ellipse(8,10,7,4.5,0,0,6.283);c.fill();c.stroke();c.fillStyle='rgba(255,255,255,.5)';c.fillRect(4,8,4,1.5);}
   else if(it.tipo==='elmo'){c.fillStyle=cor;c.beginPath();c.arc(8,10,6,Math.PI,0);c.lineTo(14,12);c.lineTo(2,12);c.closePath();c.fill();c.stroke();}
   else if(it.tipo==='armadura'){c.fillStyle=cor;c.beginPath();c.moveTo(3,3);c.lineTo(13,3);c.lineTo(14,14);c.lineTo(2,14);c.closePath();c.fill();c.stroke();c.fillStyle='rgba(0,0,0,.25)';c.fillRect(7,3,2,11);}
+  else if(it.tipo==='luvas'||it.tipo==='botas'){c.fillStyle=cor;c.fillRect(3,5,10,8);c.strokeRect(3,5,10,8);c.fillRect(it.tipo==='botas'?9:3,11,4,4);}
   else if(it.tipo==='acessorio'){c.strokeStyle=cor;c.lineWidth=2.4;c.beginPath();c.arc(8,9,4.5,0,6.283);c.stroke();c.fillStyle='#fff';c.fillRect(7,3,2,2);}
   else if(id==='fruta'){c.fillStyle='#3f8a4a';c.fillRect(7,1,2,4);for(const [a,b] of [[5,9],[11,9],[8,13]]){c.fillStyle=cor;c.beginPath();c.arc(a,b,3.4,0,6.283);c.fill();c.stroke();c.fillStyle='rgba(255,255,255,.7)';c.fillRect(a-1.6,b-1.8,1.4,1.4);}}
   else if(id==='erva'){c.fillStyle=cor;for(const r of[-.6,0,.6]){c.save();c.translate(8,14);c.rotate(r);c.beginPath();c.ellipse(0,-6,2.6,6,0,0,6.283);c.fill();c.stroke();c.restore();}c.fillStyle='#e8fbff';c.fillRect(7,3,2,2);}

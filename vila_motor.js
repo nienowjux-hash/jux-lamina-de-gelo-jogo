@@ -938,6 +938,9 @@ addEventListener('keydown',e=>{ligaAudio();const k=e.key.toLowerCase();
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(perto)abreFala(perto.id);}});
 addEventListener('keyup',e=>{teclas[e.key.toLowerCase()]=false;});
+// tecla 'presa' (bug 2026-11-19: 'o boneco sai caminhando sozinho'): se a janela perde o foco com uma tecla apertada, o keyup nunca chega
+function soltaTudo(){for(const k in teclas)teclas[k]=false;hero.alvo=null;hero.pontoAlvo=null;}
+addEventListener('blur',soltaTudo);document.addEventListener('visibilitychange',()=>{if(document.hidden)soltaTudo();});
 // roda do mouse: rola as listas do menu e das lojas
 cv.addEventListener('wheel',e=>{if(!uiAberto())return;e.preventDefault();uiTecla(e.deltaY>0?'arrowdown':'arrowup');},{passive:false});
 cv.addEventListener('pointerdown',e=>{ligaAudio();if(ab.on){if(ab.esperando)abToca();else abProxima();return;}const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width,sy=(e.clientY-r.top)*H/r.height;
@@ -946,7 +949,7 @@ cv.addEventListener('pointerdown',e=>{ligaAudio();if(ab.on){if(ab.esperando)abTo
   const mx=cam.x+(sx-W/2)/Z,my=cam.y+(sy-H/2)/Z;
   const p=V.pontos.map(q=>[q,Math.hypot(mx-q.x,my-q.y)]).filter(([q,d])=>d<Math.max(q.r,30)+22).sort((a,b)=>a[1]-b[1]).map(a=>a[0])[0];
   if(p&&perto===p){abreFala(p.id);return;}
-  hero.alvo={x:mx,y:my};hero.alvoLonge=Math.hypot(mx-hero.x,my-hero.y)>110;hero.pontoAlvo=p||null;});
+  hero.alvo={x:mx,y:my};hero._ad=1e9;hero._at=0;hero.alvoLonge=Math.hypot(mx-hero.x,my-hero.y)>110;hero.pontoAlvo=p||null;});
 document.getElementById('voltar').onclick=()=>{location.href=jp('index.html');};
 if(!NA_VILA)document.getElementById('abertura').style.display='none';
 if(NA_VILA)V.pontos.push({id:'portao',x:722,y:738,r:40});
@@ -962,6 +965,8 @@ function passo(dt){
     if(dx||dy){hero.alvo=null;hero.pontoAlvo=null;}
     else if(hero.alvo){const ax=hero.alvo.x-hero.x,ay=hero.alvo.y-hero.y,d=Math.hypot(ax,ay);if(d<3)hero.alvo=null;else{dx=ax/d;dy=ay/d;}}
   }
+  if(hero.alvo){const d=Math.hypot(hero.alvo.x-hero.x,hero.alvo.y-hero.y);   // clicou num lugar que nao se alcanca: desiste em ~1 s (antes andava 'sozinho')
+    if(!(d<(hero._ad||1e9)-2)){hero._at=(hero._at||0)+dt;if(hero._at>1.1){hero.alvo=null;hero.pontoAlvo=null;hero._at=0;hero._ad=1e9;}}else{hero._ad=d;hero._at=0;}}
   const n=Math.hypot(dx,dy);let moveu=false;
   let emGelo=false;
   if(hero.pulo<=0&&naGelo(hero.x,hero.y)&&!transicao){emGelo=true;   // ---- DESLIZANDO no gelo
@@ -978,7 +983,7 @@ function passo(dt){
     hero.x=nx;hero.y=ny;
     if(vm>14){if(Math.abs(g.x)>Math.abs(g.y)*.8){hero.olha=g.x<0?'esquerda':'direita';hero.dir=g.x<0?-1:1;}else hero.olha=g.y<0?'cima':'baixo';}
     if(vm>20){tDesl-=dt;if(tDesl<=0){tDesl=.42-Math.min(.17,vm/900)+Math.random()*.08;const k=(Math.random()*4)|0;som(SOM_DESL[k],Math.min(.55,.12+vm/330));if(!hero.desliza)som(SOM.whoosh,.28);}}else tDesl=0;
-    hero.desliza=vm>14?vm:0;hero.anda=false;hero.alvo=null;hero.pontoAlvo=null;
+    hero.desliza=vm>14?vm:0;hero.anda=false;if(hero.alvo&&Math.hypot(hero.alvo.x-hero.x,hero.alvo.y-hero.y)<16){hero.alvo=null;hero.pontoAlvo=null;}   // toque/clique tambem empurra no gelo (antes so o teclado)
     if(vm>45&&!JOGO.geloVisto&&!fala){JOGO.geloVisto=true;g.x=g.y=0;setTimeout(()=>abreFala('gelo'),350);}   // 1a vez no gelo: o Jux se acha o patinador
     if(hero.desliza&&Math.random()<dt*26){const ang=Math.atan2(-g.y,-g.x)+rnd(-.5,.5);poeira.push({x:hero.x+rnd(-4,4),y:hero.y-1,vx:Math.cos(ang)*rnd(10,40),vy:Math.sin(ang)*rnd(5,20)-rnd(8,24),v:0});}
     if(hero.desliza){hero.gt=(hero.gt||0)+dt;if(hero.gt>.05){hero.gt=0;(hero.rastroG=hero.rastroG||[]).push({x:hero.x,y:hero.y,v:0});}}
@@ -1286,7 +1291,10 @@ let ultRAF=0,semRAF=false,tocavamRAF=[];
 setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){semRAF=true;
   tocavamRAF=[MUS,VENTO,musAtual,...Object.values(VOZES),...Object.values(MUS_CINE)].filter(a=>a&&!a.paused);paraAudio();
   try{for(const v of Object.values(MUS_CINE))v.pause();if(AC&&AC.state==='running')AC.suspend();}catch(e){}}},300);
-function quadro(now){const dt=Math.min(.05,(now-ult)/1000);ult=now;
+// um erro num quadro nao congela mais o jogo: mostra o erro (jogo.js mostraErro) e segue
+function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.filter='none';c.globalCompositeOperation='source-over';}catch(_){}}
+function quadro(now){try{quadro0(now);}catch(e){zeraCtx(ctx);if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(quadro);}}
+function quadro0(now){const dt=Math.min(.05,(now-ult)/1000);ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);
