@@ -131,6 +131,11 @@ const FALAS={
   pico_chega:[['✦','O vento bate de frente. A neve corre de lado, rente ao chão.'],['Jux','Que ventania! Meu cabelo vai chegar no Vale antes de mim.'],['Aurora','Lá no alto, Portador: um círculo de pedras antigas. As pegadas terminam nele.']],
   mirante_pico:[['✦','Lá embaixo, o Vale dos Lobos inteiro: os pinheiros pequenos, a névoa, o rio fino brilhando sob a lua.'],['Jux','Daqui dá para ver a Garganta. E, se eu forçar a vista, a chaminé da Vovó.'],['Aurora','Daqui também se vê quem sobe, Portador. Ele sempre soube que você vinha.']],
   circulo_pico:[['✦','O círculo de pedras está em silêncio. As runas de lobo brilham fraco, e o vento parece contornar o círculo.'],['Aurora','Um lugar antigo. Ele dormiu aqui por muito tempo.']],
+  ordem_ve:[['Jux','Sol negro com um olho no meio. Esse desenho tá me seguindo desde que eu cheguei. Alguém me explica?'],['Aurora','Segure firme a lâmina, Portador. Eu vou te mostrar.',1]],
+  ordem_depois:[['Jux','…E eu não tenho sombra.'],['Aurora','Por isso vão te querer, Portador. Você é o único que eles não conseguem esvaziar.',1],
+    ['Jux','Imune ao golpe principal do vilão. Isso nunca dá errado nas histórias.'],['Bino','…Eu fico na frente.'],
+    ['Jux','Primeiro a gente acha o Halvard. Depois a gente apaga essa Ordem.'],['✦','Diário: A Ordem do Eclipse (menu → Missões).']],
+  garganta_chega_cedo:[['Jux','A Garganta Gelada. Paredões de rocha, névoa baixa e marcas de garra na pedra.'],['Aurora','Um acampamento de caçador, um rio congelado e… o sol negro riscado no chão, Portador.'],['Jux','Alguém que gosta de sol negro passou por aqui. E o lobo ainda está atrás daqueles dentes de gelo, lá no fundo.']],
   prova_depois:[['Aurora','Sábio. Volte quando estiver pronto, Portador.'],['Fenrir','…Eu espero.']],
   prova_vence:[['Jux','…Eu ganhei? De um lobo do tamanho de um cavalo?'],['Fenrir','Você luta como quem protege alguém.'],['Fenrir','Mil caçadas, e poucos me fizeram recuar.'],
     ['Fenrir','Sua lâmina é de gelo, como a minha. A minha lealdade é sua, Portador.'],['Aurora','O Eco da Lâmina. O Fenrir caçava ao lado dos heróis antigos. Agora caça ao seu lado.'],
@@ -138,7 +143,7 @@ const FALAS={
   caverna:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá dentro, Portador. Algo grande, e muito triste.'],['Aurora','Eu recomendo o nível 7 antes de entrar. Explore a trilha e a garganta, junte equipamento e volte.'],
     ['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.'],['✦','Nível recomendado: 10. Se estiver fraco, treine e melhore o equipamento.']],
   acamp_pista:[['Jux','Acampamento goblin. E o dono saiu correndo e deixou o jantar. Literalmente: tem pão pela metade.'],['Goblin','(de longe) NÃO VOLTA AQUI! Tem um olho lá embaixo!'],
-    ['Jux','Um mapa rasgado, com um sol negro e um olho no meio. Eles não estavam fugindo de mim.'],['Aurora','Estavam fugindo da Ordem. E do que ela prende na caverna ao sul.'],['✦','Pista: o mapa rasgado do sol negro.']],
+    ['Jux','Um mapa rasgado, com um sol negro e um olho no meio. Eles não estavam fugindo de mim.'],['Aurora','Estavam fugindo de quem desenha isso. E do que eles prendem na caverna ao sul.'],['✦','Pista: o mapa rasgado do sol negro.']],
   acolito_aparece:[['Jux','O cristal do santuário está apagando. E tem alguém de capuz preto bebendo a luz dele.'],['Bino','…Frio. Não é de neve.'],['Jux','Isso foi poesia? Vindo de você?'],['Bino','Não.'],
     ['Acólito','…O Arauto manda lembranças, Portador sem sombra.'],['Bino','…Ele sabe quem você é.'],['Jux','Capuz preto, símbolo de olho, fala misteriosa. Você é o inimigo mais previsível do mundo. Parabéns.'],
     ['Aurora','Cuidado. Ele não sente medo. Isso o torna perigoso, não forte.'],['Bino','Eu fico na frente.'],['Jux','Você sempre fica na frente. Eu só preciso ficar atrás com estilo.'],['✦','O Acólito do Eclipse ergue o cajado!']],
@@ -682,7 +687,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
     if(st==='feita'){abreFala('caverna_livre',()=>{});return;}
     if(st==='vencida'){abreFala('skoll_vence',concluiSkoll);return;}
     abreFala('camara_ve',()=>{UI.escolha={id:'prova',prova:'skoll',ops:['Entrar','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
-  if(id==='acampamento'&&!fim&&estadoMissao('olhos_roxos')==='ativa'&&JOGO.cap1&&!JOGO.cap1.acamp){abreFala('acamp_pista',()=>{JOGO.cap1.acamp=true;som(SOM.ui_vez,.7);aviso('Pista encontrada: o mapa do sol negro','#ffe27a');salvaJogo();});return;}
+  if(id==='acampamento'&&!fim&&estadoMissao('olhos_roxos')==='ativa'&&JOGO.cap1&&!JOGO.cap1.acamp){abreFala('acamp_pista',()=>{JOGO.cap1.acamp=true;som(SOM.ui_vez,.7);aviso('Pista encontrada: o mapa do sol negro','#ffe27a');salvaJogo();setTimeout(contaOrdem,900);});return;}
   if(id==='santuario'&&!fim&&estadoMissao('olhos_roxos')==='ativa'&&(JOGO.provas||{}).acolito!=='feita'){
     SEG.cena=!!(JOGO.bino&&JOGO.bino.ativo);   // o Bino fica ao lado do Jux durante a conversa
     if((JOGO.provas||{}).acolito==='vencida')abreFala('acolito_vence',()=>{SEG.cena=false;concluiAcolito();});else abreFala('acolito_aparece',()=>{SEG.cena=false;iniciaProva('acolito');});return;}
@@ -826,6 +831,19 @@ for(const [k,f] of [['fe1','1_aurora'],['fe2','2_jux'],['fe3','3_bino'],['fe4a',
   if(PKF&&PKF.voz[f]){const a=new Audio();a.dataset.tipo='voz';a.src=PKF.voz[f][ogg==='.ogg'?'ogg':'mp3'];a.preload='auto';VOZES[k]=a;}else VOZES[k]=arq('assets/cine_fenrir/voz_fenrir_'+f);}
 const IMG_FENRIR=CENAS_FENRIR.map(c=>{const im=new Image();im.src=(PKF&&PKF.img[c.img])||('assets/cine_fenrir/'+c.img+'.jpg');return im;});
 if(REGIAO==='pico'&&location.hash==='#cine_fenrir')setTimeout(()=>tocaFilme(CENAS_FENRIR,IMG_FENRIR,()=>{}),1500);   // lab
+// CUTSCENE "A ORDEM DO ECLIPSE" (LORE_ORDEM_CENA.md, aprovada 2026-11-19): a Aurora mostra ao Jux, pela lamina, quem e o inimigo.
+// Toca depois da pista do acampamento goblin (Olhos Roxos); antes, a fala ordem_ve; depois, ordem_depois. Vozes: assets/cine_ordem/voz_ordem_*
+const CENAS_ORDEM=[
+  {mus:'lenda',cam:[.5,.5,1.0, .5,.45,1.12],dur:9.5,fx:'neve',vozes:[[.8,'or1a'],[6,'or1j']],falas:[[.8,'Aurora','Sete cristais seguram o equilíbrio de Elyria, Portador.',1],[6,'Jux','Sete. Claro que são sete.']],sons:[[.2,'brilho']]},
+  {mus:'ordem',cam:[.5,.45,1.12, .5,.5,1.0],dur:7,fx:'escuro',vozes:[[1.2,'or2a']],falas:[[1.2,'Aurora','A Ordem do Eclipse quer apagar todos. Um por um.',1]],sons:[[.2,'quebra'],[3.5,'quebra']],treme:[3.4,4.2]},
+  {mus:'ordem',cam:[.4,.55,1.0, .5,.5,1.1],dur:12,fx:'escuro',vozes:[[.8,'or3a'],[10,'or3b']],falas:[[.8,'Aurora','Arrancam a sombra das pessoas. Quem perde a sombra vira uma Sombra: uma casca que obedece.',1],[10,'Bino','…Minha montanha.']],sons:[[.4,'whoosh2']]},
+  {mus:'ordem',cam:[.45,.4,1.0, .45,.4,1.15],dur:10,fx:'escuro',vozes:[[1,'or4a']],falas:[[1,'Aurora','Quem manda é o Arauto. Ninguém viu o rosto dele. Ele fala pela boca dos outros.',1]],sons:[[.2,'rosna']]},
+  {mus:'ordem',cam:[.5,.35,1.12, .5,.5,1.0],dur:13,fx:'escuro',vozes:[[.8,'or5a'],[6,'or5j']],falas:[[.8,'Aurora','Quando o último se apagar, vem o Eclipse Eterno.',1],[6,'Jux','Clássico. Ambicioso, dramático e péssimo para o turismo.']],sons:[[.1,'impacto']],treme:[.1,1.2],flash:.1},
+];
+for(const [k,f] of [['or1a','1_aurora'],['or1j','1_jux'],['or2a','2_aurora'],['or3a','3_aurora'],['or3b','3_bino'],['or4a','4_aurora'],['or5a','5_aurora'],['or5j','5_jux']])VOZES[k]=arq('assets/cine_ordem/voz_ordem_'+f);
+const IMG_ORDEM=CENAS_ORDEM.map((c,i)=>{const im=new Image();im.src='assets/cine_ordem/cena_'+(i+1)+'.jpg';return im;});
+function contaOrdem(){if(JOGO.ordemSabe)return;abreFala('ordem_ve',()=>tocaFilme(CENAS_ORDEM,IMG_ORDEM,()=>{JOGO.ordemSabe=true;salvaJogo();setTimeout(()=>abreFala('ordem_depois'),400);}));}
+if(REGIAO==='trilha'&&location.hash==='#cine_ordem')setTimeout(()=>tocaFilme(CENAS_ORDEM,IMG_ORDEM,()=>{}),1500);   // lab
 const CENAS_BINO=[
   {mus:'bino_a',cam:[.5,.5,1.0, .72,.55,1.2],dur:17,fx:'neve',vozes:[[.6,'b1v'],[10.2,'b1j']],falas:[[.6,'Vovó Hilda','O Halvard tem um filho que não larga a minha saia e uma cama vazia em casa. Traga ele de volta, forasteiro.'],[10.2,'Jux','Eu trago. Só preciso de um plano, de uma espada e de uma sorte razoável.']],sons:[]},
   {mus:'bino_a',cam:[.55,.45,1.0, .62,.5,1.12],dur:5,fx:'neve',vozes:[[.9,'b2']],falas:[[.9,'Bino','…Halvard.',1]],sons:[]},
@@ -842,7 +860,7 @@ const ALTV=new Image();if(V.altar_vazio)ALTV.src=V.altar_vazio.img;let espadaSob
 function tocaFilme(cenas,imgs,onFim){CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
-const MUS_CINE={piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),bino_b:arq('assets/musica/bino_b')};
+const MUS_CINE={piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
 let musAtual=null,musNome=null,drone=null;
 function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone grave sintetizado; 'vila' = musica da vila (continua no jogo)
   if(nome===musNome||window.__morta)return;musNome=nome;
@@ -1300,12 +1318,14 @@ function quadro0(now){const dt=Math.min(.05,(now-ult)/1000);ult=now;
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);
     if(REGIAO==='pico'&&!JOGO.picoVista){JOGO.picoVista=true;setTimeout(()=>abreFala('pico_chega'),600);}
     else if(REGIAO==='vale'&&!JOGO.valeVista){JOGO.valeVista=true;setTimeout(()=>abreFala('vale_chega'),500);}
-    else if(REGIAO==='garganta'&&!JOGO.gargantaVista){JOGO.gargantaVista=true;setTimeout(()=>abreFala('garganta_chega'),500);}
+    else if(REGIAO==='garganta'&&!JOGO.gargantaVista){JOGO.gargantaVista=true;setTimeout(()=>abreFala(JOGO.ordemSabe?'garganta_chega':'garganta_chega_cedo'),500);}
     else if(REGIAO==='trilha'&&!JOGO.trilhaVista){JOGO.trilhaVista=true;setTimeout(()=>abreFala('trilha_chega'),500);}
     else if(REGIAO==='trilha'&&(JOGO.provas||{}).acolito==='vencida')setTimeout(()=>abreFala('santuario'),900);   // voltou do Acolito: cena
     else if(REGIAO==='caverna'&&(JOGO.provas||{}).skoll==='vencida')setTimeout(()=>abreFala('caverna'),900);   // voltou do chefe (camara do Alfa): cena do Halvard
     else if(REGIAO==='caverna'&&!JOGO.cavernaVista){JOGO.cavernaVista=true;JOGO.auroraEscuro=true;setTimeout(()=>abreFala('caverna_chega'),600);}
     else if(provaFenrirEstado()==='vencida')setTimeout(()=>abreFala('prova_fenrir'),900);   // voltou da luta: cena da lealdade
+    // quem ja tinha passado do acampamento goblin antes desta cena existir (2026-11-19): ve a explicacao da Ordem uma vez, fora da vila
+    if(!NA_VILA&&!JOGO.ordemSabe&&JOGO.cap1&&JOGO.cap1.acamp)setTimeout(()=>{if(!fala&&!ab.on&&!uiAberto())contaOrdem();},2600);
     salvaVila();}
   if(!uiCarregado&&TER){uiCarregado=true;uiCarrega();
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');localStorage.removeItem('jux_volta_luta');if(v&&v.res==='lose'&&Date.now()-v.t<120000)setTimeout(()=>abreFala('derrota'),600);}catch(e){}

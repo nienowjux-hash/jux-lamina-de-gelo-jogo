@@ -291,10 +291,11 @@ function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),ap=apUsado(),lim=limiteAP
   texto('◀ ▶ troca de coluna · ENTER: equipar Eco / ligar ou desligar · ✦ ativa (Magia) · ◆ passiva (as do Eco equipado ficam sempre ligadas)',cx,y+h-20,12,'#c8d8f0');
 }
 // ---------- Diário de missões
-function listaDiario(){const at=[],fe=[];for(const k of ORDEM_MISSOES){const s=estadoMissao(k);if(s==='ativa')at.push(k);else if(s==='feita')fe.push(k);}return ['_historia',...at,...fe];}
+function listaDiario(){const at=[],fe=[];for(const k of ORDEM_MISSOES){const s=estadoMissao(k);if(s==='ativa')at.push(k);else if(s==='feita')fe.push(k);}return ['_historia',...(JOGO.ordemSabe?['_ordem']:[]),...at,...fe];}
 function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_historia';
   l.forEach((k,i)=>{const yy=cy+6+i*40;linhaSel(cx,yy,300,36,i===UI.sel);
     if(k==='_historia'){texto('★ '+(hero.espada?'Além de Invernália':'A lâmina no altar'),cx+22,yy+23,15,'#ffe27a');}
+    else if(k==='_ordem'){texto('◉ A Ordem do Eclipse',cx+22,yy+23,15,'#ff8a8a');}
     else{const st=estadoMissao(k),pr=missaoPronta(k);texto((st==='feita'?'✓ ':pr?'✔ ':'! ')+MISSOES[k].nome,cx+22,yy+23,15,st==='feita'?'#7a8aa8':pr?'#7dffa8':'#fff');if(JOGO.rastreio===k&&st==='ativa')formaMarca(ctx,'losango',cx+276,yy+18,6,COR_S);else if(MISSOES[k].principal&&st==='ativa')formaMarca(ctx,'estrela',cx+276,yy+18,7,COR_P);
       }
     ZONAS.push([cx,yy,cx+300,yy+36,()=>{UI.sel=i;}]);});
@@ -305,6 +306,12 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
     if(!hero.espada){quebra('Mil anos de gelo prendem uma espada no altar, no alto da vila. Todos tentaram na força. Talvez não seja um teste de força.',15,'#e8f6ff');quebra('➤ Suba até o altar (★ no Mapa) e fale com ele.',15,'#7dffa8');}
     else{quebra('A Aurora escolheu você. O festival da Rainha do Inverno se aproxima, e algo se mexe além do portão da vila.',15,'#e8f6ff');quebra('➤ Ajude os moradores, fique mais forte e prepare-se. A estrada para fora de Invernália abre em breve.',15,'#7dffa8');}
     return;}
+  if(sel==='_ordem'){texto('A Ordem do Eclipse',x2,yy,20,'#ff8a8a');yy+=30;
+    quebra('Uma sociedade secreta, escondida há séculos em templos, guildas e até na corte do rei. Símbolo: um sol negro com um olho no centro.',15,'#e8f6ff');
+    quebra('O plano: apagar os sete Cristais Primordiais de Elyria, um por um. Quando o último se apagar, vem o Eclipse Eterno.',15,'#e8f6ff');
+    quebra('As Sombras: a Ordem arranca a sombra das pessoas. Quem perde a sombra perde a vontade e vira uma casca que obedece.',15,'#e8f6ff');
+    quebra('O Arauto: o líder. Ninguém viu o rosto dele. Ele fala pela boca dos outros.',15,'#e8f6ff');
+    quebra('➤ O Jux não tem sombra: é o único que a Ordem não consegue esvaziar.',15,'#7dffa8');return;}
   const M=MISSOES[sel],st=estadoMissao(sel);texto(M.nome,x2,yy,20,'#ffe27a');yy+=24;texto('Pedido por: '+M.quemNome,x2,yy,14,'#9fe8ff');yy+=26;
   quebra(M.desc,15,'#e8f6ff');
   if(M.passos){for(const p of M.passos){const ok=p.ok(),sf=(!ok&&st==='ativa'&&p.prog)?'  ('+p.prog()+')':'';texto((ok?'✔ ':'☐ ')+p.txt+sf,x2,yy,14,ok?'#7dffa8':'#c8d8f0');yy+=20;}yy+=8;}

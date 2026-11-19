@@ -22,33 +22,33 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
 <!-- aparece enquanto os sprites e as cenas das cinematicas (~5 MB) baixam; some quando o jogo comeca -->
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
-<script src="itens_icones.js?v=1795106894"></script>
-<script src="jogo.js?v=1795106894"></script>
-<script src="combate.js?v=1795106894"></script>
-<script src="bino_habs.js?v=1795106894"></script>
-<script src="jux_habs.js?v=1795106894"></script>
-<script src="ecos.js?v=1795106894"></script>
-<script src="sprites_anim.js?v=1795106894"></script>
-<script src="sprites_magias.js?v=1795106894"></script>
-<script src="sprites_ressonancia.js?v=1795106894"></script>
-<script src="sprites_danca.js?v=1795106894"></script>
-<script src="sprites_escudo.js?v=1795106894"></script>
-<script src="sprites_lanca.js?v=1795106894"></script>
-<script src="sprites_nevasca.js?v=1795106894"></script>
-<script src="sprites_zero.js?v=1795106894"></script>
-<script src="sprites_cine.js?v=1795106894"></script>
-<script src="sprites_bino.js?v=1795106894"></script>
-<script src="sprites_batalha.js?v=1795106894"></script>
-<script src="ecos_sprites.js?v=1795106894"></script>
-<script src="inimigos_sprites.js?v=1795106894"></script>
-<script src="efeitos_fx.js?v=1795106894"></script>
-<script src="fx_inimigos_sprites.js?v=1795106894"></script>
-<script src="fx_bino_sprites.js?v=1795106894"></script>
-<script src="efeitos_inimigos.js?v=1795106894"></script>
-<script src="sprites_cine_bino.js?v=1795106894"></script>
-<script src="jux_fx_golpes.js?v=1795106894"></script>
-<script src="fx_vento.js?v=1795106894"></script>
-<script src="bino_batalha.js?v=1795106894"></script>
+<script src="itens_icones.js?v=1795110610"></script>
+<script src="jogo.js?v=1795110610"></script>
+<script src="combate.js?v=1795110610"></script>
+<script src="bino_habs.js?v=1795110610"></script>
+<script src="jux_habs.js?v=1795110610"></script>
+<script src="ecos.js?v=1795110610"></script>
+<script src="sprites_anim.js?v=1795110610"></script>
+<script src="sprites_magias.js?v=1795110610"></script>
+<script src="sprites_ressonancia.js?v=1795110610"></script>
+<script src="sprites_danca.js?v=1795110610"></script>
+<script src="sprites_escudo.js?v=1795110610"></script>
+<script src="sprites_lanca.js?v=1795110610"></script>
+<script src="sprites_nevasca.js?v=1795110610"></script>
+<script src="sprites_zero.js?v=1795110610"></script>
+<script src="sprites_cine.js?v=1795110610"></script>
+<script src="sprites_bino.js?v=1795110610"></script>
+<script src="sprites_batalha.js?v=1795110610"></script>
+<script src="ecos_sprites.js?v=1795110610"></script>
+<script src="inimigos_sprites.js?v=1795110610"></script>
+<script src="efeitos_fx.js?v=1795110610"></script>
+<script src="fx_inimigos_sprites.js?v=1795110610"></script>
+<script src="fx_bino_sprites.js?v=1795110610"></script>
+<script src="efeitos_inimigos.js?v=1795110610"></script>
+<script src="sprites_cine_bino.js?v=1795110610"></script>
+<script src="jux_fx_golpes.js?v=1795110610"></script>
+<script src="fx_vento.js?v=1795110610"></script>
+<script src="bino_batalha.js?v=1795110610"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -2325,6 +2325,7 @@ if(TESTE){
     G.golpeLab=antes;st.textContent='pronto';},'#ffb347');
   mk('Cinemática: entrada do Bino (abre a vila)',()=>{if(G.busy)return;location.href='vila.html#cine_bino';},'#ffd0a0');
   mk('Cinemática: entrada do Skoll (abre a caverna)',()=>{if(G.busy)return;location.href='caverna.html#cine_skoll';},'#c9a6ff');
+  mk('Cinemática: a Ordem do Eclipse (abre a Trilha)',()=>{if(G.busy)return;location.href='trilha.html#cine_ordem';},'#ff9a9a');
   mk('Cinemática: entrada do Fenrir (abre o Pico)',()=>{if(G.busy)return;location.href='pico.html#cine_fenrir';},'#9fe0ff');
   mk('Inimigo — fala de abertura e som',()=>{if(G.busy)return;const f=FALA_ABERTURA[enemy.tipo];if(!f){st.textContent='Este inimigo não tem fala de abertura.';return;}ecoPensa(f[0],3000,f[1],f[2]);som(f[3],.9);},'#ffb347');
   mk('Inimigo — ouvir rosnado',()=>{if(G.busy)return;som(ROSNA_TIPO[enemy.tipo]||'inimigo_rosna',.9);},'#ffb347');
@@ -2353,7 +2354,7 @@ requestAnimationFrame(frame);
 (function(){if(TESTE)return;try{const s=JSON.parse(localStorage.getItem('jux_encontro')||'null');
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
-<script src="bino_cines.js?v=1795106894"></script>
-<script src="tela_cheia.js?v=1795106894"></script>
+<script src="bino_cines.js?v=1795110610"></script>
+<script src="tela_cheia.js?v=1795110610"></script>
 </body>
 </html>
