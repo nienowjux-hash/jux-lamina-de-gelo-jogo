@@ -1,0 +1,47 @@
+Sons do jogo
+
+Gravados pelo usuario (espada.mp3, gelo.mp3, gelo_golpe_1..5.mp3).
+
+assets/sfx/novos - todos CC0 (dominio publico), credito opcional:
+- Interface Sounds - Kenney (kenney.nl) - ui_*, caco_pequeno
+- RPG Sound Pack - artisticdude (opengameart.org/content/rpg-sound-pack) - pocao, defender, recompensa, inimigo_ataca, whoosh, whoosh2, magia_brilho, magia_raio
+- 80 CC0 RPG SFX (opengameart.org/content/80-cc0-rpg-sfx) - nivel, inimigo_morre, inimigo_rosna, pedras
+- Ice spells - bart (opengameart.org/content/ice-spells) - magia_gelo, carga_gelo
+- Ice breaking/shattering (opengameart.org/content/ice-breakingshattering) - gelo_quebra, gelo_quebra2
+
+Sons do Fenrir (lobo):
+- lobo_uivo: uivo de lobo de Denali, National Park Service (EUA) - dominio publico, credito: "National Park Service" (nps.gov/subjects/sound/sounds-wolf.htm)
+- lobo_rosna: silent beast growls - opengameart.org/content/silent-beast-growls4 (CC0)
+- lobo_ataque, lobo_mordida: monster snarls - Darsycho, opengameart.org/content/monster-snarls (CC0) + eat_02 do 80 CC0 creature SFX (opengameart.org/content/80-cc0-creature-sfx, CC0)
+- lobo_latido: roar_02 do 80 CC0 creature SFX (CC0)
+
+Golpes dos inimigos (CC0):
+neve_pancada: trecho de "42 Snow and Gravel Footsteps" (passo na neve, grave e suavizado) - https://opengameart.org/node/2627 - CC0
+bolota_espirro: "Sneeze" - zarokima - https://opengameart.org/node/141993 - CC0
+goblin_facada: mistura de "apple-cut-02" e "metal-knife-scrape-01" do pacote "Fantasy Sound Effects (tinysized sfx)" - https://opengameart.org/content/fantasy-sound-effects-tinysized-sfx - CC0
+goblin_moedas: "coins-shake-01" do mesmo pacote - CC0
+goblin_pedrada: "metal-hammer-hit-02" (filtrado) do pacote "Fantasy Sound Effects (tinysized sfx)" - CC0
+acolito_esfera: "paralyzer-discharge-01" (grave, filtrado) do pacote "Fantasy Sound Effects (tinysized sfx)" - CC0
+acolito_explode: "metal-hammer-hit-01" (bem grave, com eco) do mesmo pacote - CC0
+acolito_drenar: "compressed-air-spray-01" (grave, filtrado) do pacote "Fantasy Sound Effects (tinysized sfx)" - CC0
+acolito_vazio: "paralyzer-discharge-02" (meia velocidade, grave, com eco) do pacote "Fantasy Sound Effects (tinysized sfx)" - CC0
+skoll_mordida: mistura de lobo_mordida (CC0) com acolito_explode (CC0, do pacote tinysized)
+skoll_correntes: mistura de "handcuffs-metal-lock-01" e "handcuffs-metal-open-01" (mais grave) do pacote "Fantasy Sound Effects (tinysized sfx)" - CC0
+
+Sons do Bino (marreta de pedra) - todos CC0, mixados com ffmpeg em tools/cria_sons_bino.py:
+- bino_golpe, bino_golpe_forte, bino_quebra, bino_rumble, bino_pedras, bino_pedra_forma, bino_muralha, bino_investida, bino_peito, bino_cura:
+  "75 CC0 breaking / falling / hit SFX" - rubberduck (opengameart.org/content/75-cc0-breaking-falling-hit-sfx) + "Moving Boulder" - themightyglider (opengameart.org/content/moving-boulder)
+- bino_urso1, bino_urso2: "Bear Growls" - U.S. Fish & Wildlife Service (opengameart.org/content/bear-growls) - CC0
+- bino_rugido, bino_rugido2, bino_rugido_longo, bino_rugido_queda: "Male Grunt/Yelling sounds" - HaelDB (opengameart.org/content/male-gruntyelling-sounds), versao CC0, mais grave, com o rugido do urso por baixo
+
+Sons do Bolotao e do Capitao (2026-11-17, feitos com ffmpeg a partir de material CC0 + sintese):
+bolotao_rosna, bolotao_bruf, bolotao_abraco: vozes de "Orc Commander" (ORC GRUNT 1/3/4) - https://opengameart.org/content/orc-voice - CC0, descidas de tom e abafadas, misturadas com sopro de neve sintetizado / "Ice breaking/shattering" - https://opengameart.org/content/ice-breakingshattering - CC0
+bolotao_rolo, bolotao_avalanche: ruido marrom sintetizado (ronco) + neve_pancada, pedras e "Ice breaking/shattering" (CC0)
+bolotao_bola: whoosh2 invertido + magia_gelo (do pacote ja creditado acima)
+capitao_rosna, capitao_bravata, capitao_risada: "Orc Commander" (ORC GRUNT 2, ORC FIGHT 2, ORC LAUGH) - CC0, tom mais agudo
+capitao_machado, capitao_clank: trechos de "Medieval weapons impacts" - https://opengameart.org/node/146863 - CC0
+capitao_apito: apito sintetizado (ffmpeg), sem material de terceiros
+
+presa_rosna / presa_uivo / presa_mordida / presa_investida: feitos a partir dos sons de lobo e de gelo já creditados acima (mais graves, com eco de toca e de vale), para a Presa-Antiga.
+
+fenrir_rosna / fenrir_latido / fenrir_ataque / fenrir_mordida: "Wolf Monster Sound", CaveboyTup (OpenGameArt.org, CC0), misturado com gelo/brilho já creditados. fenrir_uivo: o uivo de lobo já creditado, mais grave, com coro e eco longo. Sons exclusivos do Fenrir (Eco lendário), diferentes dos lobos comuns.

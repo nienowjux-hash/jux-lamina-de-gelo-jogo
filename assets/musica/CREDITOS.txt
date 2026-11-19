@@ -1,0 +1,49 @@
+Musica de batalha: "Epic Boss Battle [Seamlessly Looping]" - Juhani Junkala (SubspaceAudio)
+Fonte: https://opengameart.org/content/boss-battle-music
+Licenca: CC0 (dominio publico) - uso livre, credito opcional.
+
+Musicas das cinematicas (Ressonancias) - todas CC0 (dominio publico), credito opcional:
+cine_1: "Dramatic Boss Encounter" - cynicmusic - https://opengameart.org/content/dramatic-boss-encounter
+cine_2: "Massive Battle" - Eldritch Grim - https://opengameart.org/content/massive-battle
+cine_3: "The Final Battle" (trecho final) - skrjablin - https://opengameart.org/node/73591
+cine_4: "Production Theme Intro [Epic Orchestra]" - nene - https://opengameart.org/content/production-theme-intro-epic-orchestra
+
+Abertura (cinematica de chegada a Elyria):
+intro_piano: "The Budding of Consciousness" (Yoiyami Blue Series No.4) - Yoiyami - CC0 - https://opengameart.org/content/the-budding-of-consciousness-%E2%80%93-cc0-ambient-minimalist-theme-yoiyami-blue-series-%E2%80%93-no4
+(cenas 5 = cine_4; cenas 7-8 = musica da vila)
+
+Cinematica da espada (CC0, credito opcional):
+espada_lenda: "The Ancient Legend" - Vitalezzz - https://opengameart.org/content/the-ancient-legend
+espada_heroi: "A Legend Will Rise (Orchestral)" - Magic Strings - https://opengameart.org/content/a-legend-will-rise-orchestral
+
+Cinematica da Ressonancia Final: Era do Gelo (CC0, credito opcional):
+cine_final: "Fall of Nightmares [Epic, Orchestral]" (trecho 0:54-1:23) - nene; vozes Helena Kesti e Matias Lindgren - https://opengameart.org/content/fall-of-nightmares-epic-orchestral
+
+Cinematica do Ragnarok (Fenrir) (CC0, credito opcional):
+cine_ragnarok: "Epic Endgame Cinematic" (trecho 0:38-0:56) - cynicmusic - https://opengameart.org/content/epic-endgame-cinematic
+
+Cinematicas do Bino (CC0, credito opcional):
+cine_bino: "Determined Pursuit (epic orchestra loop)" - Emma_MA (opengameart.org/content/determined-pursuit-epic-orchestra-loop), trecho 0:12-0:38 + "Horde War Drums" - William Hector (opengameart.org/content/horde-war-drums-loop) por baixo
+
+Musica de batalha (trocada em 2026-11-16, CC0, credito opcional): "QaziJamJam (orchestral battle theme)" - opengameart.org/content/qazijamjam-orchestral-battle-theme (4 min, cordas, metais, guitarras e tambores). A anterior ("Epic Boss Battle") fica em ref/musica_antiga/.
+
+Musica da Trilha dos Pinheiros (assets/vila/musica_trilha): "Forest Whisper Theme" - CleytonKauffman - CC0 (credito opcional) - https://opengameart.org/content/forest-whisper-theme
+
+Passos na neve (assets/vila/passo_neve_*): "Walking in Snow" - Corsica_S (freesound) - CC0 - https://opengameart.org/content/42-snow-and-gravel-footsteps
+Passos na madeira (assets/vila/passo_madeira_*): "footsteps on different surfaces" (derivado de footstep-wood.wav de swuing, freesound 38876) - CC-BY 3.0 - https://opengameart.org/content/footsteps-on-different-surfaces
+
+Raspada de deslizamento no gelo (assets/vila/deslize_*): amostras de "Walking in Snow" - Corsica_S - CC0, mais graves e lentas (ffmpeg).
+
+Musica da Garganta Gelada (assets/vila/musica_garganta): "cathedral in the forest ambient loop" - congusbongus - CC0 - https://opengameart.org/content/cathedral-in-the-forest-ambient-loop
+
+Cutscene de entrada do Bino (2026-11-17, CC0, credito opcional):
+bino_a (cenas 1-5, conversa e flashbacks): "Emotional Piano" - Centurion_of_war - https://opengameart.org/content/emotional-piano-0
+bino_b (cenas 6-7, soquinho e partida): "The Hope" - TAD - https://opengameart.org/content/the-hope
+
+chefe_presa.ogg/.mp3 — "Battle Theme A", cynicmusic (OpenGameArt.org), CC0. Música da luta contra a Presa-Antiga (Vale dos Lobos).
+
+chefe_skoll.ogg/.mp3 — "Battle Theme B", cynicmusic (OpenGameArt.org), CC0. Música da luta contra o Skoll (Câmara do Alfa).
+
+chefe_fenrir.ogg/.mp3 — "Battle! (Rocky Cliffs)", Umplix (OpenGameArt.org), CC0 — https://opengameart.org/content/battle-rocky-cliffs. Música da luta contra o Fenrir (Pico do Uivo).
+
+Vento do Pico do Uivo (assets/vila/vento_pico): "Strong Wind Blowing" - Flixberry Entertainment - CC-BY 3.0/4.0 - https://opengameart.org/content/strong-wind-blowing (trecho 0:05-1:05 emendado em loop). No Pico não toca música: só o vento e os passos.

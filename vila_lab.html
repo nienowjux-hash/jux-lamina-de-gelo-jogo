@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jux — Laboratório de Animação (vila)</title>
+<style>
+body{margin:0;background:#0d1220;color:#dfe9ff;font:14px "Trebuchet MS",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;background:#141c33;position:sticky;top:0;z-index:2}
+header b{font-size:17px;color:#bff0ff}
+button{border:0;border-radius:6px;padding:6px 10px;background:#2a3a66;color:#eaf2ff;cursor:pointer;font:inherit}
+button.on{background:#7fd6f5;color:#0c1a2a}
+label{display:flex;gap:6px;align-items:center}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:14px;padding:14px}
+.card{background:#162038;border-radius:10px;padding:10px}
+.card h3{margin:0 0 6px;font-size:15px;color:#ffe27a}
+.nota{font-size:13px;margin:4px 0}.ok{color:#7dffa8}.ruim{color:#ff8a8a}
+canvas{display:block;border-radius:8px;background:#203050}
+.dica{padding:0 14px 10px;color:#9fb3d9;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <b>Laboratório de Animação — Jux na vila</b>
+  <button id="b_andar" class="on">Andar</button><button id="b_correr">Correr</button>
+  <button id="b_espada">Espada: não</button>
+  <label>Velocidade <input id="vel" type="range" min="20" max="160" value="54"><span id="velv">54</span></label>
+  <label>Passo <input id="passo" type="range" min="3" max="14" step=".5" value="7"><span id="passov">7</span> px/quadro</label>
+  <label>Inclinação <input id="incl" type="range" min="0" max="30" value="13"><span id="inclv">13</span></label>
+  <label>Quique <input id="quique" type="range" min="0" max="60" value="26"><span id="quiquev">26</span></label>
+  <button id="b_rastro" class="on">Rastro: sim</button>
+  <button id="pausa">Pausar</button>
+  <button onclick="location.href='vila.html'">Ir para a vila ▶</button>
+</header>
+<div class="dica">É o mesmo desenho da vila (mesmos quadros, mesma corrida feita por código), andando sobre um chão que corre na velocidade dele: se o pé “patina”, o passo está errado.
+Embaixo, os quadros usados com a seta de para onde o rosto aponta (<span class="ok">verde = certo</span>, <span class="ruim">vermelho = errado</span>). Os valores das barras que ficarem bons eu passo para a vila.</div>
+<div class="grade" id="grade"></div>
+<script src="vila_heroi.js"></script>
+<script>
+'use strict';
+const AND=window.JUX_ANDAR,IMG={};
+for(const n in AND){const i=new Image();i.src=AND[n].atlas;IMG[n]=i;}
+const $=id=>document.getElementById(id);
+const P={modo:'andar',espada:false,vel:54,passo:7,incl:13,quique:26,rastro:true,pausa:false};
+const ajusta=()=>{$('velv').textContent=P.vel;$('passov').textContent=P.passo;$('inclv').textContent=P.incl;$('quiquev').textContent=P.quique;
+  $('vel').value=P.vel;$('passo').value=P.passo;$('incl').value=P.incl;$('quique').value=P.quique;};
+$('b_andar').onclick=()=>{P.modo='andar';P.vel=54;P.passo=7;$('b_andar').classList.add('on');$('b_correr').classList.remove('on');ajusta();monta();};
+$('b_correr').onclick=()=>{P.modo='correr';P.vel=96;P.passo=6.5;$('b_correr').classList.add('on');$('b_andar').classList.remove('on');ajusta();monta();};
+$('b_espada').onclick=e=>{P.espada=!P.espada;e.target.textContent='Espada: '+(P.espada?'sim':'não');e.target.classList.toggle('on',P.espada);monta();};
+$('b_rastro').onclick=e=>{P.rastro=!P.rastro;e.target.textContent='Rastro: '+(P.rastro?'sim':'não');e.target.classList.toggle('on',P.rastro);};
+for(const k of ['vel','passo','incl','quique'])$(k).oninput=e=>{P[k]=+e.target.value;ajusta();};
+$('pausa').onclick=e=>{P.pausa=!P.pausa;e.target.textContent=P.pausa?'Continuar':'Pausar';};
+const esperado={esquerda:-1,direita:1};
+const certo=(o,g)=>g in esperado?(o!==null&&o*esperado[g]>=.02):(o===null||Math.abs(o)<=.2);
+const seta=o=>o===null||o===undefined?'⬆':o<-.02?'⬅':o>.02?'➡':'⬇';
+let caixas=[];
+function monta(){
+  const nome=P.espada?'espada':'sem',D=AND[nome],grade=$('grade');grade.innerHTML='';caixas=[];
+  for(const g of ['baixo','esquerda','direita','cima']){
+    const ks=D.ciclos[g],c=document.createElement('div');c.className='card';
+    const ruins=ks.filter(k=>!certo(D.olhar[k],g)),mov=D.movimento&&D.movimento[g];
+    c.innerHTML=`<h3>${P.modo} · ${g}</h3><div class="nota ${ruins.length?'ruim':'ok'}">${ruins.length?'Quadros virados errado: '+ruins.join(', '):'Todos os quadros olham para o lado certo'}</div>
+      <div class="nota ${mov<.12?'ruim':'ok'}">Movimento das pernas entre quadros: ${mov}</div>`;
+    const cv=document.createElement('canvas');cv.width=420;cv.height=240;c.appendChild(cv);
+    const tira=document.createElement('canvas');tira.width=Math.max(420,ks.length*56);tira.height=110;tira.style.marginTop='8px';c.appendChild(tira);
+    grade.appendChild(c);caixas.push({g,ks,cv,tira,dist:0,rastro:[],rt:0,nome});
+  }
+}
+let ult=performance.now();
+function quadro(now){const dt=Math.min(.05,(now-ult)/1000);ult=now;
+  for(const cx of caixas){
+    const D=AND[cx.nome],im=IMG[cx.nome],corre=P.modo==='correr';
+    if(!P.pausa)cx.dist+=P.vel*dt;
+    const c=cx.cv.getContext('2d'),W=cx.cv.width,H=cx.cv.height,Z=2.6,chao=H-26;
+    c.imageSmoothingEnabled=false;c.fillStyle='#cfe3f7';c.fillRect(0,0,W,H);
+    const dx={esquerda:1,direita:-1}[cx.g]||0,dy={baixo:-1,cima:1}[cx.g]||0;
+    // chao de neve com marcas que correm na velocidade do personagem
+    c.fillStyle='#a9c4e2';
+    for(let i=-2;i<14;i++){const x=((i*44+dx*cx.dist*Z)%(W+88)+W+88)%(W+88)-44;c.fillRect(x,chao+6,20,3);c.fillRect(x+18,chao-40,10,2);}
+    if(dy)for(let i=-2;i<12;i++){const y=((i*26+dy*cx.dist*Z)%H+H)%H;c.fillRect(30,y,12,3);c.fillRect(W-42,y,12,3);c.fillRect(110,y+9,8,2);c.fillRect(W-120,y+9,8,2);}
+    const ks=cx.ks,q=ks[Math.floor(cx.dist/P.passo)%ks.length],fase=cx.dist/P.passo*Math.PI;
+    const lado=cx.g==='direita'?1:cx.g==='esquerda'?-1:0,incl=corre?lado*P.incl/100:0;
+    const quique=-Math.abs(Math.sin(fase))*(corre?P.quique/10:.7)*Z,estica=corre&&!lado?1+Math.abs(Math.sin(fase))*.05:1;
+    const s=Z*.285*1.4,bx=W/2,by=chao;
+    if(corre&&P.rastro&&!P.pausa){cx.rt+=dt;if(cx.rt>.05){cx.rt=0;cx.rastro.push({q,off:0});if(cx.rastro.length>4)cx.rastro.shift();}
+      for(const r of cx.rastro)r.off+=P.vel*dt*Z*.9;}
+    if(corre&&P.rastro)cx.rastro.forEach((r,i)=>{c.save();c.globalAlpha=.16*(i+1)/cx.rastro.length;c.filter='brightness(1.6) hue-rotate(160deg) saturate(2)';
+      c.translate(bx-(dx?-dx:0)*0-(lado*r.off),by+(dy?-dy*r.off:0));c.rotate(incl);c.scale(s,s);c.drawImage(im,r.q*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1],D.w,D.h);c.restore();});
+    c.save();c.translate(bx,by+quique);c.rotate(incl);c.scale(s,s*estica);c.drawImage(im,q*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1],D.w,D.h);c.restore();
+    const t=cx.tira.getContext('2d');t.clearRect(0,0,cx.tira.width,cx.tira.height);t.font='bold 12px Trebuchet MS';
+    ks.forEach((k,j)=>{const o=D.olhar[k],bom=certo(o,cx.g);t.fillStyle=k===q?'#33507f':'#1c2844';t.fillRect(j*56,0,52,110);
+      t.drawImage(im,k*D.w,0,D.w,D.h,j*56+26-D.ancora[0]*.6,90-D.ancora[1]*.6,D.w*.6,D.h*.6);
+      t.fillStyle=bom?'#7dffa8':'#ff8a8a';t.fillText(seta(o)+' #'+k,j*56+4,104);});
+  }
+  requestAnimationFrame(quadro);}
+ajusta();monta();requestAnimationFrame(quadro);
+</script>
+</body>
+</html>

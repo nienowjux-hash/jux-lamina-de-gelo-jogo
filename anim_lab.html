@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratório de Animação</title>
+<style>
+:root{--bg:#1e2230;--card:#2a3042;--fg:#eef2ff;--mut:#9aa6c8;--ac:#7fd6f5}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Trebuchet MS",sans-serif;padding:16px}
+h1{font-size:20px;margin:0 0 4px}p{color:var(--mut);margin:0 0 12px;font-size:14px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px;font-size:14px}
+button{background:var(--ac);color:#0c1a2a;border:0;border-radius:6px;padding:7px 12px;font-weight:bold;cursor:pointer}
+.grid{display:flex;flex-wrap:wrap;gap:12px}
+.card{background:var(--card);border-radius:8px;padding:8px}
+.card b{display:block;font-size:14px;margin-bottom:4px}.card small{color:var(--mut)}
+canvas{image-rendering:pixelated;display:block;background:#363e55;border-radius:4px;max-width:100%}
+</style>
+</head>
+<body>
+<h1>Laboratório de Animação do Jux</h1>
+<p>Quadros recortados por <code>tools/cut_lab.py</code>. Linha amarela = pés e tronco (âncora): o corpo não deve pular dela nos ciclos.</p>
+<div class="bar">
+  <label>Velocidade <input id="vel" type="range" min="0.25" max="2" step="0.25" value="1"> <span id="velv">1x</span></label>
+  <label><input id="cebola" type="checkbox"> casca de cebola</label>
+  <label><input id="guia" type="checkbox" checked> âncora</label>
+  <button id="golpe">Ver o golpe completo no jogo</button>
+  <a href="index.html#teste" style="color:var(--ac);font-weight:bold">← Voltar ao laboratório de golpes</a>
+</div>
+<div class="grid" id="grid"></div>
+<div class="card" style="margin-top:14px"><b>Golpe completo (como no jogo, escala 2)</b><canvas id="cena" width="900" height="300"></canvas></div>
+<script src="sprites_anim.js"></script>
+<script src="sprites_magias.js"></script>
+<script>
+const A=window.JUX_ANIM,img=new Image();img.src=A.atlas;
+const M=window.JUX_MAGIA,imgM=new Image(),imgE=new Image();imgM.src=M.heroi.atlas;imgE.src=M.efeitos.atlas;
+const Z=3,cards=[];
+// as magias do heroi tem quadros por etapa (o jogo escolhe); aqui passam a 3 qps em sequencia
+const grupos=[[A,img,A.anims,''],[M.heroi,imgM,Object.fromEntries(Object.entries(M.heroi.anims).map(([n,a])=>[n,{...a,fps:3,loop:true}])),'magia: '],[M.efeitos,imgE,M.efeitos.anims,'efeito: ']];
+for(const [D,im,anims,pre] of grupos)for(const [n0,an] of Object.entries(anims)){const n=pre+n0;
+  const d=document.createElement('div');d.className='card';
+  d.innerHTML=`<b>${n}</b><small>${an.quadros.length} quadros · ${an.fps} qps · ${an.loop?'repete':'uma vez'}</small>`;
+  const c=document.createElement('canvas');c.width=D.w*Z;c.height=D.h*Z;d.appendChild(c);
+  document.getElementById('grid').appendChild(d);cards.push({n,an,c,x:c.getContext('2d'),D,im});
+}
+const vel=document.getElementById('vel'),cebola=document.getElementById('cebola'),guia=document.getElementById('guia');
+vel.oninput=()=>document.getElementById('velv').textContent=vel.value+'x';
+function idx(an,t){let i=Math.floor(t*an.fps);return an.loop?i%an.quadros.length:Math.min(i,an.quadros.length-1);}
+function blit(x,j,dx,dy,s,flip,D,im){D=D||A;im=im||img;x.save();x.translate(dx,dy);if(flip)x.scale(-1,1);x.imageSmoothingEnabled=false;
+  x.drawImage(im,j*D.w,0,D.w,D.h,-D.ancora[0]*s,-D.ancora[1]*s-s,D.w*s,D.h*s);x.restore();}
+// golpe: corre 460 ms, ataca 510 ms, volta 450 ms (igual ao index.html)
+let golpe=null;document.getElementById('golpe').onclick=()=>golpe={t:0};
+let last=performance.now(),T=0;
+function frame(now){const dt=(now-last)/1000*vel.value;last=now;T+=dt;
+  for(const k of cards){const x=k.x;x.clearRect(0,0,k.c.width,k.c.height);
+    const t=k.an.loop?T:T%(k.an.quadros.length/k.an.fps+.6),i=idx(k.an,t);
+    const D=k.D;
+    if(cebola.checked&&k.an.quadros.length>1){x.globalAlpha=.3;blit(x,k.an.quadros[(i+k.an.quadros.length-1)%k.an.quadros.length],D.ancora[0]*Z,D.ancora[1]*Z+Z,Z,false,D,k.im);x.globalAlpha=1;}
+    blit(x,k.an.quadros[i],D.ancora[0]*Z,D.ancora[1]*Z+Z,Z,false,D,k.im);
+    if(guia.checked){x.fillStyle='rgba(255,230,0,.6)';x.fillRect(0,D.ancora[1]*Z+Z,k.c.width,1);x.fillRect(D.ancora[0]*Z+Z/2,0,1,k.c.height);}
+  }
+  const cv=document.getElementById('cena'),x=cv.getContext('2d');x.clearRect(0,0,cv.width,cv.height);
+  x.fillStyle='#4a5a80';x.fillRect(0,262,cv.width,38);
+  x.fillStyle='#c4300c';x.fillRect(120,140,110,122);
+  let anim='parado',at=T,lunge=0,back=false;
+  if(golpe){golpe.t+=dt;const g=golpe.t;
+    if(g<.46){anim='corrida';at=g;lunge=330*g/.46;}
+    else if(g<.97){anim='ataque';at=g-.46;lunge=330;}
+    else if(g<1.42){anim='corrida';at=g-.97;lunge=330*(1-(g-.97)/.45);back=true;}
+    else if(g>2.2)golpe=null;}
+  blit(x,A.anims[anim].quadros[idx(A.anims[anim],at)],760-lunge,262,2,!back);
+  requestAnimationFrame(frame);}
+Promise.all([img,imgM,imgE].map(i=>i.decode())).then(()=>requestAnimationFrame(frame));
+</script>
+</body>
+</html>

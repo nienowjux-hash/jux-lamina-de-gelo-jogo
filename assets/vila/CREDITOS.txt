@@ -1,0 +1,16 @@
+Sons da vila - todos CC0 (dominio publico), credito opcional:
+- musica_vila: "Snow Theme" - CleytonKauffman - https://opengameart.org/content/snow-theme
+- vento: "Winter Wind" - wipics - https://opengameart.org/content/winter-wind
+- passo_0..3: "50 RPG sound effects" (footstep) - Kenney - https://opengameart.org/content/50-rpg-sound-effects
+
+Musicas da vila (o botao "Musica" troca entre elas):
+- musica_vila_1: "Snowy Village" - Louswan - CC-BY 3.0 - opengameart.org/content/snowy-village
+- musica_vila_2: "Morning Frost" (RPG Orchestral Essentials) - Jonathan Shaw - CC-BY 3.0 - opengameart.org/node/97452
+- musica_vila_3: "Snowland Town" - CC-BY 3.0 - autor na pagina: opengameart.org/content/snowland-town (creditar antes de publicar o jogo)
+- musica_vila (antiga): "Snow Theme" - CleytonKauffman - CC0
+
+Sons:
+- bigorna_0..2: "Hammer on Anvil" - CC0 - opengameart.org/node/108999 (cortado em batidas)
+- porco_0..3, porco_guincho: "Pig SFX Pack" - vinrax - CC-BY 3.0 - opengameart.org/content/pig-sfx-pack
+
+musica_caverna.ogg/.mp3 — "Dark Ambience Loop", Iwan Gabovitch (qubodup), OpenGameArt.org, CC-BY 3.0. Música tensa do interior da caverna do lobo.
