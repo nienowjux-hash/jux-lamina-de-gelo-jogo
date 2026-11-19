@@ -10,7 +10,7 @@ const DESCOBERTAS = [
   {id:'d_t_lago', regiao:'trilha', x:560, y:640, r:70, nome:'Margem do lago congelado',
    fala:[['Jux','O gelo do lago é grosso e liso. Dá para patinar.'],['Aurora','Não é uma boa ideia, Portador.'],['Jux','Nunca é. É por isso que eu faço.']]},
   {id:'d_t_tronco', regiao:'trilha', x:300, y:745, r:60, nome:'Tronco do caçador',
-   fala:[['Jux','Um tronco com marcas de machado e um nome riscado: HALVARD.'],['Aurora','Ele cortava lenha aqui. Esta é a última pista antes de ele sumir.']]},
+   fala:[['Jux','Um tronco com marcas de machado e um nome riscado: HALVARD.'],['Aurora','Ele cortava lenha aqui… e seguiu trilha adentro. A última pista antes de ele sumir.']]},
   {id:'d_t_pedras', regiao:'trilha', x:1120, y:545, r:65, nome:'Pedras do santuário',
    fala:[['Jux','As pedras em volta do cristal têm runas antigas, quase apagadas.'],['Aurora','Palavras de proteção. Alguém as escreveu há muito tempo para manter o mal longe.']]},
   // pistas da missao "O amigo de neve do Tico" (CHEFE_BOLOTAO.md): so existem com a missao ativa e nao entram na contagem nem no premio da regiao
@@ -43,7 +43,7 @@ const DESCOBERTAS = [
   {id:'d_c_ossos', regiao:'caverna', x:1270, y:225, r:60, nome:'O nicho dos ossos',
    fala:[['Jux','Ossos antigos atrás dos cristais. Grandes. De lobo.'],['Aurora','Outros vieram antes dele, Portador. Nenhum saiu.'],['Jux','Então a gente vai ser o primeiro grupo a sair com estilo.']]},
   {id:'d_c_acamp', regiao:'caverna', x:330, y:470, r:70, nome:'Acampamento da Ordem',
-   fala:[['Jux','Um acampamento abandonado: estandarte do sol negro, tocha apagada, fogueira fria.'],['Bino','…Saíram com pressa.'],['Aurora','Os vigias da Ordem. Fugiram quando o lobo começou a quebrar as correntes.']]},
+   fala:[['Jux','Um acampamento abandonado: estandarte do sol negro, tocha apagada, fogueira fria.'],['Bino','…Saíram com pressa.'],['Aurora','Os vigias da Ordem. Fugiram quando ouviram a gente chegando.']]},
   // ---- Vale dos Lobos
   {id:'d_v_carroca', regiao:'vale', extra:true, req:() => estadoMissao('carroca_tombada') === 'ativa', x:292, y:690, r:60, nome:'A carroça do Capitão',
    fala:[['Jux','Uma carroça tombada, caixotes abertos e nabo espalhado na neve. É a do Capitão.'],['Bino','…Arrastaram o baú.'],['Jux','Um rastro fundo na neve. Pesado. Indo para o meio do vale.']]},
@@ -52,11 +52,11 @@ const DESCOBERTAS = [
   {id:'d_v_corrente', regiao:'vale', extra:true, req:() => estadoMissao('carroca_tombada') === 'ativa', x:650, y:585, r:55, nome:'Elo de corrente roxa',
    fala:[['Jux','Um elo de corrente roxa, mordido ao meio. Marca da Ordem.'],['Aurora','Tentaram acorrentar alguma coisa aqui, Portador. Ela arrebentou a corrente com os dentes.'],['Bino','…Na toca.']]},
   {id:'d_v_toca', regiao:'vale', x:724, y:556, r:80, nome:'A toca dos lobos',
-   fala:[['Jux','Uma toca funda, costelas enormes na neve e pegadas do tamanho do meu escudo.'],['Bino','…Alfa.'],['Aurora','Os lobos daqui não usam olhos roxos, Portador. Estes são livres. E famintos.']]},
+   fala:[['Jux','Uma toca funda, costelas enormes na neve e pegadas do tamanho do meu escudo.'],['Bino','…Alfa.'],['Aurora','Os lobos daqui não têm olhos roxos, Portador. Estes são livres. E famintos.']]},
   {id:'d_p_acamp', regiao:'pico', x:300, y:655, r:80, nome:'O acampamento dos caçadores',
    fala:[['Jux','Barraca rasgada, lanças fincadas, fogueira fria. Ninguém volta aqui faz tempo.'],['Aurora','Caçadores vinham ao Pico atrás do lobo antigo, Portador. Poucos desceram.'],['Jux','Ótimo. Adoro lugares com estatística ruim.']]},
   {id:'d_p_cranio', regiao:'pico', x:560, y:235, r:70, nome:'O crânio gigante',
-   fala:[['Jux','Isso é um crânio. De lobo. Do tamanho de uma casa.'],['Aurora','Um lobo de antes dos homens, Portador. O Fenrir guarda os ossos do próprio ancestral.'],['Jux','Então não é um lugar de luta. É um túmulo. Vou falar baixo.']]},
+   fala:[['Jux','Isso é um crânio. De lobo. Do tamanho de uma casa.'],['Aurora','Um lobo de antes dos homens, Portador. O lobo antigo que vive aqui guarda os ossos do próprio ancestral.'],['Jux','Então não é um lugar de luta. É um túmulo. Vou falar baixo.']]},
   {id:'d_v_moinho', regiao:'vale', x:1110, y:330, r:80, nome:'O moinho congelado',
    fala:[['Jux','Um moinho com a roda presa no gelo. Alguém morava aqui e saiu com pressa.'],['Aurora','Os lobos tomaram o vale depois que a Ordem passou, Portador.'],['Jux','Então a Ordem nem precisou expulsar ninguém. Mandou os lobos fazerem isso.']]},
 ];

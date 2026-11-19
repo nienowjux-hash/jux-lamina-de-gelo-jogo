@@ -198,9 +198,25 @@ function usaItem(id){const it=ITENS[id];
 function opcoesSlot(s){const E=equipDe(UI.quem);return [...new Set([null,E[s],...itensBolsa().filter(k=>ITENS[k].tipo===tipoDoSlot(s)&&serveEm(ITENS[k],UI.quem))].filter(x=>x!==undefined))];}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
   if(nx===cur)return;if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_mover,.5);salvaJogo();}
-const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Salvar agora','Novo jogo (apaga o progresso)'];
+const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
+// SAVE EM ARQUIVO (2026-11-19): leva o progresso para outro navegador/computador (o save fica no navegador, separado por site)
+function exportaSave(){salvaVila();const d={jogo:'jux-lamina-de-gelo',v:1,quando:new Date().toISOString(),dados:{}};
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('jux_')&&k!=='jux_pag_viva'&&k!=='jux_encontro')d.dados[k]=localStorage.getItem(k);}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d)],{type:'application/json'}));
+  a.download='jux_save_nv'+JOGO.nivel+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+  som(SOM.ui_vez,.6);aviso('Save exportado (veja a pasta de downloads)','#7dffa8');}
+function importaSave(){const inp=document.createElement('input');inp.type='file';inp.accept='.json,application/json';
+  inp.onchange=()=>{const fl=inp.files&&inp.files[0];if(!fl)return;const rd=new FileReader();rd.onload=()=>importaDados(rd.result);rd.readAsText(fl);};inp.click();}
+function importaDados(texto){{try{const d=JSON.parse(texto);
+    if(!d||d.jogo!=='jux-lamina-de-gelo'||!d.dados||!d.dados.jux_save){aviso('Esse arquivo não é um save do Jux.','#ff9a9a');som(SOM.ui_mover,.5);return;}
+    if(!confirm('Trocar o progresso atual pelo save do arquivo? O progresso atual será perdido.'))return;
+    for(const k of Object.keys(localStorage))if(k.startsWith('jux_')&&k!=='jux_pag_viva')localStorage.removeItem(k);
+    for(const [k,v] of Object.entries(d.dados))localStorage.setItem(k,v);
+    let r='vila';try{const sv=JSON.parse(d.dados.jux_save);if(sv&&sv.local)r=sv.local;}catch(e){}window.__importou=true;location.href=r+'.html?t='+Date.now();
+  }catch(e){aviso('Não consegui ler esse arquivo.','#ff9a9a');}}}
 const VOL_OPS=['mus','sfx','voz'];
 function acaoSalvar(i,dir){if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}
+  else if(i===1)exportaSave();else if(i===2)importaSave();
   else if(UI.confirmaNovo){novoJogo();location.reload();}else{UI.confirmaNovo=true;aviso('Toque de novo para confirmar','#ff9a9a');som(SOM.ui_mover,.5);}}
 
 // ---------- Ecos
@@ -304,7 +320,10 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
   const quebra=(s,tam,cor)=>{ctx.font=`bold ${tam}px "Trebuchet MS"`;let lin='';for(const p of s.split(' ')){if(ctx.measureText(lin+p).width>ww){texto(lin,x2,yy,tam,cor);yy+=tam+7;lin='';}lin+=p+' ';}if(lin)texto(lin,x2,yy,tam,cor);yy+=tam+12;};
   if(sel==='_historia'){texto('Objetivo da história',x2,yy,20,'#ffe27a');yy+=30;
     if(!hero.espada){quebra('Mil anos de gelo prendem uma espada no altar, no alto da vila. Todos tentaram na força. Talvez não seja um teste de força.',15,'#e8f6ff');quebra('➤ Suba até o altar (★ no Mapa) e fale com ele.',15,'#7dffa8');}
-    else{quebra('A Aurora escolheu você. O festival da Rainha do Inverno se aproxima, e algo se mexe além do portão da vila.',15,'#e8f6ff');quebra('➤ Ajude os moradores, fique mais forte e prepare-se. A estrada para fora de Invernália abre em breve.',15,'#7dffa8');}
+    else{const om=estadoMissao('olhos_roxos');
+      if(om==='feita'){quebra('O Halvard voltou para casa. Mas a Ordem do Eclipse continua lá fora, e os cristais de Elyria correm perigo.',15,'#e8f6ff');quebra('➤ Fique mais forte, siga as pegadas enormes e descubra o que a Ordem quer no norte.',15,'#7dffa8');}
+      else if(om==='ativa'){quebra('O Halvard sumiu e os lobos têm olhos roxos. Alguém está por trás disso.',15,'#e8f6ff');quebra('➤ Siga a missão Olhos Roxos (★ no mapa).',15,'#7dffa8');}
+      else{quebra('A Aurora escolheu você. O festival da Rainha do Inverno se aproxima, e algo se mexe além do portão da vila.',15,'#e8f6ff');quebra('➤ A Vovó Hilda tem um pedido. Fale com ela (! em cima da cabeça) antes de sair da vila.',15,'#7dffa8');}}
     return;}
   if(sel==='_ordem'){texto('A Ordem do Eclipse',x2,yy,20,'#ff8a8a');yy+=30;
     quebra('Uma sociedade secreta, escondida há séculos em templos, guildas e até na corte do rei. Símbolo: um sol negro com um olho no centro.',15,'#e8f6ff');
@@ -531,13 +550,13 @@ function desenhaMenu(){
       ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;trocaSlot(s,1);}]);});
     texto('◀ ▶ ou toque: trocar o equipamento (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-20,13,'#c8d8f0');
   }else{   // Salvar
-    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*50;linhaSel(cx,yy,560,42,i===UI.sel);texto(o,cx+30,yy+28,18,i===4?'#ff9a9a':'#fff');
+    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*44;linhaSel(cx,yy,560,38,i===UI.sel);texto(o,cx+30,yy+28,18,i===6?'#ff9a9a':'#fff');
       if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+16,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+16,bw*v,10);
         texto(Math.round(v*100)+'%',bx+bw+14,yy+28,16,'#e8f6ff');texto('◀',bx-24,yy+28,16,'#9fe8ff');texto('▶',bx+bw+62,yy+28,16,'#9fe8ff');
         ZONAS.push([bx-30,yy,bx-4,yy+42,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+42,()=>{UI.sel=i;acaoSalvar(i,1);}]);
         ZONAS.push([bx,yy,bx+bw,yy+42,(mx)=>{UI.sel=i;}]);}
       else ZONAS.push([cx,yy,cx+360,yy+42,()=>{UI.sel=i;acaoSalvar(i);}]);});
-    texto('◀ ▶ muda o volume (vale no mapa e na batalha) · o jogo também salva sozinho a cada 15 s.',cx,cy+262,13,'#c8d8f0');
+    texto('◀ ▶ muda o volume (vale no mapa e na batalha) · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*44+8,13,'#c8d8f0');
     if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+178,18,'#7dffa8');
   }
   texto('M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar',x+w-16,y+h+24,13,'rgba(255,255,255,.6)','right');

@@ -8,7 +8,7 @@
    - vida desenhada por cima da imagem: neve, aurora, fogueira e forja com chamas e fagulhas, fumaca nas chamines,
      lanternas, agua correndo, pegadas e neve levantando, pulo na cerca do chiqueiro
    - sons: musica da vila, vento, passos, fogo e rio (volume pela distancia) */
-document.getElementById('carregando').remove();
+if(typeof fimCarregar==='function')window.addEventListener('load',fimCarregar);else document.getElementById('carregando').remove();   // carrega.js: espera as imagens
 const W=960,H=540,cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const oc=document.createElement('canvas');oc.width=W;oc.height=H;const octx=oc.getContext('2d');octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';let furo=0;
 const hc=document.createElement('canvas');hc.width=W;hc.height=H;const hctx=hc.getContext('2d');hctx.imageSmoothingEnabled=true;hctx.imageSmoothingQuality='high';
@@ -91,7 +91,7 @@ bm.onclick=e=>{e.stopPropagation();if(window.__morta){window.__morta=false;try{l
 /* ---------- falas (o Jux e o cara foda, estrategista, e engracado pela confianca; a Aurora e a espada, sarcastica) */
 const FALAS={
   floco:[['Sr. Floco','Oi. Eu sou o Sr. Floco. Antes eu era maior.', 3],['Jux','Você ficou bem simpático assim.'],['Sr. Floco','O gelo daqui é o melhor de todos. Dica: se você correr e soltar, ele te leva sozinho.', 3],['Jux','Eu sei. Eu já testei. Várias vezes. Com certo prejuízo de dignidade.'],['Sr. Floco','Pode patinar. Só não pise na cenoura.', 1]],
-  inicio:[['Jux','…'],['Jux','Tá bom, Elyria. Vamos ver o que você tem.'],['Sir Bacon','Oinc.']],
+  inicio:[['Jux','…'],['Jux','Tá bom. Vamos ver o que tem por aqui.'],['Sir Bacon','Oinc.']],
   pulo:[['Jux','Estrategista não procura porteira. Estrategista pula.']],
   fogueira:[['Jux','Fogo, neve e uma vila inteira esperando o festival. Se isso é o tutorial, o orçamento foi alto.'],['Jux','Anotado: ponto de descanso. Todo estrategista sabe onde fica a fogueira antes de saber onde fica o inimigo.']],
   arvore:[['Jux','Uma árvore com mais lanternas que a minha árvore de Natal. Respeito.'],['Aurora','Essas lanternas são para a Rainha do Inverno, Portador. Tenha modos.'],['Jux','Eu sempre tenho modos. Só escolho quando usar.']],
@@ -100,7 +100,7 @@ const FALAS={
   ferraria:[['Jux','A forja do Borin. Vinte anos tentando tirar uma espada de um altar…'],['Jux','…e as brasas dele são mais organizadas que a minha vida inteira.']],
   ingrid:[['Ingrid','Pão de centeio, pão de mel, pão de batata... e pão de ontem, que serve de arma.'],['Jux','Quanto custa o de ontem?'],['Ingrid','Pra você? Um sorriso. Pro Borin? Uma lágrima. Ele sempre chora quando come.'],['Jux','Negócio fechado.']],
   halvard:[['Halvard','O Tico não me solta nem para dormir. Eu não reclamo.',1],['Jux','Reclamar é para quem não tem filho. Li isso em algum lugar.'],
-    ['Halvard','As correntes tinham um sol negro gravado, forasteiro. Elas riam quando o lobo chorava.',0],['Halvard','Se um dia você precisar de um caçador, eu devo a minha vida a você.',2]],
+    ['Halvard','As correntes tinham um sol negro gravado, forasteiro. Eles riam quando o lobo chorava.',0],['Halvard','Se um dia você precisar de um caçador, eu devo a minha vida a você.',2]],
   oskar:[['Oskar','Hm.'],['Jux','Bela lenha.'],['Oskar','Hm.'],['Jux','Muito... cilíndrica.'],['Oskar','...Você é estranho. Gostei.']],
   borin:[['Borin','HA! Um forasteiro! Veio ver o maior ferreiro de Invernália?'],['Jux','Vim ver se o fogo esquenta. Está nevando dentro da minha alma.'],['Borin','...Isso foi bonito.'],['Borin','*funga*'],['Jux','Você vai chorar?'],['Borin','NÃO! É fuligem no olho!']],
   tico:[['Tico','É VOCÊ! O cara que caiu do céu no chiqueiro!'],['Jux','Tecnicamente eu caí no Sir Bacon. Ele amorteceu.'],['Tico','Você é um deus? Um deus de verdade?'],['Jux','Sou estrategista. Deuses não sabem fazer planilha.'],['Tico','O QUE É PLANILHA?!'],['Jux','Uma magia antiga e terrível. Não pergunte mais.']],
@@ -115,16 +115,16 @@ const FALAS={
   saida_garganta:[['Jux','Uma trilha estreita ao lado do cristal, descendo entre paredões de rocha.'],['Bino','…Cheiro de lobo. Muito.'],['Aurora','A Garganta Gelada, Portador. O caminho até a caverna passa por ela.']],
   entrada_trilha:[['Jux','De volta à trilha. O santuário fica logo ali.']],
   caverna_fechada:[['Jux','A entrada daqui está tomada por gelo e pedra. Nem a Aurora corta isso.'],['Aurora','O caminho é pela Garganta, Portador. Ao lado do cristal.']],
-  entrada_vale:[['Jux','Uma trilha subindo na névoa, ao lado da torre. Marcas de garra nas pedras dos dois lados.'],['Bino','…Muitos lobos lá em cima.'],['Aurora','O Vale dos Lobos, Portador. Lugar bom para ficar mais forte antes da caverna. E ruim para ficar parado.']],
+  entrada_vale:[['Jux','Uma trilha subindo na névoa, ao lado da torre. Marcas de garra nas pedras dos dois lados.'],['Bino','…Muitos lobos lá em cima.'],['Aurora','O Vale dos Lobos, Portador. Lugar bom para ficar mais forte. E ruim para ficar parado.']],
   saida_vale:[['Jux','De volta para a Garganta.']],
   vale_chega:[['Jux','Um vale aberto, uma toca enorme no meio e ossos para todo lado.'],['Aurora','Território dos lobos, Portador. Eles vêm em bando aqui, e vêm rápido.'],['Jux','Ótimo. Eu precisava mesmo de um lugar para treinar.'],['Bino','…Fica perto de mim.']],
   garganta_chega:[['Jux','A Garganta Gelada. Paredões de rocha, névoa baixa e marcas de garra na pedra.'],['Aurora','Um acampamento de caçador, um rio congelado e… o sol negro riscado no chão, Portador.'],['Jux','A Ordem passou por aqui. E o lobo ainda está atrás daqueles dentes de gelo, lá no fundo.']],
   saida_vila:[['Jux','De volta para Invernália. A Vovó deve estar com chá pronto.'],['Jux','Ou com uma bronca pronta. Geralmente as duas.']],
-  prova_pegadas:[['Jux','Pegadas. Do tamanho de uma panela. E a neve em volta ainda brilha.'],['Aurora','O Skoll deixou esse rastro quando fugiu. Mas estas pegadas são mais antigas: de alguém maior que ele.'],['Aurora','Não são de um lobo comum, Portador. Há uma memória nelas.'],
+  prova_pegadas:[['Jux','Pegadas. Do tamanho de uma panela. E a neve em volta ainda brilha.'],['Aurora','Não são do Skoll, Portador. São de alguém bem maior… que veio buscá-lo.'],['Aurora','Não são de um lobo comum, Portador. Há uma memória nelas.'],
     ['Jux','Uma memória de quê? Eu estava torcendo para ser de um coelho.'],['Aurora','De um caçador antigo. Um Eco. As pegadas atravessam o Vale dos Lobos e sobem até o Pico do Uivo.'],
     ['Aurora','Mas ele não se entrega a quem não prova valor. Sinto um poder enorme lá: abaixo do nível 12, você não tem chance.'],['✦','Nova missão: A prova do lobo.']],
   prova_fenrir:[['Jux','Um círculo de pedras com lobos gravados, um crânio do tamanho de uma casa e a sensação de estar sendo observado por algo que come estrategistas.'],['Aurora','Ele está aqui. Mostre que é digno, Portador.'],
-    ['Fenrir','Quem pisa no círculo da lua…'],['Fenrir','Mostre que seus golpes valem a minha lealdade.'],['Aurora','Nível recomendado: 12. Se estiver fraco, treine, melhore o equipamento e volte. Ele espera.'],['Jux','Eu tenho um plano. Costuma dar errado, mas é um plano.']],
+    ['Aurora','Nível recomendado: 12. Se estiver fraco, treine, melhore o equipamento e volte. Ele espera.']],
   pico_cedo:[['✦','Uma trilha estreita sobe a montanha, coberta de neve funda. O vento lá em cima uiva.'],['Aurora','Ainda não, Portador. Nada nos chama para lá… por enquanto.']],
   entrada_pico:[['Jux','As pegadas sobem por aqui. Bem por aqui, onde a trilha some na neve.'],['Aurora','O Pico do Uivo. Dizem que lá em cima a lua fica mais perto.'],['Jux','E o vento, pelo barulho, fica mais perto ainda.']],
   saida_pico:[['Jux','Descendo. Devagar, que o vento quer me levar junto.']],
@@ -136,6 +136,9 @@ const FALAS={
     ['Jux','Imune ao golpe principal do vilão. Isso nunca dá errado nas histórias.'],['Bino','…Eu fico na frente.'],
     ['Jux','Primeiro a gente acha o Halvard. Depois a gente apaga essa Ordem.'],['✦','Diário: A Ordem do Eclipse (menu → Missões).']],
   garganta_chega_cedo:[['Jux','A Garganta Gelada. Paredões de rocha, névoa baixa e marcas de garra na pedra.'],['Aurora','Um acampamento de caçador, um rio congelado e… o sol negro riscado no chão, Portador.'],['Jux','Alguém que gosta de sol negro passou por aqui. E o lobo ainda está atrás daqueles dentes de gelo, lá no fundo.']],
+  portao_fechado:[['Jux','Lá fora tem lobo de olho roxo e gente sumindo.'],['Aurora','Antes de sair, Portador, escute a vila. Alguém aqui precisa de você.',1],['✦','Fale com a Vovó Hilda (! em cima da cabeça).']],
+  garganta_fechada:[['Aurora','Ainda não, Portador. O que está acontecendo aqui na trilha ainda não acabou.',1],['Jux','Lobos de olho roxo, um acampamento abandonado e um santuário apagando. Tá, entendi o recado.']],
+  vovo_depois:[['Vovó Hilda','Hmpf. Ainda vivo, forasteiro sem sombra.'],['Jux','Vivo e com uma espada que fala. Subi de nível.'],['Vovó Hilda','Coma alguma coisa. E não morra perto da minha casa.']],
   prova_depois:[['Aurora','Sábio. Volte quando estiver pronto, Portador.'],['Fenrir','…Eu espero.']],
   prova_vence:[['Jux','…Eu ganhei? De um lobo do tamanho de um cavalo?'],['Fenrir','Você luta como quem protege alguém.'],['Fenrir','Mil caçadas, e poucos me fizeram recuar.'],
     ['Fenrir','Sua lâmina é de gelo, como a minha. A minha lealdade é sua, Portador.'],['Aurora','O Eco da Lâmina. O Fenrir caçava ao lado dos heróis antigos. Agora caça ao seu lado.'],
@@ -143,24 +146,24 @@ const FALAS={
   caverna:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá dentro, Portador. Algo grande, e muito triste.'],['Aurora','Eu recomendo o nível 7 antes de entrar. Explore a trilha e a garganta, junte equipamento e volte.'],
     ['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.'],['✦','Nível recomendado: 10. Se estiver fraco, treine e melhore o equipamento.']],
   acamp_pista:[['Jux','Acampamento goblin. E o dono saiu correndo e deixou o jantar. Literalmente: tem pão pela metade.'],['Goblin','(de longe) NÃO VOLTA AQUI! Tem um olho lá embaixo!'],
-    ['Jux','Um mapa rasgado, com um sol negro e um olho no meio. Eles não estavam fugindo de mim.'],['Aurora','Estavam fugindo de quem desenha isso. E do que eles prendem na caverna ao sul.'],['✦','Pista: o mapa rasgado do sol negro.']],
+    ['Jux','Um mapa rasgado, com um sol negro e um olho no meio. Eles não estavam fugindo de mim.'],['Aurora','Estavam fugindo de quem desenha isso.'],['✦','Pista: o mapa rasgado do sol negro.']],
   acolito_aparece:[['Jux','O cristal do santuário está apagando. E tem alguém de capuz preto bebendo a luz dele.'],['Bino','…Frio. Não é de neve.'],['Jux','Isso foi poesia? Vindo de você?'],['Bino','Não.'],
     ['Acólito','…O Arauto manda lembranças, Portador sem sombra.'],['Bino','…Ele sabe quem você é.'],['Jux','Capuz preto, símbolo de olho, fala misteriosa. Você é o inimigo mais previsível do mundo. Parabéns.'],
     ['Aurora','Cuidado. Ele não sente medo. Isso o torna perigoso, não forte.'],['Bino','Eu fico na frente.'],['Jux','Você sempre fica na frente. Eu só preciso ficar atrás com estilo.'],['✦','O Acólito do Eclipse ergue o cajado!']],
   acolito_vence:[['Jux','Ele não gritou. Nem caiu. Ele esvaziou.'],['Bino','…Não tinha ninguém lá dentro.'],['Aurora','Só o manto ficou. Quem estava ali dentro já tinha ido embora faz tempo.'],['Jux','Isso foi pior do que gritar.'],
     ['Aurora','O cristal ainda brilha, fraco. A Ordem tirava a luz dele para alimentar algo preso na caverna.'],['Jux','Caverna. Lobo triste. Agora faz sentido.'],['Bino','O Halvard. Vamos.'],['✦','Pista: o que a Ordem prendeu está na caverna, ao sul.']],
-  caverna_entra:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá no fundo, Portador. Algo grande, e muito triste.'],['Aurora','Lá dentro não há luz nenhuma. Eu recomendo o nível 7 antes de ir até o fim.'],['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.']],
+  caverna_entra:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá no fundo, Portador. Algo grande, e muito triste.'],['Aurora','Lá dentro não há luz nenhuma. Eu recomendo o nível 9 antes de ir até o fim.'],['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.']],
   saida_caverna:[['Jux','De volta para a Garganta. Ar fresco. Relativamente.']],
   caverna_chega:[['Jux','Escuro. Bem escuro. Não dá para ver nem a minha mão.'],['Aurora','Enquanto eu estiver na sua mão, Portador, você nunca vai ficar no escuro.',1],['✦','A lâmina da Aurora Gélida fica incandescente e ilumina o caminho.'],['Bino','…Correntes. Muitas.'],['Jux','E garras na parede. Fiquem perto da luz.']],
   tunel_garras:[['✦','Um túnel baixo. Correntes grossas presas em argolas de ferro, e na rocha, quatro riscos fundos de garra, ainda brilhando de gelo.'],['Jux','Essas garras são do tamanho do meu braço. Do braço do Bino.'],['Aurora','Ele tentou cavar para fora, Portador. Muitas vezes. A Ordem só puxou as correntes mais curtas.',1],['Jux','…Agora fiquei com pena de um lobo gigante. Que dia.']],
-  camara_ve:[['✦','Uma câmara redonda. Um feixe de luar cai do teto sobre runas roxas. Quatro estacas de ferro. E, no meio, correntes esticadas até algo enorme.'],['Aurora','É ele, Portador. O Skoll. Preso pela Ordem.'],['Jux','Lobo gigante acorrentado no escuro. Ótimo. Exatamente o que eu queria hoje.'],['✦','Nível recomendado: 7. Se estiver fraco, explore a caverna, treine e volte.']],
+  camara_ve:[['✦','Uma câmara redonda. Um feixe de luar cai do teto sobre runas roxas. Quatro estacas de ferro. E, no meio, correntes esticadas até algo enorme.'],['Aurora','É ele, Portador. O Skoll. Preso pela Ordem.'],['Jux','Lobo gigante acorrentado no escuro. Ótimo. Exatamente o que eu queria hoje.'],['✦','Nível recomendado: 9. Se estiver fraco, explore a caverna, treine e volte.']],
   caverna_depois:[['Aurora','Sábio. A caverna não vai a lugar nenhum.'],['Jux','Só os dentes dela. Esses ficam.']],
   caverna_livre:[['Jux','Vazia. As correntes quebradas no chão e nenhuma pegada de volta.'],['Aurora','Ele está livre, Portador. O que você fez aqui vai importar.']],
   skoll_vence:[['Jux','Ele não estava bravo. Estava acorrentado.'],['Aurora','A marca do Eclipse se partiu. Por um instante, ele voltou a ser quem era.'],
     ['Skoll','…A matilha ainda precisa de você. E meu pai também.'],['Jux','Pai? Que pai? Aurora, o lobo falou em enigma de novo.'],
-    ['Aurora','Depois. Olhe, Portador: ali, no fundo da caverna, entre as pedras. Um cachecol vermelho.'],['Jux','…Aurora. Isso é do Halvard.'],
+    ['Aurora','Depois. Olhe, Portador: ali, no fundo da caverna, entre as pedras. Um gorro de pele de lobo, rasgado.'],['Jux','…Aurora. Isso é do Halvard.'],
     ['✦','Preso por uma corrente com o selo do Eclipse, um caçador de capuz de pele está caído na neve. Ainda respira.'],
-    ['Halvard','…mil sóis negros… tinha um lobo… ele chorava…',3],['Jux','Calma. Ninguém aqui vai te prender de novo. Quebrei o dono das correntes.'],
+    ['Halvard','…mil sóis negros… tinha um lobo… ele chorava…',3],['Jux','Calma. Ninguém aqui vai te prender de novo. Quebrei as correntes.'],
     ['Halvard','Eu tentei soltá-lo… eles me pegaram… faz quantos dias?',0],['Jux','Três. O Tico não para de te esperar. Ele me chama de deus, mas só porque ainda não te viu voltar.'],
     ['Halvard','Meu menino…',3],['Aurora','A Ordem o mantinha vivo para ouvir o lobo. Isso ainda não acabou, Portador.',],
     ['Halvard','Obrigado, forasteiro. Eu devo a vida a você… e ao lobo.',1],['Jux','O lobo aceita agradecimento em carne. Eu aceito um abraço do Tico.'],
@@ -172,7 +175,7 @@ const FALAS={
     ['Aurora','…Eu vou fingir que não te conheço.'],['Jux','Pose heroica agora. Alguém anota isso para a lenda.']],
   trilha_chega:[['Jux','A Trilha dos Pinheiros. Neve, silêncio e alguma coisa me olhando do mato.'],['Aurora','Lobos, Portador. E goblins. E… uma bola de neve com raiva.'],['Jux','Encontros aleatórios. Finalmente um RPG de respeito.']],
   portao_sai:[['Jux','A estrada para fora de Invernália. Com a Aurora nas costas, agora sim.'],['Aurora','Se você morrer no primeiro lobo, eu volto pro altar.']],
-  derrota:[['Vovó Hilda','Achei você desmaiado na trilha, forasteiro. Arrastei até aqui.'],['Jux','Recuo estratégico.'],['Vovó Hilda','Recuo de bunda na neve, isso sim. Vá se equipar direito.']],
+  derrota:[['Vovó Hilda','Te acharam desmaiado lá fora, forasteiro. Arrastaram até aqui.'],['Jux','Recuo estratégico.'],['Vovó Hilda','Recuo de bunda na neve, isso sim. Vá se equipar direito.']],
   poco:[['Jux','Um poço congelado. Jogo uma moeda e faço um pedido?'],['Jux','…Sem moeda. Pedido negado. Esse mundo é consistente, pelo menos.']],
 };
 const NOMES={camara_alfa:'Câmara do Alfa',saida_caverna:'Saída da caverna',tunel_garras:'Túnel das correntes',caverna:'Caverna de gelo (entrada)',entrada_vale:'Trilha para o Vale dos Lobos',saida_vale:'Descida para a Garganta',floco:'Sr. Floco',capitao:'Capitão Dente-de-Ferro (mercador)',saida_garganta:'Caminho para a Garganta Gelada',entrada_trilha:'Arco de volta à trilha',caverna_fechada:'Caverna de gelo (bloqueada)',prova_pegadas:'Pegadas enormes',prova_fenrir:'Círculo de pedras',circulo_pico:'Círculo de pedras',entrada_pico:'Trilha do Pico do Uivo',saida_pico:'Descida para o Vale',mirante_pico:'Mirante',saida_vila:'Caminho de volta para a vila',caverna:'Caverna de gelo',santuario:'Santuário do cristal',acampamento:'Acampamento goblin',fogueira:'Fogueira',arvore:'Árvore das lanternas',barraca_comida:'Barraca de comida',barraca_bebida:'Barraca de bebida',
@@ -670,7 +673,8 @@ const POSE_FALA={inicio:'surpreso',fogueira:'sentado',bacon:'rindo',tico:'rindo'
 function passa(id,acao){JOGO.passou=JOGO.passou||{};if(JOGO.passou[id]){acao();return;}abreFala(id,()=>{JOGO.passou[id]=true;acao();});}
 function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));return;}
   if(id.startsWith('chefe_')&&!fim){const c=MINICHEFES.find(q=>'chefe_'+q.id===id);if(c&&!chefeFeito(c.id)){fala={linhas:c.pre,i:0,letras:0,fim:()=>{UI.escolha={id:'prova',prova:id,ops:['Lutar','Ainda não'],sel:0};som(SOM.ui_vez,.5);}};}return;}
-  if(id==='saida_garganta'&&!fim){passa('saida_garganta',()=>{JOGO.garganta={x:150,y:650};vaiPara('garganta.html');});return;}
+  if(id==='saida_garganta'&&!fim){if((JOGO.provas||{}).acolito!=='feita'&&!JOGO.gargantaVista){abreFala('garganta_fechada');return;}   // trava: a Garganta abre depois do Acolito
+    passa('saida_garganta',()=>{JOGO.garganta={x:150,y:650};vaiPara('garganta.html');});return;}
   if(id==='entrada_vale'&&!fim){passa('entrada_vale',()=>{JOGO.vale={x:735,y:985};vaiPara('vale.html');});return;}
   if(id==='saida_vale'&&!fim){passa('saida_vale',()=>{JOGO.garganta={x:1208,y:362};vaiPara('garganta.html');});return;}
   if(id==='entrada_pico'&&!fim){if(provaFenrirEstado()==='cedo'){abreFala('pico_cedo');return;}passa('entrada_pico',()=>{JOGO.pico={x:650,y:1000};vaiPara('pico.html');});return;}
@@ -678,7 +682,8 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='entrada_trilha'&&!fim){passa('entrada_trilha',()=>{JOGO.trilha={x:1360,y:515};vaiPara('trilha.html');});return;}
   if(id==='caverna_fechada'&&!fim){abreFala('caverna_fechada');return;}
   if(id==='saida_vila'&&!fim){passa('saida_vila',()=>{JOGO.vila=Object.assign(JOGO.vila||{},{x:722,y:710,espada:true});vaiPara('vila.html');});return;}
-  if(id==='portao'&&hero.espada&&!fim){passa('portao_sai',()=>{JOGO.trilha=null;vaiPara('trilha.html');});return;}
+  if(id==='portao'&&hero.espada&&!fim){const om=typeof estadoMissao==='function'?estadoMissao('olhos_roxos'):'ativa';if(om!=='ativa'&&om!=='feita'){abreFala('portao_fechado');return;}   // trava: so sai com a missao da Vovo aceita (o Bino entra no time nela)
+    passa('portao_sai',()=>{JOGO.trilha=null;vaiPara('trilha.html');});return;}
   if(id==='portao_sai'&&!fim)return;
   if(id==='caverna'&&REGIAO==='garganta'&&!fim){passa('caverna_entra',()=>{JOGO.caverna={x:705,y:990};vaiPara('caverna.html');});return;}   // a boca da caverna leva para DENTRO (exploracao); a luta e na camara do Alfa
   if(id==='saida_caverna'&&!fim){passa('saida_caverna',()=>{JOGO.garganta={x:1300,y:1010};vaiPara('garganta.html');});return;}
@@ -688,7 +693,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
     if(st==='vencida'){abreFala('skoll_vence',concluiSkoll);return;}
     abreFala('camara_ve',()=>{UI.escolha={id:'prova',prova:'skoll',ops:['Entrar','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
   if(id==='acampamento'&&!fim&&estadoMissao('olhos_roxos')==='ativa'&&JOGO.cap1&&!JOGO.cap1.acamp){abreFala('acamp_pista',()=>{JOGO.cap1.acamp=true;som(SOM.ui_vez,.7);aviso('Pista encontrada: o mapa do sol negro','#ffe27a');salvaJogo();setTimeout(contaOrdem,900);});return;}
-  if(id==='santuario'&&!fim&&estadoMissao('olhos_roxos')==='ativa'&&(JOGO.provas||{}).acolito!=='feita'){
+  if(id==='santuario'&&!fim&&estadoMissao('olhos_roxos')==='ativa'&&JOGO.ordemSabe&&(JOGO.provas||{}).acolito!=='feita'){   // trava: o Acolito so depois da cena da Ordem
     SEG.cena=!!(JOGO.bino&&JOGO.bino.ativo);   // o Bino fica ao lado do Jux durante a conversa
     if((JOGO.provas||{}).acolito==='vencida')abreFala('acolito_vence',()=>{SEG.cena=false;concluiAcolito();});else abreFala('acolito_aparece',()=>{SEG.cena=false;iniciaProva('acolito');});return;}
   if(id==='acolito_vence'&&!fim)return;
@@ -697,7 +702,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
-  fala={linhas:FALAS[id],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
+  fala={linhas:FALAS[(id==='vovo'&&hero.espada&&FALAS.vovo_depois)?'vovo_depois':id],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 function avanca(){if(!fala)return;const L=fala.linhas[fala.i][1];
   if(fala.letras<L.length){fala.letras=L.length;return;}
   fala.i++;fala.letras=0;som(SOM.ui_mover,.45);if(fala.i>=fala.linhas.length){const f=fala.fim;fala=null;if(f)f();}}
@@ -738,7 +743,7 @@ function passoEncontro(){
   encPassos++;if(encPassos>=(lobosPendentes()?Math.min(encAlvo,48):encAlvo)){   // missao dos lobos: a luta vem em ~11 s andando e so com lobos
     encAlvo=sorteiaLimiar();iniciaEncontro();}}
 // luta especial (prova de um Eco): um unico inimigo fixo; ao ganhar, o index.html marca JOGO.provas[nome]='vencida'
-const PROVAS={fenrir:{tipos:['fenrir_prova'],nv:12},skoll:{tipos:['skoll'],nv:7},acolito:{tipos:['acolito'],nv:8}};   // lutas fixas: o nivel NAO acompanha o heroi
+const PROVAS={fenrir:{tipos:['fenrir_prova'],nv:12},skoll:{tipos:['skoll'],nv:9},acolito:{tipos:['acolito'],nv:8}};   // lutas fixas: o nivel NAO acompanha o heroi
 for(const c of MINICHEFES)PROVAS['chefe_'+c.id]={tipos:[c.tipo],nv:c.nv,chefe:{nome:c.nome,hp:c.hp,forca:c.forca,exp:c.exp}};
 function iniciaProva(nome){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
@@ -849,7 +854,7 @@ const CENAS_BINO=[
   {mus:'bino_a',cam:[.55,.45,1.0, .62,.5,1.12],dur:5,fx:'neve',vozes:[[.9,'b2']],falas:[[.9,'Bino','…Halvard.',1]],sons:[]},
   {mus:'bino_a',cam:[.55,.5,1.0, .6,.5,1.1],dur:11.5,fx:'neve',vozes:[[.6,'b3a'],[2,'b3ja'],[4.6,'b3b'],[6.1,'b3jb'],[8.7,'b3c']],falas:[[.6,'Bino','…Ouvi.'],[2,'Jux','A conversa inteira?'],[4.6,'Bino','Eu vou.'],[6.1,'Jux','Isso era uma pergunta?'],[8.7,'Bino','Não.']],sons:[[.1,'impacto']],treme:[.1,.9]},
   {mus:'bino_a',cam:[.55,.5,1.1, .5,.5,1.0],dur:11.5,fx:'neve',vozes:[[.6,'b4a'],[4.5,'b4h'],[7,'b4b']],falas:[[.6,'Bino','Cheguei aqui sem nome. Sem comida.'],[4.5,'Halvard','Come. Pergunta depois.'],[7,'Bino','Ele nunca perguntou.']],sons:[]},
-  {mus:'bino_a',cam:[.5,.68,1.0, .5,.38,1.14],dur:16,fx:'neve',vozes:[[.6,'b5b'],[7.2,'b5a']],falas:[[.6,'Bino','Minha montanha ficou muda. A Ordem passou. Eu desci.'],[7.2,'Aurora','Ele é de um povo de guardadores de pedra, Portador. Existe uma força nele que eles reconheceriam.',1]],sons:[]},
+  {mus:'bino_a',cam:[.5,.68,1.0, .5,.38,1.14],dur:16,fx:'neve',vozes:[[.6,'b5b'],[7.2,'b5a']],falas:[[.6,'Bino','Minha montanha ficou muda. Uns de capuz preto passaram. Eu desci.'],[7.2,'Aurora','Ele é de um povo de guardadores de pedra, Portador. Existe uma força nele que eles reconheceriam.',1]],sons:[]},
   {mus:'bino_b',cam:[.45,.5,1.0, .5,.42,1.16],dur:20,fx:'neve',vozes:[[.5,'b6ja'],[6.4,'b6ba'],[7.9,'b6jb'],[11,'b6bb'],[13.1,'b6v']],falas:[[.5,'Jux','Eu sou o Jux. Sou bom em ideias e em cair em porcos.'],[6.4,'Bino','Bino.'],[7.9,'Jux','Prazer. Quer entrar no time?'],[11,'Bino','Já entrei.'],[13.1,'Vovó Hilda','Hmpf. Dois homens, quase um cérebro. Vão.']],sons:[[6.1,'brilho']]},
   {mus:'bino_b',cam:[.5,.5,1.0, .5,.55,1.16],dur:14,fx:'neve',vozes:[[.6,'b7a'],[5.2,'b7j']],falas:[[.6,'Aurora','Dois são mais difíceis de derrubar do que um, Portador.',1],[5.2,'Jux','E mais difíceis de convencer a andar na mesma direção.'],[10.6,'✦','Bino entrou no time!',1]],sons:[]},
 ];
@@ -1312,7 +1317,7 @@ setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){sem
 // um erro num quadro nao congela mais o jogo: mostra o erro (jogo.js mostraErro) e segue
 function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.filter='none';c.globalCompositeOperation='source-over';}catch(_){}}
 function quadro(now){try{quadro0(now);}catch(e){zeraCtx(ctx);if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(quadro);}}
-function quadro0(now){const dt=Math.min(.05,(now-ult)/1000);ult=now;
+function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}const dt=Math.min(.05,(now-ult)/1000);ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);

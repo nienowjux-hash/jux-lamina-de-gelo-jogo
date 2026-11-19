@@ -14,12 +14,12 @@ const MISSOES={
       {txt:'Libertar o Skoll e resgatar o Halvard',ok:()=>(JOGO.provas||{}).skoll==='feita'},
       {txt:'Voltar e contar à Vovó Hilda',ok:()=>estadoMissao('olhos_roxos')==='feita'}],
     oferta:[['Vovó Hilda','Forasteiro. Os caçadores não voltaram. Três já, só esta semana.'],['Jux','Lobos?'],
-      ['Vovó Hilda','Com olhos roxos. Lobo normal foge de homem. Estes atacam como quem recebeu ordem.'],['Jux','Ordem. Que palavra desagradável nesta semana.'],
+      ['Vovó Hilda','Com olhos roxos. Lobo normal foge de homem. Estes atacam como quem recebeu ordem.'],['Jux','Ordem? Lobo não recebe ordem. Alguém está mandando neles.'],
       ['Vovó Hilda','O Halvard, pai do Tico, foi pegar lenha e não voltou. O menino não para de chorar… nem de te chamar de deus.'],
       ['Jux','Eu acho ele. E de graça: o Borin me ensinou que chorar sai caro.'],['Vovó Hilda','O festival é em três dias. Traga o homem para casa antes disso. E não morra perto da minha casa.']],
     lembra:[['Vovó Hilda','Lobos de olhos roxos, goblins assustados e o Halvard ainda lá fora. Eu não dormi.'],['Jux','Prometo dormir por você. Depois.']],
     entrega:[['Jux','Achei o Halvard. Preso na caverna do lobo, vivo e com muita vontade de abraçar o Tico.'],['Vovó Hilda','…Vivo. Eu rezei tanto que esqueci como se agradece.'],
-      ['Jux','O Tico?'],['Vovó Hilda','Não largou o pai desde o amanhecer. O Borin chorou tanto que apagou a forja. Dois choros, uma casa, nenhum filho de peito.'],
+      ['Jux','O Tico?'],['Vovó Hilda','Não largou o pai desde o amanhecer. O Borin chorou tanto que apagou a forja. Dois choros, uma casa e um menino que finalmente dormiu.'],
       ['Jux','Isso foi um elogio?'],['Vovó Hilda','Foi um desabafo. Tome gil e poções. E ouça, forasteiro: olhos roxos não aparecem à toa. O festival é amanhã. Tenho um pressentimento.'],
       ['Jux','Pressentimento de avó é o sistema de alarme mais confiável de qualquer RPG.']]},
   tico_cachecol:{nome:'O cachecol do Tico',quem:'tico',quemNome:'Tico',req:{espada:true},
@@ -61,7 +61,7 @@ const MISSOES={
       ['Jux','Pesada é bom. Pesada quebra coisas.'],['Oskar','Hm. Toma uma Hi-Poção. Pra não quebrar você.']]},
 };
 // a Prova do Lobo nao tem morador: nasce das pegadas na trilha (provaFenrirEstado, vila_motor.js)
-MISSOES.prova_fenrir={nome:'A prova do lobo',quem:null,quemNome:'as pegadas do Fenrir',
+MISSOES.prova_fenrir={nome:'A prova do lobo',quem:null,quemNome:'as pegadas enormes',
   desc:'Pegadas enormes, brilhando na neve, saem da caverna do lobo, atravessam o Vale dos Lobos e sobem até o Pico do Uivo. Um Eco antigo, um lobo caçador, só se entrega a quem provar valor: lute contra o espírito dele. Ele é forte: nível recomendado 12. Se estiver fraco, treine e melhore o equipamento.',
   pede:{prova:'fenrir'},rec:{eco:'lamina'}};
 // MISSAO SECUNDARIA LIGADA AO MINI-CHEFE DA GARGANTA (CHEFE_CAPITAO.md): o Halvard, ja resgatado, pede o machado e a cota de volta
@@ -75,7 +75,7 @@ MISSOES.machado_halvard = {nome:'O machado do Halvard', quem:'halvard', quemNome
     {txt:'Enfrentar o Capitão Dente-de-Ferro', ok:() => !!((JOGO.chefes || {}).capitao)},
     {txt:'Devolver as coisas ao Halvard', ok:() => estadoMissao('machado_halvard') === 'feita'}],
   oferta:[['Halvard','Forasteiro. Uma palavra, se tiver tempo.', 0], ['Jux','Tenho. Pouco, mas tenho.'],
-    ['Halvard','Quando me levaram, eu estava no acampamento da Garganta. Meu machado e a cota do meu pai ficaram lá. Estão na família há três gerações.', 0],
+    ['Halvard','Quando me levaram, eu tinha ido atrás de lenha seca até o acampamento de caça da Garganta. Meu machado e a cota do meu pai ficaram lá. Estão na família há três gerações.', 0],
     ['Halvard','Os goblins ficaram com tudo. Eu não os culpo: estavam com medo. Mas aquilo não é deles.', 2],
     ['Jux','Eu cuido disso. Alguma pista?'],
     ['Halvard','Eu escrevia um diário no acampamento. Procure lá. E procure o rastro de ferro: só um goblin muito pesado deixa aquilo. E uma bandeirinha de osso, perto da torre.', 0],
@@ -97,7 +97,7 @@ MISSOES.amigo_floco = {nome:'O amigo de neve do Tico', quem:'tico', quemNome:'Ti
     {txt:'Achar as 3 pistas do Sr. Floco na Trilha', ok:() => pistasFloco() >= 3, prog:() => pistasFloco() + '/3'},
     {txt:'Enfrentar o que está no lago congelado', ok:() => !!((JOGO.chefes || {}).bolotao)},
     {txt:'Contar ao Tico', ok:() => estadoMissao('amigo_floco') === 'feita'}],
-  oferta:[['Tico','Moço do céu! Emergência! EMERGÊNCIA! O Sr. Floco SUMIU!'], ['Jux','O Sr. Floco é… um parente?'],
+  oferta:[['Tico','Moço do céu! De novo! OUTRA emergência! O Sr. Floco SUMIU!'], ['Jux','O Sr. Floco é… um parente?'],
     ['Tico','É o meu boneco de neve! Tinha chapéu de balde, nariz de cenoura e tudo! Eu fiz sozinho!'],
     ['Jux','Um boneco de neve que some. Faz sentido, em Invernália.'],
     ['Tico','Acho que foi para a trilha. Ele sempre ficava olhando para lá.'],
@@ -106,7 +106,7 @@ MISSOES.amigo_floco = {nome:'O amigo de neve do Tico', quem:'tico', quemNome:'Ti
   entrega:[['Jux','Achei o Sr. Floco. Ele estava no lago, bem maior e bem mais bravo. Agora está pequeno de novo.'],
     ['Tico','O SR. FLOCO! Ele está vivo! Ele está pequeno! Ele está… falando?!'],
     ['Jux','Ele voltou ao tamanho original. Só ficou mais simpático.'],
-    ['Tico','Você é o melhor deus-estrategista do mundo dos bonecos de neve! Toma o cofrinho, e as poções que a mamãe esconde.'],
+    ['Tico','Você é o melhor deus-estrategista do mundo dos bonecos de neve! Toma o resto do cofrinho. A mamãe já mudou as poções de lugar.'],
     ['Jux','Informante e escultor. Você vai longe.']]};
 // MISSAO DO MINI-CHEFE DO VALE (CHEFE_PRESA_ANCIA.md): o Capitao (ja mercador) perdeu a carroca para os lobos do vale
 const PISTAS_PRESA = ['d_v_carroca', 'd_v_pegadas', 'd_v_corrente'];
