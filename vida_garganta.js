@@ -8,6 +8,7 @@ const VG = (() => {
   const CRIST_AZUL = [[215, 440], [545, 530], [500, 620], [630, 340], [1415, 450], [345, 890], [830, 840], [850, 925], [1210, 915], [1365, 945], [575, 545], [470, 640]];
   const CRIST_ROXO = [[940, 525], [1155, 480], [1190, 545]];
   const RITUAL = [1050, 545], CAVERNA = [1335, 860], FOGO = [330, 322], LANTERNA = [40, 575];
+  const FOGO_IMG = new Image(); if (window.JUX_FOGO) FOGO_IMG.src = window.JUX_FOGO.atlas;
   const NEVOAS = [[640, 165, 140], [1240, 210, 150], [150, 1050, 210], [760, 560, 170], [1030, 160, 120], [430, 1040, 160]];   // [x, y, raio]
   const st = {chamas: [], fumaca: [], fiapos: [], bafo: [], brilhosGelo: [], estrelas: [], morcegos: [], rajadas: [], tMorc: 4, tRaj: 3};
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -89,7 +90,12 @@ const VG = (() => {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       // fogueira: luz tremendo, chamas e brasas
       luz(FOGO[0], FOGO[1] - 4, 58 + Math.sin(t * 9) * 4 + Math.sin(t * 23) * 2, 'rgba(255,150,50,.40)');
-      for (const c of st.chamas) {const a = 1 - c.v / (c.q ? 1.3 : .75); ctx.fillStyle = c.q ? `rgba(255,200,90,${a})` : `rgba(255,${120 + ((1 - a) * 80) | 0},40,${a * .85})`; ctx.beginPath(); ctx.arc(c.x, c.y, Math.max(.4, c.s), 0, 6.283); ctx.fill();}
+      // (2026-11-19) as chamas agora sao o FOGO DESENHADO da vila (vila_fogo.js), logo abaixo, fora do modo 'lighter'
+      ctx.restore();
+      // fogo de verdade (pedido 2026-11-19: 'igual tem na vila, o sprite, nao codigo'): a mesma folha de chamas da fogueira da vila
+      {const F = window.JUX_FOGO; if (F && FOGO_IMG.complete && FOGO_IMG.naturalWidth) {const l = 44, sc = l / F.larg, q = Math.floor(t * 11) % 8;
+        ctx.drawImage(FOGO_IMG, q * F.w, 0, F.w, F.h, FOGO[0] - F.base[0] * sc, FOGO[1] + 6 - F.base[1] * sc, F.w * sc, F.h * sc);}}
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
       // cristais pulsando
       CRIST_AZUL.forEach(([x, y], k) => {const p = .5 + .5 * Math.sin(t * 1.6 + k * 1.3); luz(x, y - 8, 20 + p * 6, `rgba(110,210,255,${.16 + .14 * p})`);});
       CRIST_ROXO.forEach(([x, y], k) => {const p = .5 + .5 * Math.sin(t * 1.9 + k * 2.1); luz(x, y - 8, 22 + p * 7, `rgba(190,110,255,${.18 + .16 * p})`);});
