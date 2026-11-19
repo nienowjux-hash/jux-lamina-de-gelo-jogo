@@ -142,17 +142,24 @@ function itensLoja(){const L=LOJAS[UI.loja.id];
   if(UI.loja.modo==='vender')return Object.keys(JOGO.inv).filter(k=>ITENS[k]&&ITENS[k].venda);
   return L.itens;}
 function bloqueado(it){const q=it.req;if(!q)return '';if(q.espada&&!hero.espada)return 'depois da espada';if(q.nivel&&JOGO.nivel<q.nivel)return 'Nv '+q.nivel;return '';}
-function podeComprar(id){const it=ITENS[id];if(bloqueado(it))return false;
-  if(EQUIPAVEL.includes(it.tipo)&&(qtd(id)>0||equipadoEmAlguem(id)))return false;
-  return JOGO.gil>=it.preco;}
-function compra(id){
+// pedido 2026-11-19: comprar QUANTOS quiser (so depende do gil), inclusive equipamento repetido; escolhe a quantidade antes (estilo FF)
+function podeComprar(id){const it=ITENS[id];if(bloqueado(it))return false;return JOGO.gil>=it.preco;}
+const MAX_QTD=99;
+function maxQtd(id){const it=ITENS[id];return UI.loja.modo==='vender'?Math.min(MAX_QTD,qtd(id)):Math.min(MAX_QTD,Math.floor(JOGO.gil/Math.max(1,it.preco)));}
+function compra(id){   // escolheu o item: abre a caixa de quantidade
   const it=ITENS[id];
-  if(UI.loja.modo==='vender'){JOGO.gil+=it.venda;tiraItem(id);som(SOM.ui_vez,.6);aviso('+'+it.venda+' gil');salvaJogo();return;}
-  if(!podeComprar(id)){som(SOM.ui_mover,.5);aviso(JOGO.gil<it.preco?'Gil insuficiente':'Você já tem isso','#ff9a9a');return;}
-  JOGO.gil-=it.preco;
-  if(EQUIPAVEL.includes(it.tipo)){const q=donoItem(it),E=equipDe(q),sl=slotPara(it,q);
-    if(!E[sl]){E[sl]=id;aviso(it.nome+' equipado'+(q!=='jux'?' no '+NOME_GRUPO[q]:'')+'!','#bff4ff');}else{daItem(id);aviso(it.nome+' guardado na bolsa');}}
-  else{daItem(id);aviso(it.nome+' +1');}
+  if(UI.loja.modo!=='vender'&&!podeComprar(id)){som(SOM.ui_mover,.5);aviso(bloqueado(it)?'Ainda não: '+bloqueado(it):'Gil insuficiente','#ff9a9a');return;}
+  if(UI.loja.modo==='vender'&&(!qtd(id)||!it.venda))return;
+  UI.loja.qtd={id,n:1};som(SOM.ui_mover,.4);}
+function mudaQtd(d){const q=UI.loja.qtd,mx=Math.max(1,maxQtd(q.id));q.n=Math.max(1,Math.min(mx,q.n+d));som(SOM.ui_mover,.3);}
+function confirmaQtd(){const q=UI.loja.qtd,id=q.id,it=ITENS[id],n=Math.max(1,Math.min(q.n,maxQtd(id)));UI.loja.qtd=null;if(!n||!maxQtd(id))return;
+  if(UI.loja.modo==='vender'){JOGO.gil+=it.venda*n;tiraItem(id,n);som(SOM.ui_vez,.6);aviso('+'+it.venda*n+' gil');salvaJogo();return;}
+  JOGO.gil-=it.preco*n;let resto=n;
+  if(EQUIPAVEL.includes(it.tipo)){const q2=donoItem(it),E=equipDe(q2),sl=slotPara(it,q2);
+    if(!E[sl]){E[sl]=id;resto--;aviso(it.nome+' equipado'+(q2!=='jux'?' no '+NOME_GRUPO[q2]:'')+(resto?' (+'+resto+' na bolsa)':'')+'!','#bff4ff');}
+    else aviso(it.nome+' ×'+n+' guardado na bolsa');}
+  else aviso(it.nome+' ×'+n+'  (−'+it.preco*n+' gil)');
+  if(resto)daItem(id,resto);
   som(SOM.ui_vez,.6);salvaJogo();
 }
 
@@ -330,6 +337,8 @@ function fecha(){UI.menu=false;UI.loja=null;UI.escolha=null;som(SOM.ui_mover,.45
 function uiTecla(k){
   if(typeof transicao!=='undefined'&&transicao)return true;   // luta comecando: ignora teclas (nao abre menu sem querer)
   if(!uiAberto()){if(k==='m'||k==='i'||k==='escape'||k==='tab'){abreMenu();return true;}return false;}
+  if(UI.loja&&UI.loja.qtd){if(k==='arrowright'||k==='d')mudaQtd(1);else if(k==='arrowleft'||k==='a')mudaQtd(-1);else if(k==='arrowup'||k==='w')mudaQtd(10);else if(k==='arrowdown'||k==='s')mudaQtd(-10);
+    else if(k==='enter'||k===' '||k==='e')confirmaQtd();else if(k==='escape'||k==='backspace'){UI.loja.qtd=null;som(SOM.ui_mover,.4);}return true;}
   const l=listaAtual(),n=Math.max(1,l.length),obj=UI.escolha||UI.loja||UI;
   if(UI.menu&&!UI.home&&!UI.escolha&&!UI.loja&&(k==='escape'||k==='backspace')){UI.home=true;UI.sel=Math.max(0,HOME.findIndex(h=>h[1]===UI.aba));som(SOM.ui_mover,.45);return true;}   // dentro de uma secao: volta ao menu principal
   if(k==='escape'||k==='backspace'||(UI.menu&&(k==='m'||k==='i'))){fecha();return true;}
@@ -383,7 +392,7 @@ function desenhaLoja(){
   l.slice(top,top+6).forEach((id,j)=>{const i=top+j,it=ITENS[id],yy=y+76+j*40,pode=UI.loja.modo==='vender'||podeComprar(id);
     linhaSel(x+12,yy,w-24,36,i===UI.loja.sel);iconeItem(ctx,id,x+34,yy+5,26);
     texto(it.nome,x+70,yy+24,17,pode?'#fff':'#7a8aa8');
-    const ja=bloqueado(it)?'🔒 '+bloqueado(it):(EQUIPAVEL.includes(it.tipo)&&(qtd(id)||equipadoEmAlguem(id))?'já tem':qtd(id)?'tem '+qtd(id):'');
+    const ja=bloqueado(it)?'🔒 '+bloqueado(it):(qtd(id)?'tem '+qtd(id):'')+(EQUIPAVEL.includes(it.tipo)&&equipadoEmAlguem(id)?(qtd(id)?' · ':'')+'equipado':'');
     texto(ja,x+w-150,yy+24,13,'#9fe8ff','right');
     texto(UI.loja.modo==='vender'?it.venda+' gil':it.preco+' gil',x+w-30,yy+24,16,pode?'#ffe27a':'#8a7a4a','right');
     ZONAS.push([x+12,yy,x+w-12,yy+36,()=>{UI.loja.sel=i;compra(id);}]);});
@@ -396,6 +405,22 @@ function desenhaLoja(){
     if(UI.loja.modo!=='vender'&&!desenhaPrevia(sel,x+30,y+h-24,w-60)){}}
   texto('ENTER/toque: '+(UI.loja.modo==='vender'?'vender':'comprar')+' · ESC: sair',x+w-20,y+h+22,13,'rgba(255,255,255,.6)','right');
   ZONAS.push([x+w-40,y+8,x+w-4,y+40,fecha]);
+  if(UI.loja.qtd)caixaQtd(x,y,w,h);
+}
+// caixa de quantidade (estilo FF): ◀ ▶ 1 em 1, ▲ ▼ 10 em 10, total em gil; no toque, botoes -10 -1 +1 +10 e Comprar
+function caixaQtd(x,y,w,h){const q=UI.loja.qtd,it=ITENS[q.id],vend=UI.loja.modo==='vender',pr=vend?it.venda:it.preco,mx=Math.max(1,maxQtd(q.id));q.n=Math.min(q.n,mx);
+  ZONAS.length=0;ctx.fillStyle='rgba(0,0,10,.55)';ctx.fillRect(0,0,W,H);
+  const bw=440,bh=210,bx=x+(w-bw)/2,by=y+(h-bh)/2;painel(bx,by,bw,bh);
+  iconeItem(ctx,q.id,bx+24,by+18,30);texto(it.nome,bx+66,by+40,20,'#fff');texto((vend?'tem ':'na bolsa: ')+qtd(q.id),bx+bw-22,by+40,13,'#9fe8ff','right');
+  texto('Quantidade',bx+bw/2,by+78,14,'#9fb3d9','center');texto('◀',bx+bw/2-70,by+114,22,q.n>1?'#7fd6f5':'#3a4a6a','center');
+  texto('×'+q.n,bx+bw/2,by+116,32,'#ffe27a','center');texto('▶',bx+bw/2+70,by+114,22,q.n<mx?'#7fd6f5':'#3a4a6a','center');
+  texto((vend?'Recebe ':'Total ')+pr*q.n+' gil'+(vend?'':'   ·   sobra '+(JOGO.gil-pr*q.n)),bx+bw/2,by+146,15,vend?'#7dffa8':'#ffe27a','center');
+  const bts=[['−10',-10],['−1',-1],['+1',1],['+10',10]],bt=60,gap=10,x0=bx+22;
+  bts.forEach(([s,d],i)=>{const xx=x0+i*(bt+gap),yy=by+162;ctx.fillStyle='rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(xx,yy,bt,32,6);ctx.fill();texto(s,xx+bt/2,yy+22,15,'#e8f6ff','center');ZONAS.push([xx,yy,xx+bt,yy+32,()=>mudaQtd(d)]);});
+  const cx=x0+4*(bt+gap)+4,cw=bx+bw-22-cx;ctx.fillStyle='#7fd6f5';ctx.beginPath();ctx.roundRect(cx,by+162,cw,32,6);ctx.fill();texto(vend?'Vender':'Comprar',cx+cw/2,by+184,16,'#0c1a2a','center');
+  ZONAS.push([cx,by+162,cx+cw,by+194,confirmaQtd]);
+  texto('◀ ▶: 1 · ▲ ▼: 10 · ENTER: '+(vend?'vender':'comprar')+' · ESC: voltar',bx+bw/2,by+bh+20,12,'rgba(255,255,255,.65)','center');
+  ZONAS.push([0,0,W,H,()=>{UI.loja.qtd=null;}]);
 }
 // ---------- MENU PRINCIPAL (estilo Final Fantasy: lista a esquerda, cartoes do grupo a direita)
 const HOME=[['Mapa',6],['Missões',5],['Bestiário',8],['Itens',1],['Equipamento',2],['Habilidades',3],['Ecos',4],['Grupo',0],['Sistema',7]];
