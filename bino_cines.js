@@ -5,7 +5,7 @@
 (function () {
   const B = window.JUX_CINE_BINO;
   if (!B || typeof CIN === 'undefined') return;
-  for (const [n, c] of Object.entries(B.cenas)) { CIN.cenas[n] = c; const i = new Image(); i.src = c.src; CIMG[n] = i; }
+  for (const [n, c] of Object.entries(B.cenas)) { CIN.cenas[n] = c; const i = new Image(); (window.depois || (f => f()))(() => { i.src = c.src; }); CIMG[n] = i; }
   const REDUZ_ZOOM = .4;   // o zoom das tomadas foi cortando rostos: fica so 40% dele
   const V = '255,80,60', O = '255,170,80', D = '255,214,130';   // vermelho da furia, laranja do por do sol, dourado do amanhecer
   const fa = (area, n, vy, cor, o) => Object.assign({t: 'faiscas', area, n, vy, vx: 0, cor, s: [2, 4]}, o || {});

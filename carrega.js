@@ -6,6 +6,9 @@
 'use strict';
 (function () {
   let tot = 0, ok = 0, pronto = false;
+  // depois(fn): coisas que NAO precisam segurar a entrada (imagens das cutscenes) so comecam a baixar quando a tela de carregamento sai
+  const fila = [];
+  window.depois = function (fn) { if (pronto) setTimeout(fn, 0); else fila.push(fn); };
   window.__carregando = true;
   const d = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
   if (d && d.set) Object.defineProperty(HTMLImageElement.prototype, 'src', {configurable: true, get() { return d.get.call(this); },
@@ -26,6 +29,7 @@
   }
   function tira() {
     if (pronto) return; pronto = true; window.__carregando = false;
+    setTimeout(() => { while (fila.length) { try { fila.shift()(); } catch (e) {} } }, 50);
     const el = document.getElementById('carregando');
     if (el) { el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 450); }
   }

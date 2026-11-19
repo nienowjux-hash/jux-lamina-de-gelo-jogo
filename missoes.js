@@ -52,7 +52,7 @@ const MISSOES={
     lembra:[['Borin','Três Cristais de Gelo! A forja está com fome!']],
     entrega:[['Jux','Três Cristais de Gelo. A forja pode jantar.'],['Borin','Olha esse brilho... *funga*'],['Jux','Você vai chorar de novo?'],['Borin','É FULIGEM! Toma, gil e minério. E SAI DAQUI antes que a fuligem piore!']]},
   oskar_forca:{nome:'A força do lenhador',quem:'oskar',quemNome:'Oskar',req:{espada:true,apos:'borin_cristais'},
-    desc:'O Oskar quer ver se você aguenta o tranco: vença 3 batalhas (botão "Voltar ao jogo").',
+    desc:'O Oskar quer ver se você aguenta o tranco: vença 3 lutas fora da vila.',
     pede:{vitorias:3},rec:{gil:80,itens:{hipocao:1}},
     oferta:[['Oskar','Hm.'],['Jux','Hm?'],['Oskar','Espada bonita. Braço fino.'],['Jux','Braço estratégico. Ele trabalha com eficiência.'],
       ['Oskar','Vença 3 lutas. Aí eu te mostro uma coisa.'],['Jux','Um desafio de lenhador. Isso é quase uma side quest de anime.']],
@@ -165,7 +165,7 @@ function missaoFala(npc){const k=missaoDe(npc);if(!k)return null;const M=MISSOES
   if(!st)return {linhas:M.oferta,fim:()=>aceitaMissao(k)};
   if(missaoPronta(k))return {linhas:M.entrega,fim:()=>concluiMissao(k)};
   return {linhas:[...M.lembra,['✦','Missão: '+M.nome+' — '+progressoMissao(k)+' / '+alvoMissao(k)]]};}
-function aceitaMissao(k){estMissoes()[k]={st:'ativa',v0:JOGO.vitorias||0};if(k==='olhos_roxos'){JOGO.cap1={lobos:0,acamp:false};if(!(JOGO.bino&&JOGO.bino.ativo))setTimeout(entradaBino,500);}if(!MISSOES[k].principal&&!JOGO.rastreio)JOGO.rastreio=k;som(SOM.ui_vez,.7);aviso('Nova missão: '+MISSOES[k].nome+'  (veja no menu → Missões)','#ffe27a');pontosColeta();salvaJogo();}
+function aceitaMissao(k){estMissoes()[k]={st:'ativa',v0:JOGO.vitorias||0};if(k==='olhos_roxos'){JOGO.cap1={lobos:0,acamp:false};if(!(JOGO.bino&&JOGO.bino.ativo))setTimeout(entradaBino,500);}if(!MISSOES[k].principal&&!JOGO.rastreio)JOGO.rastreio=k;som(SOM.ui_vez,.7);aviso('Nova missão: '+MISSOES[k].nome+' (veja no menu → Missões)','#ffe27a');pontosColeta();salvaJogo();}
 // o Bino se oferece para ajudar a resgatar o Halvard (calado e bruto, mas protetor com quem ele gosta): entra no time
 function entradaBino(){if(typeof fala==='undefined'||fala)return setTimeout(entradaBino,600);
   if(typeof tocaFilme==='function'&&typeof CENAS_BINO!=='undefined'){   // cutscene de apresentacao (ENTER pula e ele entra do mesmo jeito)
@@ -213,7 +213,7 @@ function pontosProva(){for(let i=V.pontos.length-1;i>=0;i--)if(V.pontos[i].id.st
   if(REGIAO==='garganta'&&st==='pegadas'&&PEG){const p=PEG.rotas.garganta[1];V.pontos.push({id:'prova_pegadas',x:p[0],y:p[1],r:50});}
   if(REGIAO==='pico'){const C=PROVA_PONTOS.circulo;V.pontos.push({id:(st==='pista'||st==='vencida')?'prova_fenrir':'circulo_pico',x:C.x,y:C.y,r:C.r});}}
 function aceitaProvaFenrir(){estProvas().fenrir='pista';estMissoes().prova_fenrir={st:'ativa',v0:0};som(SOM.ui_vez,.7);
-  aviso('Nova missão: A prova do lobo  (veja no menu → Missões)','#ffe27a');pontosColeta();salvaJogo();}
+  aviso('Nova missão: A prova do lobo (veja no menu → Missões)','#ffe27a');pontosColeta();salvaJogo();}
 function concluiProvaFenrir(){const E=estadoEcos();estProvas().fenrir='feita';if(!E.tem.includes('lamina'))E.tem.push('lamina');E.equip='lamina';
   if(!E.equipadas.includes('golpe_duplo')&&apUsado()+HABS.golpe_duplo.ap<=limiteAP(JOGO.nivel))E.equipadas.push('golpe_duplo');
   if(estMissoes().prova_fenrir)estMissoes().prova_fenrir.st='feita';pontosColeta();som(SOM.ui_vez,.9);clarao=1;salvaJogo();}

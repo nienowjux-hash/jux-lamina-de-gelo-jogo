@@ -22,34 +22,34 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
 <!-- aparece enquanto os sprites e as cenas das cinematicas (~5 MB) baixam; some quando o jogo comeca -->
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
-<script src="carrega.js?v=1795116603"></script>
-<script src="itens_icones.js?v=1795116603"></script>
-<script src="jogo.js?v=1795116603"></script>
-<script src="combate.js?v=1795116603"></script>
-<script src="bino_habs.js?v=1795116603"></script>
-<script src="jux_habs.js?v=1795116603"></script>
-<script src="ecos.js?v=1795116603"></script>
-<script src="sprites_anim.js?v=1795116603"></script>
-<script src="sprites_magias.js?v=1795116603"></script>
-<script src="sprites_ressonancia.js?v=1795116603"></script>
-<script src="sprites_danca.js?v=1795116603"></script>
-<script src="sprites_escudo.js?v=1795116603"></script>
-<script src="sprites_lanca.js?v=1795116603"></script>
-<script src="sprites_nevasca.js?v=1795116603"></script>
-<script src="sprites_zero.js?v=1795116603"></script>
-<script src="sprites_cine.js?v=1795116603"></script>
-<script src="sprites_bino.js?v=1795116603"></script>
-<script src="sprites_batalha.js?v=1795116603"></script>
-<script src="ecos_sprites.js?v=1795116603"></script>
-<script src="inimigos_sprites.js?v=1795116603"></script>
-<script src="efeitos_fx.js?v=1795116603"></script>
-<script src="fx_inimigos_sprites.js?v=1795116603"></script>
-<script src="fx_bino_sprites.js?v=1795116603"></script>
-<script src="efeitos_inimigos.js?v=1795116603"></script>
-<script src="sprites_cine_bino.js?v=1795116603"></script>
-<script src="jux_fx_golpes.js?v=1795116603"></script>
-<script src="fx_vento.js?v=1795116603"></script>
-<script src="bino_batalha.js?v=1795116603"></script>
+<script src="carrega.js?v=1795120505"></script>
+<script src="itens_icones.js?v=1795117438"></script>
+<script src="jogo.js?v=1795120505"></script>
+<script src="combate.js?v=1795117438"></script>
+<script src="bino_habs.js?v=1795117438"></script>
+<script src="jux_habs.js?v=1795117438"></script>
+<script src="ecos.js?v=1795120505"></script>
+<script src="sprites_anim.js?v=1795117438"></script>
+<script src="sprites_magias.js?v=1795117438"></script>
+<script src="sprites_ressonancia.js?v=1795117438"></script>
+<script src="sprites_danca.js?v=1795117438"></script>
+<script src="sprites_escudo.js?v=1795117438"></script>
+<script src="sprites_lanca.js?v=1795117438"></script>
+<script src="sprites_nevasca.js?v=1795117438"></script>
+<script src="sprites_zero.js?v=1795117438"></script>
+<script src="sprites_cine.js?v=1795117438"></script>
+<script src="sprites_bino.js?v=1795117438"></script>
+<script src="sprites_batalha.js?v=1795117438"></script>
+<script src="ecos_sprites.js?v=1795117438"></script>
+<script src="inimigos_sprites.js?v=1795117438"></script>
+<script src="efeitos_fx.js?v=1795117438"></script>
+<script src="fx_inimigos_sprites.js?v=1795117438"></script>
+<script src="fx_bino_sprites.js?v=1795117438"></script>
+<script src="efeitos_inimigos.js?v=1795117438"></script>
+<script src="sprites_cine_bino.js?v=1795117438"></script>
+<script src="jux_fx_golpes.js?v=1795117438"></script>
+<script src="fx_vento.js?v=1795117438"></script>
+<script src="bino_batalha.js?v=1795117438"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -408,6 +408,12 @@ function drawFenrirProva(c,x,y,sc,o){if(!ECS)return;const lg=o.lg||0,coreo=o.fa&
   c.drawImage(ATLAS_EC,j*ECS.w,0,ECS.w,ECS.h,-ECS.ancora[0],-ECS.ancora[1],ECS.w,ECS.h);
   if(!o.contorno){c.filter='none';c.globalCompositeOperation='lighter';c.globalAlpha=.22+.16*(o.glow||0);c.drawImage(ATLAS_EC,j*ECS.w,0,ECS.w,ECS.h,-ECS.ancora[0],-ECS.ancora[1],ECS.w,ECS.h);}
   c.restore();}
+// filtro (brilho ao apanhar, contorno) em inimigo desenhado por codigo: o Chrome aplicava o filtro em cada pedaco do desenho
+// e travava ~150 ms por inimigo. Desenha numa camada sem filtro e aplica o filtro uma vez so (2026-11-19).
+const CAMADA_F=document.createElement('canvas');CAMADA_F.width=W;CAMADA_F.height=H;const CAMADA_C=CAMADA_F.getContext('2d');
+function comFiltro(c,filtro,desenha){if(!filtro){desenha(c);return;}
+  const k=CAMADA_C;k.setTransform(1,0,0,1,0,0);k.clearRect(0,0,W,H);k.setTransform(c.getTransform());k.imageSmoothingEnabled=c.imageSmoothingEnabled;k.globalAlpha=1;k.filter='none';
+  desenha(k);c.save();c.setTransform(1,0,0,1,0,0);c.filter=filtro;c.drawImage(CAMADA_F,0,0);c.restore();}
 const DESENHO_INIM={ignarok:[drawEnemy,7],
   lobo:INIM.lobo?[drawInimSprite('lobo',2.6),2,{sprite:1,sombra:78}]:[drawLobo,6],
   bolota:INIM.bolota?[drawInimSprite('bolota',2.2),2,{sprite:1,sombra:58}]:[drawBolota,7],
@@ -1301,7 +1307,7 @@ async function heroTurn(kind){
 // fase 1: acorrentado, a cada 3 turnos o uivo chama 2 lobos da matilha; abaixo de 50% de vida as correntes arrebentam (fase 2: mais forte e rapido).
 // ao cair, os lobos somem junto e ele fica com os olhos azuis por um instante.
 async function skollEspecial(){const e=enemy;
-  if(!e.fase2&&e.hp<e.max*.5){e.fase2=true;banner('As correntes de Skoll se partem!');tween(G,'dim',.4,300);som('lobo_uivo',1);shake=18;
+  if(!e.fase2&&e.hp<e.max*.5){e.fase2=true;banner('As correntes do Skoll se partem!');tween(G,'dim',.4,300);som('lobo_uivo',1);shake=18;
     fxFlash('120,60,230',.5,500);fxAnel(e.x,e.y+8,{raio:560,achata:.26,ms:760,esp:26,cor:COR_ECL2});fxAnel(e.x+60,e.y-110,{raio:420,ms:700,esp:16,cor:COR_ECL});
     fxFaiscas(e.x,e.y-80,26,{cor:'150,150,170',vel:800,g:700,tam:1.2});ecoPensa('Mais depressa… antes que eu…',2600,'Skoll','#c9a6ff');
     await wait(1300);tween(G,'dim',0,400);e.forca*=1.25;e.vel*=1.35;return true;}
@@ -1324,7 +1330,7 @@ async function capitaoApito(){const e=enemy;
   for(let k=0;k<2&&ENEMIES.length<4;k++){const i=ENEMIES.length,w=novoInimigo(i,Math.max(1,(e.nv||5)-1),i+1,'goblin');w.alpha=0;ENEMIES.push(w);tween(w,'alpha',1,500);
     fxBrilho(w.x,w.y-50,{raio:160,ms:600,cor:'180,235,120'});fxFaiscas(w.x,w.y-40,10,{cor:'170,225,110',vel:350,g:-40});}
   tween(e,'glow',0,300);await wait(700);}
-// ---------- PRESA-ANTIGA, O LOBO ANCIAO (mini-chefe do Vale, CHEFE_PRESA_ANCIA.md): Sopro da Montanha, Uivo do Bando, Investida do Alfa e a fase 2 ----------
+// ---------- PRESA-ANTIGA, O LOBO ANCIAO (mini-chefe do Vale, CHEFE_PRESA_ANCIA.md): Sopro da Montanha, Uivo do Bando, Investida do Ancião e a fase 2 ----------
 async function presaSopro(){const e=enemy;
   banner('Sopro da Montanha!');som('presa_rosna',.8);som('carga_gelo',.8);await tween(e,'glow',1,420);
   const g={t:'m',el:'gelo',poder:38,nome:'Sopro da Montanha',est:['lento',3,.4]};
@@ -1338,8 +1344,8 @@ async function presaUivo(){const e=enemy;
     fxBrilho(w.x,w.y-50,{raio:160,ms:600,cor:'170,215,255'});fxFaiscas(w.x,w.y-40,10,{cor:'190,225,255',vel:350,g:-40});}
   tween(e,'glow',0,300);await wait(600);}
 async function presaInvestida(){const e=enemy;
-  banner('Investida do Alfa!');som('presa_rosna',.7);await tween(e,'glow',1,360);
-  const g={t:'f',poder:46,nome:'Investida do Alfa'};
+  banner('Investida do Ancião!');som('presa_rosna',.7);await tween(e,'glow',1,360);
+  const g={t:'f',poder:46,nome:'Investida do Ancião'};
   tween(e,'ly',0,10);await tween(e,'lunge',-80,240,easeIn);
   for(const a of aliados().filter(x=>x.hp>0)){hero=a;fxiPlay('presa_investida',a.x-60,a.y-40,820,{escala:2.1});som('presa_investida',.85);shake=Math.max(shake,10);golpeAplica(g,g.poder);await wait(280);if(aliadoCaiu())break;}
   tween(e,'glow',0,300);await tween(e,'lunge',0,320,easeOut);await wait(150);}
@@ -1387,7 +1393,7 @@ async function bolotaoBola(){const e=enemy;
 async function bolotaoEspecial(){const e=enemy;
   if(!e.fase2&&e.hp<e.max*.5){e.fase2=true;banner('A bola racha…');tween(G,'dim',.3,300);shake=Math.max(shake,14);som('gelo_quebra',.9);
     fxFaiscas(e.x,e.y-110,26,{cor:'230,240,255',vel:700,g:500});ecoPensa('…Tico? …Eu era… maior?',2800,'Bolotão','#9fd8ff');await wait(1500);
-    ecoPensa('A Bolota está soltando, Portador. O boneco de dentro está acordando.',3200,'Aurora','#c9b8ff');await wait(1700);
+    ecoPensa('A Bolota está se desfazendo, Portador. O boneco de dentro está acordando.',3200,'Aurora','#c9b8ff');await wait(1700);
     tween(G,'dim',0,400);e.vel*=1.25;e.turn=0;return true;}   // recomeca a contagem dos golpes na fase 2
   if(!e.fase2){
     if(e.turn%3===0){e.ciclo=(e.ciclo||0)+1;if(e.ciclo%2)await bolotaoRolo();else await bolotaoAvalanche();return true;}
@@ -1396,9 +1402,9 @@ async function bolotaoEspecial(){const e=enemy;
   if(e.turn%2===0){e.ciclo=(e.ciclo||0)+1;const k=e.ciclo%3;if(k===0)await bolotaoAvalanche();else if(k===1)await bolotaoAbraco();else await bolotaoRolo();return true;}
   return false;}
 // ---------- LABORATORIO: golpes especiais dos chefes, um por um (lista em golpesLab, execucao em espLab) ----------
-const ESP_LAB_EXTRA={presa:['Sopro da Montanha','Uivo do Bando','Investida do Alfa','Mudança de fase'],capitao:['Apito Goblin','Couraça Estourada','Mudança de fase'],bolotao:['Rolo Compressor','Avalanche de Neve','Abraço Gelado','Bola de Neve','Mudança de fase'],skoll:['Uivo da Matilha','Mudança de fase']};
+const ESP_LAB_EXTRA={presa:['Sopro da Montanha','Uivo do Bando','Investida do Ancião','Mudança de fase'],capitao:['Apito Goblin','Couraça Estourada','Mudança de fase'],bolotao:['Rolo Compressor','Avalanche de Neve','Abraço Gelado','Bola de Neve','Mudança de fase'],skoll:['Uivo da Matilha','Mudança de fase']};
 const golpesLab=tp=>{const T=TIPOS_INIMIGO[tp||'ignarok']||{};return [...(T.golpes||[]).map(g=>g.nome),...(ESP_LAB_EXTRA[tp]||[])];};
-const ESP_LAB={'Sopro da Montanha':()=>presaSopro(),'Uivo do Bando':()=>presaUivo(),'Investida do Alfa':()=>presaInvestida(),'Apito Goblin':()=>capitaoApito(),'Couraça Estourada':()=>capitaoCouraca(),'Rolo Compressor':()=>bolotaoRolo(),'Avalanche de Neve':()=>bolotaoAvalanche(),'Abraço Gelado':()=>bolotaoAbraco(),'Bola de Neve':()=>bolotaoBola(),
+const ESP_LAB={'Sopro da Montanha':()=>presaSopro(),'Uivo do Bando':()=>presaUivo(),'Investida do Ancião':()=>presaInvestida(),'Apito Goblin':()=>capitaoApito(),'Couraça Estourada':()=>capitaoCouraca(),'Rolo Compressor':()=>bolotaoRolo(),'Avalanche de Neve':()=>bolotaoAvalanche(),'Abraço Gelado':()=>bolotaoAbraco(),'Bola de Neve':()=>bolotaoBola(),
   'Uivo da Matilha':async()=>{const e=enemy;e.fase2=false;e.turn=3;await skollEspecial();},
   'Mudança de fase':async()=>{const e=enemy,f={skoll:skollEspecial,capitao:capitaoEspecial,bolotao:bolotaoEspecial,presa:presaEspecial}[e.tipo];if(!f)return;const fo=e.forca,ve=e.vel,hp=e.hp;
     e.fase2=false;e.hp=Math.round(e.max*.45);e.turn=1;await f();e.fase2=false;e.forca=fo;e.vel=ve;e.hp=hp;}};   // volta ao normal para poder repetir
@@ -1541,7 +1547,8 @@ async function win(){G.busy=true;hero=JUX;musicaSome(1600);climaFim();
   if(BAT&&BAT.anims.vitoria){hero.guard=false;setAnim('vitoria');await wait(1400);}else await wait(700);   // folha nova: gira, crava a espada, ajeita os oculos e cruza os bracos
   const si=(()=>{let exp=0,gil=0;for(const e of ENEMIES){const a=inimigoNv(e.nv||prog.nivel),T=TIPOS_INIMIGO[e.tipo]||{};
     // EXP (PLANO_PROGRESSAO.md): lutas por nivel F(L)=9*L^0,3 (2 inimigos em media) => nivel 10 em ~4 h, nivel 50 em ~32 h e nivel 100 em ~80 h de jogo; inimigo mais forte que voce paga um pouco mais, mais fraco paga bem menos
-    const L=prog.nivel,base=expPara(L)/(9*Math.pow(L,.3))/2.2,dif=Math.max(.25,Math.min(1.5,1+((e.nv||L)-L)*.12));
+    // inicio mais rapido (pedido 2026-11-19): +40% de EXP ate o nivel 12, caindo aos poucos ate o 15 (sem degrau)
+    const L=prog.nivel,inicio=L<=12?1.4:L<15?1.4-(L-12)*.4/3:1,base=inicio*expPara(L)/(9*Math.pow(L,.3))/2.2,dif=Math.max(.25,Math.min(1.5,1+((e.nv||L)-L)*.12));
     exp+=base*((T.exp||.4)/.4)*dif*(e.elite?3:1)*(G.encontro&&G.encontro.regiao==='vale'?1.3:1)*(e.chefe?(G.encontro.chefe.exp||5):1);gil+=a.gil*(T.gil||1)*(e.elite?3:1)*(e.chefe?(G.encontro.chefe.exp||5):1);}return {exp:Math.round(exp),gil:Math.round(gil)};})(),k=1;const drops=typeof sorteiaDrops==='function'?sorteiaDrops(ENEMIES.map(e=>e.tipo||'ignarok'),stats(prog.nivel).sor):[];
   if(!TESTE&&typeof daItem==='function')for(const d of drops)daItem(d.id,d.n);
   G.recompensa={...ganhaExp(si.exp*k),gil:si.gil*k,drops,eco:(!TESTE&&typeof ganhaPE==='function')?ganhaPE(Math.max(3,Math.round(si.exp*k/25))):null};if(!TESTE&&typeof JOGO==='object'){JOGO.gil+=si.gil*k;JOGO.vitorias=(JOGO.vitorias||0)+1;{const bs=JOGO.besta=JOGO.besta||{};for(const e of ENEMIES)if(e.tipo)bs[e.tipo]=(bs[e.tipo]||0)+1;}if(JOGO.cap1)JOGO.cap1.lobos=(JOGO.cap1.lobos||0)+ENEMIES.filter(e=>e.tipo==='lobo').length;if(G.encontro&&G.encontro.prova){if(G.encontro.prova.startsWith('chefe_')){(JOGO.chefes=JOGO.chefes||{})[G.encontro.prova.slice(6)]=true;JOGO.chefePend=G.encontro.prova.slice(6);}else (JOGO.provas=JOGO.provas||{})[G.encontro.prova]='vencida';}if(JOGO.buff){JOGO.buff.lutas--;if(JOGO.buff.lutas<=0)JOGO.buff=null;}salvaJogo();}
@@ -1642,7 +1649,7 @@ function drawHUD(c,t){
     const il=menu.level==='item'?itemList():null;
     const list=menu.level==='main'?mainLista():il?il.map(o=>o.id==='voltar'?'Voltar':nomeItemBat(o.id)+'  x'+o.n):menu.level==='alvo'?inimigos().map(e=>e.name+'   '+e.hp+' HP'):menu.level==='res'?resList().map(r=>r.nome):ml.map(h=>h.nome);fixTop();
     painel(c,630,64,320,18+Math.min(VIS,list.length)*28);
-    if(menu.level==='alvo')txt(c,'Escolha o alvo  (Esc volta)',640,58,13,'#ffe27a');else if(hero.quem==='bino')txt(c,'Vez do Bino',640,58,13,'#ffb27a');
+    if(menu.level==='alvo')txt(c,'Escolha o alvo (Esc volta)',640,58,13,'#ffe27a');else if(hero.quem==='bino')txt(c,'Vez do Bino',640,58,13,'#ffb27a');
     if(menu.top>0)txt(c,'\u25B2',930,80,11,'#a9bdf5','center');if(menu.top+VIS<list.length)txt(c,'\u25BC',930,74+VIS*28,11,'#a9bdf5','center');
     list.forEach((n,i)=>{if(i<menu.top||i>=menu.top+VIS)return;const r=menuRow(i);let en=menu.level==='main'?mainEnabled(i):il?itemEnabled(i):magicEnabled(i);
       let size=17;if(menu.level==='alvo'||menu.level==='res')en=true;
@@ -1673,7 +1680,9 @@ function etiquetas(c,t){
    clarao, cor sumindo quando o tempo para (Zero) e o Jux recortado passando na frente da cena em outra velocidade
    (profundidade). ENTER, espaco ou clique pulam. */
 const CIN=window.JUX_CINE,CIMG={};
-for(const [n,c] of Object.entries({...CIN.cenas,...CIN.recortes})){const i=new Image();i.src=c.src;CIMG[n]=i;}
+// as cenas das cutscenes baixam DEPOIS da tela de carregamento (carrega.js depois); cinematica() espera as dela chegarem
+const depoisDe=window.depois||(f=>f());
+for(const [n,c] of Object.entries({...CIN.cenas,...CIN.recortes})){const i=new Image();depoisDe(()=>{i.src=c.src;});CIMG[n]=i;}
 // tomada: cena, d (s), z/f = zoom e foco (0..1) no inicio e no fim, tremor [de,ate,forca], clarao (branco no inicio),
 // cinza [de,ate] (0 colorido, 1 sem cor), jux = recorte na frente {img, de:[x,y,escala], ate:[x,y,escala]} em fracao da tela
 const CINES={
@@ -1789,7 +1798,8 @@ const SONS={
 // a musica da cinematica abaixa enquanto alguem fala e volta quando a fala acaba (a voz fica clara por cima da orquestra)
 function fala(n){const a=VOZES[n];if(!a)return;try{a.currentTime=0;a.volume=1;a.play().catch(()=>{});
   const m=typeof musCineTocando!=='undefined'?musCineTocando:null;if(m&&!m.paused){const v=m.volume;volPara(m,v*.35,150);a.onended=()=>{if(!m.paused&&cine)volPara(m,v,600);};}}catch(e){}}
-function cinematica(id){return new Promise(res=>{cine={id,t:0,res,flocos:[],cacos:[],p:[],ti:-1,vozes:new Set()};});}
+function cinematica(id){const C=CINES[id],ims=C?C.tomadas.flatMap(t=>[CIMG[t.cena],t.jux&&CIMG[t.jux.img]]).filter(Boolean):[],t0=Date.now();
+  return new Promise(res=>{(function vai(){if(ims.some(i=>!i.complete||!i.naturalWidth)&&Date.now()-t0<8000)return setTimeout(vai,100);cine={id,t:0,res,flocos:[],cacos:[],p:[],ti:-1,vozes:new Set()};})();});}
 function pulaCine(){if(!cine)return;for(const a of Object.values(VOZES))a.pause();const r=cine.res;cine=null;r();}
 // efeitos vivos desenhados por cima da cena: posicoes em fracao da imagem, andam junto com a camera
 function cineFx(c,s,i,p,dt,ox,oy,dw,dh,im,info){
@@ -2022,6 +2032,7 @@ function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return
   stepTweens(dt);stepParts(dt);for(const a of aliados())if(!a.hold)a.at+=dt;
   if(G.scene==='battle')updateBattle(dt);
   ctx.save();ctx.clearRect(0,0,W,H);
+  if(typeof OPC==='object'&&!OPC.tremor)shake=0;
   if(shake>.3){const ks=hero.quem==='bino'?.8:0;ctx.translate(rnd(-shake,shake)*ks,rnd(-shake,shake)*ks);shake*=.9;}else shake=0;   // a tela mexe bem menos para o Jux (atrapalhava ver o golpe)
   if(G.scene==='title'){if(G.encontro||ENC_PEND){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);}else drawTitle(ctx,t,dt);}else drawBattle(ctx,t,dt);   // vindo do mapa: tela preta em vez da tela inicial piscando
   ctx.restore();
@@ -2057,8 +2068,8 @@ function drawInimigo(c,e,t){if(e.dead)return;
   c.fillStyle='rgba(10,20,60,.35)';c.beginPath();c.ellipse(x,y+4,((DESENHO_INIM[e.tipo]||[])[2]||{}).sombra||100,16,0,0,7);c.fill();
   const f=[];if(e.flash>0)f.push(`brightness(${1+e.flash*2.5})`);
   {const [fn,sc,cfg]=DESENHO_INIM[e.tipo]||DESENHO_INIM.ignarok,o={t:t+e.x*.01,glow:e.glow,flash:e.flash,lg:e.lunge,hurt:e.flash>.04,morre:!!e.morrendo,fa:e.fa,fq:e.fq,fesc:e.fesc,filter:f.join(' ')||null};
-    if(e.tipo&&e.tipo!=='ignarok'&&!(cfg&&cfg.sprite)){const oc={...o,glow:0,contorno:true,filter:'brightness(.2) saturate(1.6)'};for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])fn(c,x+dx*sc,y+dy*sc,sc,oc);}   // contorno escuro (bichos claros na neve)
-    fn(c,x,y,sc,o);}
+    if(e.tipo&&e.tipo!=='ignarok'&&!(cfg&&cfg.sprite)){const oc={...o,glow:0,contorno:true,filter:null};comFiltro(c,'brightness(.2) saturate(1.6)',k=>{for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])fn(k,x+dx*sc,y+dy*sc,sc,oc);});}   // contorno escuro (bichos claros na neve)
+    if(cfg&&cfg.sprite)fn(c,x,y,sc,o);else comFiltro(c,o.filter,k=>fn(k,x,y,sc,{...o,filter:null}));}
   if(e.preso>0&&!e.morrendo){c.restore();c.save();drawJaula(c,e,t);c.restore();c.save();}   // congelado = a jaula de gelo desenhada (a mesma da Prisao), nao mais os triangulos
   c.restore();}
 // aliados de enfeite do "Campo cheio" do laboratorio (a party de verdade vem depois)
@@ -2159,7 +2170,7 @@ function drawEnd(c,t,ok){
   }else{
     txt(c,'FIM DE JOGO',W/2,230,64,'#ff9a8a','center');txt(c,'Jux caiu em batalha...',W/2,290,26,'#fff','center');
   }
-  c.globalAlpha=.5+.5*Math.sin(t*4);txt(c,G.encontro?(ok?'Pressione ENTER ou toque para voltar ao mapa':'ENTER: a Vovó Hilda te arrasta de volta para a vila'):'Pressione ENTER ou toque para a próxima luta',ok?W/2:W/2,ok?522:380,17,'#fff','center');c.globalAlpha=1;
+  c.globalAlpha=.5+.5*Math.sin(t*4);txt(c,G.encontro?(ok?'Pressione ENTER ou toque para voltar ao mapa':(lutaDeChefe()?'ENTER: voltar para perto dele e tentar de novo (vida cheia)':'ENTER: a Vovó Hilda te arrasta de volta para a vila')):'Pressione ENTER ou toque para a próxima luta',ok?W/2:W/2,ok?522:380,17,'#fff','center');c.globalAlpha=1;
 }
 
 /* ---------- tela de titulo ---------- */
@@ -2217,8 +2228,10 @@ function cineMusica(liga,propria){
   else{tocavam.forEach(x=>x.play().catch(()=>{}));tocavam=[];}});}
 function musicaAlterna(){musicaLigada=!musicaLigada;try{localStorage.setItem('jux_musica',musicaLigada?'1':'0');}catch(e){}
   if(musicaLigada){if(G.scene==='battle')musicaToca();}else{clearInterval(musFade);MUSICA.pause();MUS_CINE.pause();musCineTocando.pause();}banner(musicaLigada?'Música ligada':'Música desligada');G.bannerT=1;}
-function voltaDoEncontro(){const ganhou=G.scene==='win';try{localStorage.setItem('jux_volta_luta',JSON.stringify({res:ganhou?'win':'lose',t:Date.now()}));}catch(e){}
-  location.href=jp(ganhou?(G.encontro.volta||'vila.html'):'vila.html');}
+// perder contra um CHEFE/prova (2026-11-19): volta para perto dele, de vida cheia, para tentar de novo (antes ia para a vila)
+const lutaDeChefe=()=>!!(G.encontro&&(G.encontro.prova||G.encontro.chefe));
+function voltaDoEncontro(){const ganhou=G.scene==='win',chefe=!ganhou&&lutaDeChefe();try{localStorage.setItem('jux_volta_luta',JSON.stringify({res:ganhou?'win':chefe?'lose_chefe':'lose',t:Date.now()}));}catch(e){}
+  location.href=jp((ganhou||chefe)?(G.encontro.volta||'vila.html'):'vila.html');}
 function startOrRestart(){if(G.encontro&&(G.scene==='win'||G.scene==='lose')){voltaDoEncontro();return;}if(G.scene==='title'||G.scene==='win'||G.scene==='lose'){newBattle();som('ui_inicio',.7);musicaToca();}}
 addEventListener('keydown',e=>{
   const k=e.key;
@@ -2355,7 +2368,7 @@ requestAnimationFrame(frame);
 (function(){if(TESTE)return;try{const s=JSON.parse(localStorage.getItem('jux_encontro')||'null');
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
-<script src="bino_cines.js?v=1795116603"></script>
-<script src="tela_cheia.js?v=1795116603"></script>
+<script src="bino_cines.js?v=1795120505"></script>
+<script src="tela_cheia.js?v=1795117438"></script>
 </body>
 </html>

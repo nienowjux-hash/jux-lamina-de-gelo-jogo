@@ -143,12 +143,13 @@ const FALAS={
   borin_resgate:[['Borin','O HALVARD VOLTOU! Eu chorei tanto que apaguei a forja, sabia?'],['Jux','A Vovó me contou. Duas vezes.'],['Borin','Pra você, forasteiro, a forja acende quando quiser. E o preço… quase justo.'],['Jux','Quase justo já é um avanço histórico.']],
   tico_espada:[['Tico','VOCÊ PEGOU A ESPADA! Eu sabia! Eu SABIA!'],['Jux','Ela que me pegou. Eu só fiz a pergunta certa.'],['Tico','Me ensina a pergunta?'],['Jux','Primeiro você aprende a planilha.'],['Tico','A MAGIA ANTIGA E TERRÍVEL?!']],
   tico_resgate:[['Tico','Moço do céu! Meu pai voltou! Ele disse que você lutou com um lobo do tamanho de uma casa!'],['Jux','Do tamanho de uma casa pequena. Uma casinha.'],['Tico','Quando eu crescer, eu vou ser estrategista igual você.'],['Jux','Então começa hoje: arruma o quarto em três turnos.'],['Tico','…Isso é muito difícil.']],
+  derrota_chefe:[['Aurora','Recue, Portador. Respire. Ele ainda está ali.',1],['Jux','Primeira tentativa foi reconhecimento de terreno. Agora eu sei o padrão.'],['✦','HP e MP recuperados. Fale com ele de novo quando estiver pronto.']],
   prova_depois:[['Aurora','Sábio. Volte quando estiver pronto, Portador.'],['Fenrir','…Eu espero.']],
   prova_vence:[['Jux','…Eu ganhei? De um lobo do tamanho de um cavalo?'],['Fenrir','Você luta como quem protege alguém.'],['Fenrir','Mil caçadas, e poucos me fizeram recuar.'],
     ['Fenrir','Sua lâmina é de gelo, como a minha. A minha lealdade é sua, Portador.'],['Aurora','O Eco da Lâmina. O Fenrir caçava ao lado dos heróis antigos. Agora caça ao seu lado.'],
     ['Jux','Bem-vindo à equipe. O salário é em gil e elogios.'],['✦','O Fenrir agora é seu Eco, já equipado! (menu → Ecos)']],
-  caverna:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá dentro, Portador. Algo grande, e muito triste.'],['Aurora','Eu recomendo o nível 7 antes de entrar. Explore a trilha e a garganta, junte equipamento e volte.'],
-    ['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.'],['✦','Nível recomendado: 10. Se estiver fraco, treine e melhore o equipamento.']],
+  caverna:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá dentro, Portador. Algo grande, e muito triste.'],['Aurora','Eu recomendo o nível 7 antes de entrar. Explore a trilha e a Garganta, junte equipamento e volte.'],
+    ['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.'],['✦','Nível recomendado: 7 para entrar, 10 para o que espera no fundo. Se estiver fraco, treine e melhore o equipamento.']],
   acamp_pista:[['Jux','Acampamento goblin. E o dono saiu correndo e deixou o jantar. Literalmente: tem pão pela metade.'],['Goblin','(de longe) NÃO VOLTA AQUI! Tem um olho lá embaixo!'],
     ['Jux','Um mapa rasgado, com um sol negro e um olho no meio. Eles não estavam fugindo de mim.'],['Aurora','Estavam fugindo de quem desenha isso.'],['✦','Pista: o mapa rasgado do sol negro.']],
   acolito_aparece:[['Jux','O cristal do santuário está apagando. E tem alguém de capuz preto bebendo a luz dele.'],['Bino','…Frio. Não é de neve.'],['Jux','Isso foi poesia? Vindo de você?'],['Bino','Não.'],
@@ -156,11 +157,11 @@ const FALAS={
     ['Aurora','Cuidado. Ele não sente medo. Isso o torna perigoso, não forte.'],['Bino','Eu fico na frente.'],['Jux','Você sempre fica na frente. Eu só preciso ficar atrás com estilo.'],['✦','O Acólito do Eclipse ergue o cajado!']],
   acolito_vence:[['Jux','Ele não gritou. Nem caiu. Ele esvaziou.'],['Bino','…Não tinha ninguém lá dentro.'],['Aurora','Só o manto ficou. Quem estava ali dentro já tinha ido embora faz tempo.'],['Jux','Isso foi pior do que gritar.'],
     ['Aurora','O cristal ainda brilha, fraco. A Ordem tirava a luz dele para alimentar algo preso na caverna.'],['Jux','Caverna. Lobo triste. Agora faz sentido.'],['Bino','O Halvard. Vamos.'],['✦','Pista: o que a Ordem prendeu está na caverna, ao sul.']],
-  caverna_entra:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá no fundo, Portador. Algo grande, e muito triste.'],['Aurora','Lá dentro não há luz nenhuma. Eu recomendo o nível 9 antes de ir até o fim.'],['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.']],
+  caverna_entra:[['Jux','Uma caverna de gelo com dentes. Literalmente com dentes.'],['Aurora','Há algo vivo lá no fundo, Portador. Algo grande, e muito triste.'],['Aurora','Lá dentro não há luz nenhuma. Eu recomendo o nível 10 antes de ir até o fim.'],['Jux','Triste? Eu estava esperando "faminto".'],['Aurora','Também. Mas o triste é pior.']],
   saida_caverna:[['Jux','De volta para a Garganta. Ar fresco. Relativamente.']],
   caverna_chega:[['Jux','Escuro. Bem escuro. Não dá para ver nem a minha mão.'],['Aurora','Enquanto eu estiver na sua mão, Portador, você nunca vai ficar no escuro.',1],['✦','A lâmina da Aurora Gélida fica incandescente e ilumina o caminho.'],['Bino','…Correntes. Muitas.'],['Jux','E garras na parede. Fiquem perto da luz.']],
   tunel_garras:[['✦','Um túnel baixo. Correntes grossas presas em argolas de ferro, e na rocha, quatro riscos fundos de garra, ainda brilhando de gelo.'],['Jux','Essas garras são do tamanho do meu braço. Do braço do Bino.'],['Aurora','Ele tentou cavar para fora, Portador. Muitas vezes. A Ordem só puxou as correntes mais curtas.',1],['Jux','…Agora fiquei com pena de um lobo gigante. Que dia.']],
-  camara_ve:[['✦','Uma câmara redonda. Um feixe de luar cai do teto sobre runas roxas. Quatro estacas de ferro. E, no meio, correntes esticadas até algo enorme.'],['Aurora','É ele, Portador. O Skoll. Preso pela Ordem.'],['Jux','Lobo gigante acorrentado no escuro. Ótimo. Exatamente o que eu queria hoje.'],['✦','Nível recomendado: 9. Se estiver fraco, explore a caverna, treine e volte.']],
+  camara_ve:[['✦','Uma câmara redonda. Um feixe de luar cai do teto sobre runas roxas. Quatro estacas de ferro. E, no meio, correntes esticadas até algo enorme.'],['Aurora','É ele, Portador. O Skoll. Preso pela Ordem.'],['Jux','Lobo gigante acorrentado no escuro. Ótimo. Exatamente o que eu queria hoje.'],['✦','Nível recomendado: 10. Se estiver fraco, explore a caverna, treine e volte.']],
   caverna_depois:[['Aurora','Sábio. A caverna não vai a lugar nenhum.'],['Jux','Só os dentes dela. Esses ficam.']],
   caverna_livre:[['Jux','Vazia. As correntes quebradas no chão e nenhuma pegada de volta.'],['Aurora','Ele está livre, Portador. O que você fez aqui vai importar.']],
   skoll_vence:[['Jux','Ele não estava bravo. Estava acorrentado.'],['Aurora','A marca do Eclipse se partiu. Por um instante, ele voltou a ser quem era.'],
@@ -201,7 +202,7 @@ const fumaca=[],pegadas=[],poeira=[],chamas=[],brilhoRio=[];
    espuma e nevoa, circulos na agua, bandeiras no vento, estrelinhas nos cristais, gelo brilhante flutuando,
    neve caindo da copa e rajadas de vento */
 const AG=window.JUX_AGUA||null;
-let agMask=null,agCor=null,agTmp=null,agPad=null,agPat=null,agSuave=null,agTex=null,agTexPat=null;const agPx=[];
+let agN=0,agUltK='';let agMask=null,agCor=null,agTmp=null,agPad=null,agPat=null,agSuave=null,agTex=null,agTexPat=null;const agPx=[];
 if(window.JUX_AGUA&&JUX_AGUA.textura){agTex=new Image();agTex.src=JUX_AGUA.textura;}
 const respingos=[],aneis=[],estrelas=[],motes=[],nevoa=[],neveCopa=[];let vento=0;
 const LANTERNAS=[[602,490],[637,505],[670,462],[812,490],[851,480],[900,460],[930,476],[735,182],[870,225],[848,140]];
@@ -634,14 +635,17 @@ function desenhaAgua(){
   // OTIMIZACAO (2026-11-19): so o pedaco do rio que aparece na tela (antes desenhava o rio inteiro a cada quadro; a vila caia de quadros)
   const hw=W/(2*Z)+8,hh=H/(2*Z)+8,sx=Math.max(0,Math.floor(cam.x-hw-x0)),sy=Math.max(0,Math.floor(cam.y-hh-y0)),ex=Math.min(w,Math.ceil(cam.x+hw-x0)),ey=Math.min(h,Math.ceil(cam.y+hh-y0));
   if(ex<=sx||ey<=sy)return;const sw=ex-sx,sh=ey-sy;
-  g.clearRect(sx,sy,sw,sh);
-  if(agTex&&agTex.complete&&agTex.naturalWidth){g.save();g.beginPath();g.rect(sx,sy,sw,sh);g.clip();
+  // OTIMIZACAO 2 (2026-11-19): a textura da agua so e refeita em quadro sim, quadro nao (ou quando a camera mostra outro pedaco);
+  // no outro quadro a mesma agua e so carimbada. A correnteza anda devagar, a diferenca nao aparece.
+  const agK=sx+','+sy+','+ex+','+ey;agN++;const refaz=agK!==agUltK||!(agN&1);agUltK=agK;
+  if(refaz)g.clearRect(sx,sy,sw,sh);
+  if(agTex&&agTex.complete&&agTex.naturalWidth){if(refaz){g.save();g.beginPath();g.rect(sx,sy,sw,sh);g.clip();
     // agua de verdade: a textura corre em duas camadas (correnteza para a direita e uma contra-onda mais lenta),
     // com um balanco leve, recortada no formato do riacho e com a borda esfumada
     if(!agTexPat)agTexPat=g.createPattern(agTex,'repeat');const L=agTex.naturalWidth;g.fillStyle=agTexPat;
     g.save();g.globalAlpha=1;g.translate((t*7)%L,Math.sin(t*.5)*2);g.fillRect(-L,-L,w+2*L,h+2*L);g.restore();
     g.save();g.globalAlpha=.42;g.globalCompositeOperation='screen';g.translate(-((t*4.5)%L)+L*.37,(t*2.2)%L+L*.21);g.fillRect(-L,-L,w+2*L,h+2*L);g.restore();
-    g.globalCompositeOperation='destination-in';g.drawImage(agSuave,sx,sy,sw,sh,sx,sy,sw,sh);g.globalCompositeOperation='source-over';g.restore();
+    g.globalCompositeOperation='destination-in';g.drawImage(agSuave,sx,sy,sw,sh,sx,sy,sw,sh);g.globalCompositeOperation='source-over';g.restore();}
     ctx.save();ctx.globalAlpha=.86;ctx.drawImage(agTmp,sx,sy,sw,sh,x0+sx,y0+sy,sw,sh);ctx.restore();
   }else{
     for(let y=sy-sy%2;y<ey;y+=2){const yy=y0+y,dx=Math.sin(yy*.23+t*2.3)*1.1+Math.sin(yy*.061-t*1.2)*.8;ctx.drawImage(agCor,0,y,w,2,x0+dx,yy,w,2);}
@@ -800,7 +804,9 @@ let CENAS=[
   {mus:'vila',cam:[.48,.5,1.05, .5,.48,1.2],dur:10,fx:'neve',voz:[2,7],falas:[[.7,'Sir Bacon','Oinc.'],[2,'Jux','Respawn no chiqueiro. Começo humilde.'],[6.8,'Jux','Vou gostar dessa história.']],sons:[[.7,'oinc']]},
 ];
 const VOZES={};for(let k=1;k<=8;k++)VOZES[k]=arq('assets/cine_intro/voz_'+k);
-let CENA_IMG=CENAS.map((c,i)=>{const im=new Image();im.src='assets/cine_intro/cena_'+(i+1)+'.jpg';return im;});
+// filmes: fora a abertura na vila, as imagens so baixam DEPOIS da tela de carregamento (nao seguram a entrada no mapa); tocaFilme espera chegarem
+function imgsFilme(urls){return urls.map(u=>{const im=new Image();(window.depois||(f=>f()))(()=>{im.src=u;});return im;});}
+let CENA_IMG=REGIAO==='vila'?CENAS.map((c,i)=>{const im=new Image();im.src='assets/cine_intro/cena_'+(i+1)+'.jpg';return im;}):imgsFilme(CENAS.map((c,i)=>'assets/cine_intro/cena_'+(i+1)+'.jpg'));
 const CENAS_INTRO=CENAS,IMG_INTRO=CENA_IMG;
 /* ---------- CINEMATICA DA ESPADA (assets/cine_espada, prompts em PROMPTS_CINE_ESPADA.md): toca ao chegar no altar sem a espada */
 const CENAS_ESPADA=[
@@ -817,7 +823,7 @@ const CENAS_ESPADA=[
 ];
 for(const k of ['1a','1b','2','3a','3b','4','5','6','7a','7b','8a','8b'])VOZES['e'+k]=arq('assets/cine_espada/voz_'+k);
 for(let k=1;k<=6;k++)VOZES['o'+k]=arq('assets/cine_espada/voz_olhos_'+k+['_aurora','_jux','_aurora','_jux','_aurora','_jux'][k-1]);
-let _nEsp=0;const IMG_ESPADA=CENAS_ESPADA.map(c=>{const im=new Image();im.src=c.img||'assets/cine_espada/cena_'+(++_nEsp)+'.jpg';return im;});
+let _nEsp=0;const IMG_ESPADA=imgsFilme(CENAS_ESPADA.map(c=>c.img||'assets/cine_espada/cena_'+(++_nEsp)+'.jpg'));
 // CUTSCENE DE ENTRADA DO BINO (CINE_ENTRADA_BINO.md): ele ouve a Vovo e o Jux, conta de onde veio (2 flashbacks) e entra no time. Vozes em japones gravadas pelo Jux (assets/cine_bino_entrada/voz_*).
 // CUTSCENE DE ENTRADA DO SKOLL (CINE_SKOLL.md): toca ao escolher "Entrar" na Camara do Alfa; no fim comeca a luta
 const CENAS_SKOLL=[
@@ -827,7 +833,7 @@ const CENAS_SKOLL=[
   {mus:'skoll',cam:[.45,.5,1.0, .55,.4,1.15],dur:7,fx:'escuro',vozes:[[2.2,'sk4']],falas:[[2.2,'Jux','Então a gente quebra as correntes por você.']],sons:[[.1,'uivo'],[1.2,'quebra']],treme:[.1,2.4],flash:.12},
 ];
 for(const [k,f] of [['sk1','skoll_1_aurora'],['sk2','skoll_2_jux'],['sk3','skoll_3_bino'],['sk4','skoll_4_jux']])VOZES[k]=arq('assets/cine_skoll/voz_'+f);
-const IMG_SKOLL=CENAS_SKOLL.map((c,i)=>{const im=new Image();im.src='assets/cine_skoll/cena_'+(i+1)+'.jpg';return im;});
+const IMG_SKOLL=imgsFilme(CENAS_SKOLL.map((c,i)=>'assets/cine_skoll/cena_'+(i+1)+'.jpg'));
 if(REGIAO==='caverna'&&location.hash==='#cine_skoll')setTimeout(()=>tocaFilme(CENAS_SKOLL,IMG_SKOLL,()=>{}),1500);   // lab
 // CUTSCENE DE ENTRADA DO FENRIR (CINE_FENRIR.md, aprovada 2026-11-19): no circulo de pedras do Pico, ao escolher "Lutar agora";
 // so o Fenrir nas imagens (regra dos Ecos); a equipe fala em legenda e voz (assets/cine_fenrir/voz_*); o Fenrir fala em legenda (pensamento)
@@ -847,7 +853,7 @@ const CENAS_FENRIR=[   // 10 cenas: o Fenrir (cena_1..5) intercalado com a equip
 const PKF=window.JUX_CINE_FENRIR||null;
 for(const [k,f] of [['fe1','1_aurora'],['fe2','2_jux'],['fe3','3_bino'],['fe4a','4_aurora'],['fe4j','4_jux'],['fe5b','5_bino'],['fe5j','5_jux']]){
   if(PKF&&PKF.voz[f]){const a=new Audio();a.dataset.tipo='voz';a.src=PKF.voz[f][ogg==='.ogg'?'ogg':'mp3'];a.preload='auto';VOZES[k]=a;}else VOZES[k]=arq('assets/cine_fenrir/voz_fenrir_'+f);}
-const IMG_FENRIR=CENAS_FENRIR.map(c=>{const im=new Image();im.src=(PKF&&PKF.img[c.img])||('assets/cine_fenrir/'+c.img+'.jpg');return im;});
+const IMG_FENRIR=imgsFilme(CENAS_FENRIR.map(c=>(PKF&&PKF.img[c.img])||('assets/cine_fenrir/'+c.img+'.jpg')));
 if(REGIAO==='pico'&&location.hash==='#cine_fenrir')setTimeout(()=>tocaFilme(CENAS_FENRIR,IMG_FENRIR,()=>{}),1500);   // lab
 // CUTSCENE "A ORDEM DO ECLIPSE" (LORE_ORDEM_CENA.md, aprovada 2026-11-19): a Aurora mostra ao Jux, pela lamina, quem e o inimigo.
 // Toca depois da pista do acampamento goblin (Olhos Roxos); antes, a fala ordem_ve; depois, ordem_depois. Vozes: assets/cine_ordem/voz_ordem_*
@@ -859,7 +865,7 @@ const CENAS_ORDEM=[
   {mus:'ordem',cam:[.5,.35,1.12, .5,.5,1.0],dur:13,fx:'escuro',vozes:[[.8,'or5a'],[6,'or5j']],falas:[[.8,'Aurora','Quando o último se apagar, vem o Eclipse Eterno.',1],[6,'Jux','Clássico. Ambicioso, dramático e péssimo para o turismo.']],sons:[[.1,'impacto']],treme:[.1,1.2],flash:.1},
 ];
 for(const [k,f] of [['or1a','1_aurora'],['or1j','1_jux'],['or2a','2_aurora'],['or3a','3_aurora'],['or3b','3_bino'],['or4a','4_aurora'],['or5a','5_aurora'],['or5j','5_jux']])VOZES[k]=arq('assets/cine_ordem/voz_ordem_'+f);
-const IMG_ORDEM=CENAS_ORDEM.map((c,i)=>{const im=new Image();im.src='assets/cine_ordem/cena_'+(i+1)+'.jpg';return im;});
+const IMG_ORDEM=imgsFilme(CENAS_ORDEM.map((c,i)=>'assets/cine_ordem/cena_'+(i+1)+'.jpg'));
 function contaOrdem(){if(JOGO.ordemSabe)return;abreFala('ordem_ve',()=>tocaFilme(CENAS_ORDEM,IMG_ORDEM,()=>{JOGO.ordemSabe=true;salvaJogo();setTimeout(()=>abreFala('ordem_depois'),400);}));}
 if(REGIAO==='trilha'&&location.hash==='#cine_ordem')setTimeout(()=>tocaFilme(CENAS_ORDEM,IMG_ORDEM,()=>{}),1500);   // lab
 const CENAS_BINO=[
@@ -872,10 +878,11 @@ const CENAS_BINO=[
   {mus:'bino_b',cam:[.5,.5,1.0, .5,.55,1.16],dur:14,fx:'neve',vozes:[[.6,'b7a'],[5.2,'b7j']],falas:[[.6,'Aurora','Dois são mais difíceis de derrubar do que um, Portador.',1],[5.2,'Jux','E mais difíceis de convencer a andar na mesma direção.'],[10.6,'✦','Bino entrou no time!',1]],sons:[]},
 ];
 for(const [k,f] of Object.entries({'b1v': '1_vovo', 'b1j': '1_jux', 'b2': '2_bino', 'b3a': '3_bino_a', 'b3ja': '3_jux_a', 'b3b': '3_bino_b', 'b3jb': '3_jux_b', 'b3c': '3_bino_c', 'b4a': '4_bino_a', 'b4h': '4_halvard', 'b4b': '4_bino_b', 'b5b': '5_bino', 'b5a': '5_aurora', 'b6ja': '6_jux_a', 'b6ba': '6_bino_a', 'b6jb': '6_jux_b', 'b6bb': '6_bino_b', 'b6v': '6_vovo', 'b7a': '7_aurora', 'b7j': '7_jux'}))VOZES[k]=arq('assets/cine_bino_entrada/voz_'+f);
-const IMG_BINO=CENAS_BINO.map((c,i)=>{const im=new Image();im.src='assets/cine_bino_entrada/cena_'+(i+1)+'.jpg';return im;});
+const IMG_BINO=imgsFilme(CENAS_BINO.map((c,i)=>'assets/cine_bino_entrada/cena_'+(i+1)+'.jpg'));
 if(REGIAO==='vila'&&location.hash==='#cine_bino')setTimeout(()=>tocaFilme(CENAS_BINO,IMG_BINO,()=>{}),1500);   // lab: abre a cutscene direto
 const ALTV=new Image();if(V.altar_vazio)ALTV.src=V.altar_vazio.img;let espadaSobe=99;
-function tocaFilme(cenas,imgs,onFim){CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
+function tocaFilme(cenas,imgs,onFim){const t0=Date.now();(function vai(){if(imgs.some(i=>!i.complete||!i.naturalWidth)&&Date.now()-t0<10000)return setTimeout(vai,100);tocaFilme0(cenas,imgs,onFim);})();}
+function tocaFilme0(cenas,imgs,onFim){CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
 const MUS_CINE={piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
@@ -926,7 +933,7 @@ function abCena(i,alpha,tt){
   const [x0,y0,z0,x1,y1,z1]=c.cam,cx=x0+(x1-x0)*e,cy=y0+(y1-y0)*e,z=z0+(z1-z0)*e;
   const base=Math.max(W/im.naturalWidth,H/im.naturalHeight)*z,dw=im.naturalWidth*base,dh=im.naturalHeight*base;
   let ox=W/2-cx*dw,oy=H/2-cy*dh;ox=Math.min(0,Math.max(W-dw,ox));oy=Math.min(0,Math.max(H-dh,oy));
-  if(c.treme&&tt>=c.treme[0]&&tt<=c.treme[1]){const k=1-(tt-c.treme[0])/(c.treme[1]-c.treme[0]);ox+=rnd(-1,1)*7*k;oy+=rnd(-1,1)*7*k;}
+  if(c.treme&&(typeof OPC!=='object'||OPC.tremor)&&tt>=c.treme[0]&&tt<=c.treme[1]){const k=1-(tt-c.treme[0])/(c.treme[1]-c.treme[0]);ox+=rnd(-1,1)*7*k;oy+=rnd(-1,1)*7*k;}
   ctx.globalAlpha=alpha;ctx.drawImage(im,ox,oy,dw,dh);ctx.globalAlpha=1;
 }
 function abDesenha(){
@@ -1066,7 +1073,7 @@ function passo(dt){
   if(hero.pontoAlvo&&perto===hero.pontoAlvo){abreFala(perto.id);}
   cam.x+=(hero.x-cam.x)*Math.min(1,dt*6);cam.y+=(hero.y-12-cam.y)*Math.min(1,dt*6);
   const hw=W/2/Z,hh=H/2/Z;cam.x=clamp(cam.x,hw,V.w-hw);cam.y=clamp(cam.y,hh,V.h-hh);
-  if(fala){const L=fala.linhas[fala.i][1];fala.letras=Math.min(L.length,fala.letras+dt*48);}
+  if(fala){const L=fala.linhas[fala.i][1];fala.letras=Math.min(L.length,fala.letras+dt*48*(typeof OPC==='object'?OPC.texto:1));}
   // particulas
   if(NA_VILA&&!FUM)for(const[cx,cy,taxa]of CHAMINES)if(Math.random()<dt*taxa)fumaca.push({x:cx+rnd(-2,2),y:cy,v:0,s:rnd(2.5,4)});
   for(const f of fumaca){f.v+=dt;f.y-=dt*13;f.x+=dt*7+Math.sin(f.v*2)*.2;f.s+=dt*2.6;}
@@ -1341,6 +1348,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);
+    try{const vl=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');if(vl&&vl.res==='lose_chefe'&&Date.now()-vl.t<120000){localStorage.removeItem('jux_volta_luta');setTimeout(()=>abreFala('derrota_chefe'),700);}}catch(e){}
     if(REGIAO==='pico'&&!JOGO.picoVista){JOGO.picoVista=true;setTimeout(()=>abreFala('pico_chega'),600);}
     else if(REGIAO==='vale'&&!JOGO.valeVista){JOGO.valeVista=true;setTimeout(()=>abreFala('vale_chega'),500);}
     else if(REGIAO==='garganta'&&!JOGO.gargantaVista){JOGO.gargantaVista=true;setTimeout(()=>abreFala(JOGO.ordemSabe?'garganta_chega':'garganta_chega_cedo'),500);}

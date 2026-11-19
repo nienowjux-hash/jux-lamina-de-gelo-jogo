@@ -34,7 +34,7 @@ const HABS={
   perfurante: {nome:'Garra Perfurante', nv:10,ap:4,mp:12,alvo:'inim',t:'f',el:null,  poder:[72],q:1,perfura:.5,criatura:'garra',desc:'O Fenrir crava as garras: ignora metade da DEF.'},
   p_crit:     {nome:'Instinto do Caçador',nv:20,ap:4,passiva:{crit:8},desc:'Passiva: crítico +8%.'},
   matilha:    {nome:'Matilha Fantasma', nv:45,ap:6,mp:22,alvo:'todos',t:'f',el:'gelo',poder:[42,42],q:1.5,criatura:'matilha',desc:'Lobos fantasmas atravessam o campo: 2 mordidas em cada inimigo.'},
-  p_pelagem:  {nome:'Pelagem de Lâminas',nv:60,ap:5,passiva:{contra:.20},desc:'Passiva: 20% de revidar golpes físicos.'},
+  p_pelagem:  {nome:'Pelagem de Lâminas',nv:60,ap:5,passiva:{contra:.20},desc:'Passiva: 20% de chance de revidar golpes físicos.'},
   p_sede:     {nome:'Sede de Caça',     nv:75,ap:5,passiva:{sede:.20},desc:'Passiva: +20% de dano em inimigo com menos da metade do HP.'},
   p_alfa:     {nome:'Fúria do Alfa',    nv:90,ap:6,passiva:{crit:10,vel:3},desc:'Passiva: crítico +10% e VEL +3.'},
   ragnarok:   {nome:'Ragnarök',         nv:100,ap:8,mp:40,alvo:'todos',t:'f',el:'gelo',poder:[230],q:3,criatura:'ragnarok',desc:'Suprema: o Fenrir vira o lobo do fim do mundo e devora o campo.'},
@@ -48,7 +48,7 @@ const HABS={
   // Guardião
   muralha:    {nome:'Muralha',          nv:1,ap:3,mp:8, alvo:'eu',  est:['muralha',4],desc:'Dano recebido −30% por 4 turnos.'},
   p_hp:       {nome:'HP +10%',          nv:2,ap:3,passiva:{hp:.10},desc:'Passiva.'},
-  contra:     {nome:'Contra-ataque',    nv:4,ap:5,passiva:{contra:.25},desc:'Passiva: 25% de revidar golpes físicos.'},
+  contra:     {nome:'Contra-ataque',    nv:4,ap:5,passiva:{contra:.25},desc:'Passiva: 25% de chance de revidar golpes físicos.'},
   p_def:      {nome:'DEF +10%',         nv:5,ap:3,passiva:{def:.10,defm:.10},desc:'Passiva: DEF e DEF.M.'},
   vontade:    {nome:'Vontade de Ferro', nv:7,ap:6,passiva:{vontade:1},desc:'Passiva: uma vez por luta, aguenta um golpe mortal com 1 HP.'},
   // Sábio

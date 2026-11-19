@@ -100,11 +100,15 @@ const JOGO={
 // (musica = pastas/arquivos de musica; voz = arquivos voz_*; o resto = efeitos). Os sons sintetizados (WebAudio) passam por acSaida().
 const VOL=(()=>{const d={mus:1,sfx:1,voz:1};try{return Object.assign(d,JSON.parse(localStorage.getItem('jux_vol')||'{}'));}catch(e){return d;}})();
 function tipoAudio(el){if(el.dataset&&el.dataset.tipo)return el.dataset.tipo;const s=el.currentSrc||el.src||'';return /\/voz[_\/]/.test(s)?'voz':/\/musica[\/_]|cine_|bino_[ab]\.|espada_lenda|espada_heroi|intro_piano|chefe_|batalha\./.test(s)?'mus':'sfx';}
+// acerto fino de volume por arquivo (medido em LUFS, 2026-11-19): a musica da vila era ~5 dB mais alta que a dos outros mapas
+// e a da batalha comum ~4 dB mais baixa que a dos chefes. Corrige aqui, sem mexer nos arquivos.
+const GANHO_ARQ=[[/musica_vila_2\./,.7],[/musica_(trilha|caverna|garganta)\./,1.2],[/\/batalha\.(ogg|mp3)/,1.35]];
+function ganhoArq(el){const s=el.currentSrc||el.src||'';for(const [r,g] of GANHO_ARQ)if(r.test(s))return g;return 1;}
 const AUDIOS_VIVOS=new Set();
 (()=>{const d=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'volume');if(!d||!d.set)return;
   Object.defineProperty(HTMLMediaElement.prototype,'volume',{configurable:true,
     get(){return this._volPedido!==undefined?this._volPedido:d.get.call(this);},
-    set(v){this._volPedido=v;AUDIOS_VIVOS.add(this);d.set.call(this,Math.max(0,Math.min(1,v*(VOL[tipoAudio(this)]??1))));}});
+    set(v){this._volPedido=v;AUDIOS_VIVOS.add(this);d.set.call(this,Math.max(0,Math.min(1,v*(VOL[tipoAudio(this)]??1)*ganhoArq(this))));}});
   setInterval(()=>{for(const a of AUDIOS_VIVOS)if(a.paused||a.ended)AUDIOS_VIVOS.delete(a);},8000);})();
 function mudaVol(tipo,v){VOL[tipo]=Math.max(0,Math.min(1,Math.round(v*10)/10));try{localStorage.setItem('jux_vol',JSON.stringify(VOL));}catch(e){}
   for(const a of AUDIOS_VIVOS)if(!a.paused)a.volume=a._volPedido;   // reaplica no que esta tocando agora
@@ -117,6 +121,10 @@ function mostraErro(e,onde){try{const m=(e&&(e.message||e.reason&&e.reason.messa
   const st=(e&&e.stack)||'';b.textContent='⚠ erro: '+m+(onde?' ('+onde+')':'')+(st?' | '+st.split(String.fromCharCode(10)).slice(1,3).join(' ').replace(/https?:[^ )]*[/]/g,''):'');b.style.display='block';clearTimeout(b._t);b._t=setTimeout(()=>{b.style.display='none';},20000);console.error(e);}catch(_){}}
 addEventListener('error',ev=>mostraErro(ev.error||ev.message,(ev.filename||'').split('/').pop()+':'+ev.lineno));
 addEventListener('unhandledrejection',ev=>mostraErro(ev.reason));
+// OPCOES (menu Sistema, 2026-11-19): velocidade do texto das falas e tremor da tela. localStorage 'jux_opc'
+const OPC=(()=>{const d={texto:1,tremor:true};try{return Object.assign(d,JSON.parse(localStorage.getItem('jux_opc')||'{}'));}catch(e){return d;}})();
+const VEL_TEXTO=[[.5,'Lento'],[1,'Normal'],[2,'Rápido'],[99,'Na hora']];
+function salvaOpc(){try{localStorage.setItem('jux_opc',JSON.stringify(OPC));}catch(e){}}
 const SAVE_J='jux_save';
 function carregaJogo(){
   try{const s=JSON.parse(localStorage.getItem(SAVE_J)||'null');

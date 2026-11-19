@@ -198,7 +198,7 @@ function usaItem(id){const it=ITENS[id];
 function opcoesSlot(s){const E=equipDe(UI.quem);return [...new Set([null,E[s],...itensBolsa().filter(k=>ITENS[k].tipo===tipoDoSlot(s)&&serveEm(ITENS[k],UI.quem))].filter(x=>x!==undefined))];}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
   if(nx===cur)return;if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_mover,.5);salvaJogo();}
-const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
+const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Controles do teclado','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
 // SAVE EM ARQUIVO (2026-11-19): leva o progresso para outro navegador/computador (o save fica no navegador, separado por site)
 function exportaSave(){salvaVila();const d={jogo:'jux-lamina-de-gelo',v:1,quando:new Date().toISOString(),dados:{}};
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('jux_')&&k!=='jux_pag_viva'&&k!=='jux_encontro')d.dados[k]=localStorage.getItem(k);}
@@ -215,7 +215,12 @@ function importaDados(texto){{try{const d=JSON.parse(texto);
     let r='vila';try{const sv=JSON.parse(d.dados.jux_save);if(sv&&sv.local)r=sv.local;}catch(e){}window.__importou=true;location.href=r+'.html?t='+Date.now();
   }catch(e){aviso('Não consegui ler esse arquivo.','#ff9a9a');}}}
 const VOL_OPS=['mus','sfx','voz'];
-function acaoSalvar(i,dir){if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}
+function acaoSalvar(i,dir){
+  if(i===3){const k=VEL_TEXTO.findIndex(v=>v[0]===OPC.texto),n=(Math.max(0,k)+(dir===-1?VEL_TEXTO.length-1:1))%VEL_TEXTO.length;OPC.texto=VEL_TEXTO[n][0];salvaOpc();som(SOM.ui_mover,.6);return;}
+  if(i===4){OPC.tremor=!OPC.tremor;salvaOpc();som(SOM.ui_mover,.6);return;}
+  if(i===5){UI.controles=!UI.controles;som(SOM.ui_vez,.5);return;}
+  if(i>5)i-=3;
+  if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}
   else if(i===1)exportaSave();else if(i===2)importaSave();
   else if(UI.confirmaNovo){novoJogo();location.reload();}else{UI.confirmaNovo=true;aviso('Toque de novo para confirmar','#ff9a9a');som(SOM.ui_mover,.5);}}
 
@@ -319,7 +324,7 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
   const x2=cx+330,ww=w-370;let yy=cy+24;
   const quebra=(s,tam,cor)=>{ctx.font=`bold ${tam}px "Trebuchet MS"`;let lin='';for(const p of s.split(' ')){if(ctx.measureText(lin+p).width>ww){texto(lin,x2,yy,tam,cor);yy+=tam+7;lin='';}lin+=p+' ';}if(lin)texto(lin,x2,yy,tam,cor);yy+=tam+12;};
   if(sel==='_historia'){texto('Objetivo da história',x2,yy,20,'#ffe27a');yy+=30;
-    if(!hero.espada){quebra('Mil anos de gelo prendem uma espada no altar, no alto da vila. Todos tentaram na força. Talvez não seja um teste de força.',15,'#e8f6ff');quebra('➤ Suba até o altar (★ no Mapa) e fale com ele.',15,'#7dffa8');}
+    if(!hero.espada){quebra('Mil anos de gelo prendem uma espada no altar, no alto da vila. Todos tentaram na força. Talvez não seja um teste de força.',15,'#e8f6ff');quebra('➤ Suba até o altar (★ no mapa) e fale com ele.',15,'#7dffa8');}
     else{const om=estadoMissao('olhos_roxos');
       if(om==='feita'){quebra('O Halvard voltou para casa. Mas a Ordem do Eclipse continua lá fora, e os cristais de Elyria correm perigo.',15,'#e8f6ff');quebra('➤ Fique mais forte, siga as pegadas enormes e descubra o que a Ordem quer no norte.',15,'#7dffa8');}
       else if(om==='ativa'){quebra('O Halvard sumiu e os lobos têm olhos roxos. Alguém está por trás disso.',15,'#e8f6ff');quebra('➤ Siga a missão Olhos Roxos (★ no mapa).',15,'#7dffa8');}
@@ -380,7 +385,7 @@ function uiTecla(k){
   if(k==='arrowdown'||k==='s'){obj.sel=(obj.sel+1)%n;som(SOM.ui_mover,.3);}
   else if(k==='arrowup'||k==='w'){obj.sel=(obj.sel-1+n)%n;som(SOM.ui_mover,.3);}
   else if(UI.menu&&UI.aba===ABA_ECOS&&(k==='arrowright'||k==='d'||k==='arrowleft'||k==='a')){UI.ecoCol=(k==='arrowright'||k==='d')?1:0;UI.sel=UI.ecoCol?0:ecoLista().indexOf(ecoVisto());som(SOM.ui_mover,.3);}
-  else if(UI.menu&&UI.aba===ABA_SALVAR&&UI.sel<3&&(k==='arrowright'||k==='d'||k==='arrowleft'||k==='a')){acaoSalvar(UI.sel,(k==='arrowright'||k==='d')?1:-1);}
+  else if(UI.menu&&UI.aba===ABA_SALVAR&&UI.sel<5&&(k==='arrowright'||k==='d'||k==='arrowleft'||k==='a')){acaoSalvar(UI.sel,(k==='arrowright'||k==='d')?1:-1);}
   else if(UI.menu&&(k==='arrowright'||k==='d'||k==='tab')){if(UI.aba===2&&k!=='tab')trocaSlot(SLOTS_EQ[UI.sel][0],1);else{UI.aba=(UI.aba+1)%ABAS.length;UI.sel=0;UI.confirmaNovo=false;som(SOM.ui_mover,.3);}}
   else if(UI.menu&&(k==='arrowleft'||k==='a')){if(UI.aba===2)trocaSlot(SLOTS_EQ[UI.sel][0],-1);else{UI.aba=(UI.aba+ABAS.length-1)%ABAS.length;UI.sel=0;som(SOM.ui_mover,.3);}}
   else if(UI.loja&&(k==='arrowright'||k==='arrowleft')&&LOJAS[UI.loja.id].compra){UI.loja.modo=UI.loja.modo==='comprar'?'vender':'comprar';UI.loja.sel=0;som(SOM.ui_mover,.3);}
@@ -479,7 +484,7 @@ function desenhaHome(){
     if(on){ctx.fillStyle='#bff0ff';ctx.beginPath();ctx.moveTo(36,yy+19);ctx.lineTo(50,yy+11);ctx.lineTo(50,yy+27);ctx.fill();}
     texto(h[0],90,yy+27,21,on?'#fff':'#d8ecf8');ZONAS.push([60,yy,360,yy+39,()=>{UI.sel=i;abreSecao(i);}]);});
   const st=statusJux(JOGO.nivel),prox=expProx(JOGO.nivel)-(JOGO.exp||0);
-  cartaoGrupo(400,100,230,H-150,'Jux',JOGO.nivel,'jux',st.hp,st.mp,JOGO.exp||0,Math.max(0,prox),'Espadachim de gelo');
+  cartaoGrupo(400,100,230,H-150,'Jux',JOGO.nivel,'jux',st.hp,st.mp,JOGO.exp||0,Math.max(0,prox),'Cavaleiro Glacial');
   if(JOGO.bino&&JOGO.bino.ativo&&typeof statusBino==='function'){const b=JOGO.bino,sb=statusBino(b.nivel);cartaoGrupo(650,100,230,H-150,'Bino',b.nivel,'bino',sb.hp,sb.mp,b.exp||0,Math.max(0,expProx(b.nivel)-(b.exp||0)),'Bárbaro tanque');}
   texto(JOGO.gil+' gil',W-30,64,20,'#ffe27a','right');
   texto('▲ ▼ escolhe · ENTER abre · ESC fecha',400,H-18,13,'rgba(220,238,250,.75)');ZONAS.push([W-60,10,W-6,60,fecha]);
@@ -550,13 +555,18 @@ function desenhaMenu(){
       ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;trocaSlot(s,1);}]);});
     texto('◀ ▶ ou toque: trocar o equipamento (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-20,13,'#c8d8f0');
   }else{   // Salvar
-    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*44;linhaSel(cx,yy,560,38,i===UI.sel);texto(o,cx+30,yy+28,18,i===6?'#ff9a9a':'#fff');
-      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+16,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+16,bw*v,10);
-        texto(Math.round(v*100)+'%',bx+bw+14,yy+28,16,'#e8f6ff');texto('◀',bx-24,yy+28,16,'#9fe8ff');texto('▶',bx+bw+62,yy+28,16,'#9fe8ff');
-        ZONAS.push([bx-30,yy,bx-4,yy+42,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+42,()=>{UI.sel=i;acaoSalvar(i,1);}]);
-        ZONAS.push([bx,yy,bx+bw,yy+42,(mx)=>{UI.sel=i;}]);}
-      else ZONAS.push([cx,yy,cx+360,yy+42,()=>{UI.sel=i;acaoSalvar(i);}]);});
-    texto('◀ ▶ muda o volume (vale no mapa e na batalha) · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*44+8,13,'#c8d8f0');
+    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*36;linhaSel(cx,yy,560,32,i===UI.sel);texto(o,cx+30,yy+26,17,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
+      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+26,16,'#9fe8ff');
+      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+26,16,OPC.tremor?'#7dffa8':'#ff9a9a');
+      if(i===5)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+26,16,'#9fe8ff');
+      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+11,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+11,bw*v,10);
+        texto(Math.round(v*100)+'%',bx+bw+14,yy+22,16,'#e8f6ff');texto('◀',bx-24,yy+22,16,'#9fe8ff');texto('▶',bx+bw+62,yy+22,16,'#9fe8ff');
+        ZONAS.push([bx-30,yy,bx-4,yy+34,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+34,()=>{UI.sel=i;acaoSalvar(i,1);}]);
+        ZONAS.push([bx,yy,bx+bw,yy+34,(mx)=>{UI.sel=i;}]);}
+      else ZONAS.push([cx,yy,cx+460,yy+34,()=>{UI.sel=i;acaoSalvar(i);}]);});
+    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*36+8,13,'#c8d8f0');
+    if(UI.controles){const px=cx+275,py=cy+6*36-2,pw=300,ph=172;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+28,17,'#ffe27a');
+      [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+54+k*19,13,'#9fe8ff');texto(b,px+128,py+54+k*19,13,'#e8f6ff');});}
     if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+178,18,'#7dffa8');
   }
   texto('M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar',x+w-16,y+h+24,13,'rgba(255,255,255,.6)','right');
