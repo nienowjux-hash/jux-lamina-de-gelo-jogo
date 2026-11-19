@@ -139,6 +139,10 @@ const FALAS={
   portao_fechado:[['Jux','Lá fora tem lobo de olho roxo e gente sumindo.'],['Aurora','Antes de sair, Portador, escute a vila. Alguém aqui precisa de você.',1],['✦','Fale com a Vovó Hilda (! em cima da cabeça).']],
   garganta_fechada:[['Aurora','Ainda não, Portador. O que está acontecendo aqui na trilha ainda não acabou.',1],['Jux','Lobos de olho roxo, um acampamento abandonado e um santuário apagando. Tá, entendi o recado.']],
   vovo_depois:[['Vovó Hilda','Hmpf. Ainda vivo, forasteiro sem sombra.'],['Jux','Vivo e com uma espada que fala. Subi de nível.'],['Vovó Hilda','Coma alguma coisa. E não morra perto da minha casa.']],
+  borin_espada:[['Borin','HA! O forasteiro que tirou a Aurora do altar! Vinte anos eu puxei aquilo…'],['Jux','Você puxou. Eu perguntei.'],['Borin','…Isso não faz sentido nenhum.'],['Borin','*funga*'],['Jux','Fuligem no olho de novo?'],['Borin','É! Fuligem! Compra alguma coisa e some daqui!']],
+  borin_resgate:[['Borin','O HALVARD VOLTOU! Eu chorei tanto que apaguei a forja, sabia?'],['Jux','A Vovó me contou. Duas vezes.'],['Borin','Pra você, forasteiro, a forja acende quando quiser. E o preço… quase justo.'],['Jux','Quase justo já é um avanço histórico.']],
+  tico_espada:[['Tico','VOCÊ PEGOU A ESPADA! Eu sabia! Eu SABIA!'],['Jux','Ela que me pegou. Eu só fiz a pergunta certa.'],['Tico','Me ensina a pergunta?'],['Jux','Primeiro você aprende a planilha.'],['Tico','A MAGIA ANTIGA E TERRÍVEL?!']],
+  tico_resgate:[['Tico','Moço do céu! Meu pai voltou! Ele disse que você lutou com um lobo do tamanho de uma casa!'],['Jux','Do tamanho de uma casa pequena. Uma casinha.'],['Tico','Quando eu crescer, eu vou ser estrategista igual você.'],['Jux','Então começa hoje: arruma o quarto em três turnos.'],['Tico','…Isso é muito difícil.']],
   prova_depois:[['Aurora','Sábio. Volte quando estiver pronto, Portador.'],['Fenrir','…Eu espero.']],
   prova_vence:[['Jux','…Eu ganhei? De um lobo do tamanho de um cavalo?'],['Fenrir','Você luta como quem protege alguém.'],['Fenrir','Mil caçadas, e poucos me fizeram recuar.'],
     ['Fenrir','Sua lâmina é de gelo, como a minha. A minha lealdade é sua, Portador.'],['Aurora','O Eco da Lâmina. O Fenrir caçava ao lado dos heróis antigos. Agora caça ao seu lado.'],
@@ -626,17 +630,21 @@ function vivoPasso(dt){
 }
 function desenhaAgua(){
   if(!AG||!agCor)return;const [x0,y0,x1,y1]=AG.caixa,w=x1-x0,h=y1-y0;
-  const g=agTmp.getContext('2d');g.globalCompositeOperation='source-over';g.clearRect(0,0,w,h);
-  if(agTex&&agTex.complete&&agTex.naturalWidth){
+  const g=agTmp.getContext('2d');g.globalCompositeOperation='source-over';
+  // OTIMIZACAO (2026-11-19): so o pedaco do rio que aparece na tela (antes desenhava o rio inteiro a cada quadro; a vila caia de quadros)
+  const hw=W/(2*Z)+8,hh=H/(2*Z)+8,sx=Math.max(0,Math.floor(cam.x-hw-x0)),sy=Math.max(0,Math.floor(cam.y-hh-y0)),ex=Math.min(w,Math.ceil(cam.x+hw-x0)),ey=Math.min(h,Math.ceil(cam.y+hh-y0));
+  if(ex<=sx||ey<=sy)return;const sw=ex-sx,sh=ey-sy;
+  g.clearRect(sx,sy,sw,sh);
+  if(agTex&&agTex.complete&&agTex.naturalWidth){g.save();g.beginPath();g.rect(sx,sy,sw,sh);g.clip();
     // agua de verdade: a textura corre em duas camadas (correnteza para a direita e uma contra-onda mais lenta),
     // com um balanco leve, recortada no formato do riacho e com a borda esfumada
     if(!agTexPat)agTexPat=g.createPattern(agTex,'repeat');const L=agTex.naturalWidth;g.fillStyle=agTexPat;
     g.save();g.globalAlpha=1;g.translate((t*7)%L,Math.sin(t*.5)*2);g.fillRect(-L,-L,w+2*L,h+2*L);g.restore();
     g.save();g.globalAlpha=.42;g.globalCompositeOperation='screen';g.translate(-((t*4.5)%L)+L*.37,(t*2.2)%L+L*.21);g.fillRect(-L,-L,w+2*L,h+2*L);g.restore();
-    g.globalCompositeOperation='destination-in';g.drawImage(agSuave,0,0);g.globalCompositeOperation='source-over';
-    ctx.save();ctx.globalAlpha=.86;ctx.drawImage(agTmp,x0,y0);ctx.restore();
+    g.globalCompositeOperation='destination-in';g.drawImage(agSuave,sx,sy,sw,sh,sx,sy,sw,sh);g.globalCompositeOperation='source-over';g.restore();
+    ctx.save();ctx.globalAlpha=.86;ctx.drawImage(agTmp,sx,sy,sw,sh,x0+sx,y0+sy,sw,sh);ctx.restore();
   }else{
-    for(let y=0;y<h;y+=2){const yy=y0+y,dx=Math.sin(yy*.23+t*2.3)*1.1+Math.sin(yy*.061-t*1.2)*.8;ctx.drawImage(agCor,0,y,w,2,x0+dx,yy,w,2);}
+    for(let y=sy-sy%2;y<ey;y+=2){const yy=y0+y,dx=Math.sin(yy*.23+t*2.3)*1.1+Math.sin(yy*.061-t*1.2)*.8;ctx.drawImage(agCor,0,y,w,2,x0+dx,yy,w,2);}
   }
   ctx.save();ctx.globalCompositeOperation='lighter';
   // cachoeiras: fios de agua caindo
@@ -702,7 +710,12 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
-  fala={linhas:FALAS[(id==='vovo'&&hero.espada&&FALAS.vovo_depois)?'vovo_depois':id],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
+  fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
+// falas que mudam com a historia (pedido 2026-11-19): antes da espada / depois da espada / depois do resgate do Halvard
+function falaDaFase(id){const res=typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita';
+  if(id==='vovo'&&hero.espada&&FALAS.vovo_depois)return 'vovo_depois';
+  if((id==='borin'||id==='tico')&&hero.espada){const k=id+(res?'_resgate':'_espada');if(FALAS[k])return k;}
+  return id;}
 function avanca(){if(!fala)return;const L=fala.linhas[fala.i][1];
   if(fala.letras<L.length){fala.letras=L.length;return;}
   fala.i++;fala.letras=0;som(SOM.ui_mover,.45);if(fala.i>=fala.linhas.length){const f=fala.fim;fala=null;if(f)f();}}
@@ -1166,12 +1179,16 @@ function desenhaEspadaAcesa(k){const E=hero._esp;if(!E||!hero.espada||k<=.01)ret
   ctx.filter='blur(1.5px)';ctx.globalAlpha=k*p;ctx.drawImage(L.cv,ox,oy);ctx.filter='none';ctx.globalAlpha=k*.8;ctx.drawImage(L.cv,ox,oy);
   ctx.restore();
   return [E.x+(L.cx+ox)*E.s,E.y+(L.cy+oy)*E.s*E.estica];}
+const VIS={x0:0,y0:0,x1:1e9,y1:1e9};   // parte do mapa visivel no quadro (desenha so o que aparece)
 function desenha(){
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.fillStyle='#03050c';ctx.fillRect(0,0,W,H);
   ctx.save();ctx.translate(W/2,H/2);ctx.scale(Z,Z);ctx.translate(-Math.round(cam.x*Z)/Z,-Math.round(cam.y*Z)/Z);
-  ctx.drawImage(MAPA,0,0,V.w,V.h);
-  // aurora ondulando
-  for(let y=0;y<110;y+=1.5){const off=Math.sin(y*.11+t*1.6)*1.6;ctx.drawImage(MAPA,0,y*K,V.w*K,1.5*K,off,y,V.w,1.5);}
+  // OTIMIZACAO (2026-11-19): so o pedaco do mapa que aparece na tela (o mapa inteiro em alta qualidade a cada quadro pesava)
+  const vx0=Math.max(0,Math.floor(cam.x-W/(2*Z))-4),vy0=Math.max(0,Math.floor(cam.y-H/(2*Z))-4),vx1=Math.min(V.w,Math.ceil(cam.x+W/(2*Z))+4),vy1=Math.min(V.h,Math.ceil(cam.y+H/(2*Z))+4);
+  VIS.x0=vx0;VIS.y0=vy0;VIS.x1=vx1;VIS.y1=vy1;
+  ctx.drawImage(MAPA,vx0*K,vy0*K,(vx1-vx0)*K,(vy1-vy0)*K,vx0,vy0,vx1-vx0,vy1-vy0);
+  // aurora ondulando (so se o alto do mapa estiver na tela)
+  if(vy0<112)for(let y=Math.max(0,Math.floor(vy0/1.5)*1.5);y<Math.min(110,vy1);y+=1.5){const off=Math.sin(y*.11+t*1.6)*1.6,ax=Math.max(0,vx0-4),aw=Math.min(V.w,vx1+4)-ax;ctx.drawImage(MAPA,ax*K,y*K,aw*K,1.5*K,ax+off,y,aw,1.5);}
   // depois de pegar a espada: o altar fica vazio; logo apos a cinematica a espada do desenho sobe num feixe de luz e some
   if(hero.espada&&V.altar_vazio&&ALTV.complete){const p=Math.max(0,Math.min(1,espadaSobe/1.6));
     ctx.save();ctx.globalAlpha=Math.min(1,p*1.6);const A=V.altar_vazio,sk=ALTV.naturalHeight/A.h;   // linha a linha, ondulando junto com a aurora
@@ -1185,7 +1202,7 @@ function desenha(){
   for(const b of brilhoRio){ctx.globalAlpha=Math.sin(Math.PI*b.v/1.4)*.55;ctx.fillStyle='#d8f6ff';ctx.fillRect(b.x,b.y,b.l,.8);}
   ctx.globalAlpha=1;
   // luz da fogueira, da forja e das lanternas
-  const luz=(x,y,r,cor)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cor);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);};
+  const luz=(x,y,r,cor)=>{if(x+r<VIS.x0||x-r>VIS.x1||y+r<VIS.y0||y-r>VIS.y1)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cor);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);};
   if(REGIAO==='trilha'){for(const[lx,ly,r_,k]of[[660,92,30,0],[795,92,30,1]])luz(lx,ly,r_+Math.sin(t*2+k)*2,'rgba(120,220,255,.35)');
     luz(1282,300,70+Math.sin(t*1.5)*8,'rgba(110,210,255,.30)');for(const[lx,ly,k]of[[590,930,0],[830,930,1],[640,940,2]])luz(lx,ly,26+Math.sin(t*1.8+k)*3,'rgba(120,220,255,.28)');}
   if(NA_VILA){luz(740,645,62+Math.sin(t*9)*4+Math.sin(t*23)*2,'rgba(255,150,50,.42)');
@@ -1234,12 +1251,15 @@ function desenha(){
     octx.fillStyle=g;octx.fillRect(hero.x-50,hero.y-80,100,100);octx.restore();
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(oc,0,0);ctx.restore();
     // "raio-x": contorno azul-gelo claro + o proprio Jux meio transparente por cima do objeto
-    hctx.setTransform(1,0,0,1,0,0);hctx.clearRect(0,0,W,H);hctx.setTransform(tr);desenhaHeroi(hctx,1,true);
-    sctx.setTransform(1,0,0,1,0,0);sctx.clearRect(0,0,W,H);sctx.globalCompositeOperation='source-over';sctx.drawImage(hc,0,0);
-    sctx.globalCompositeOperation='source-in';sctx.fillStyle='#bff4ff';sctx.fillRect(0,0,W,H);sctx.globalCompositeOperation='source-over';
+    // OTIMIZACAO (2026-11-19): o raio-x so mexe numa caixa em volta do Jux (antes eram 6 operacoes de tela inteira por quadro)
+    const hx=tr.a*hero.x+tr.e,hy=tr.d*hero.y+tr.f,bx=Math.max(0,Math.floor(hx-90)),by=Math.max(0,Math.floor(hy-140)),bw=Math.min(W,Math.ceil(hx+90))-bx,bh=Math.min(H,Math.ceil(hy+24))-by;
+    if(bw>0&&bh>0){
+    hctx.setTransform(1,0,0,1,0,0);hctx.clearRect(bx,by,bw,bh);hctx.setTransform(tr);desenhaHeroi(hctx,1,true);
+    sctx.setTransform(1,0,0,1,0,0);sctx.clearRect(bx,by,bw,bh);sctx.globalCompositeOperation='source-over';sctx.drawImage(hc,bx,by,bw,bh,bx,by,bw,bh);
+    sctx.globalCompositeOperation='source-in';sctx.fillStyle='#bff4ff';sctx.fillRect(bx,by,bw,bh);sctx.globalCompositeOperation='source-over';
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=.95*furo;
-    for(const [ox,oy] of [[-2,0],[2,0],[0,-2],[0,2]])ctx.drawImage(sc,ox,oy);
-    ctx.globalAlpha=.85*furo;ctx.drawImage(hc,0,0);ctx.restore();
+    for(const [ox,oy] of [[-2,0],[2,0],[0,-2],[0,2]])ctx.drawImage(sc,bx,by,bw,bh,bx+ox,by+oy,bw,bh);
+    ctx.globalAlpha=.85*furo;ctx.drawImage(hc,bx,by,bw,bh,bx,by,bw,bh);ctx.restore();}
   }else furo=Math.max(0,furo-.12);
   for(const [y,f] of npcs)if(y>hero.y)f();
   desenhaBolas();
