@@ -18,6 +18,7 @@ function iniciaBino() {
   const sb = statusBino(nvBino());
   Object.assign(BINO, {x: 655, y: 490, hp: sb.hp, max: sb.hp, mp: sb.mp, mmax: sb.mp, atb: .15, est: {}, tickFeito: false, guard: false, escudo: 0, muralha: 0,
     lunge: 0, ly: 0, rise: 0, charge: 0, flash: 0, dead: false, anim: 'parado', at: 0, back: false, hold: false, pots: JUX.pots});
+  if (!TESTE && typeof vidaAtual === 'function' && JOGO.vida && JOGO.vida.bino) { const v = vidaAtual('bino'); BINO.hp = Math.max(1, v.hp); BINO.mp = v.mp; }   // vida da ultima luta
 }
 // quem o inimigo ataca: provocar ou muralha ativos = sempre o Bino; senao sorteia entre os vivos
 function escolheAlvoAliado() {
@@ -60,13 +61,13 @@ function ganhaExpBino(x) {
 }
 
 /* ---------- menu do Bino ---------- */
-const MAIN_BINO = ['Atacar', 'Habilidades', 'Itens', 'Defender'];
+const MAIN_BINO = ['Atacar', 'Habilidades', 'Itens', 'Defender', 'Fugir'];
 const mainLista = () => (hero.quem === 'bino' ? MAIN_BINO : MAIN);
 function habBinoLista() {
   const lib = HAB_BINO.filter(h => h.nivel <= nvBino() && habLigada(h.id)), prox = HAB_BINO.find(h => h.nivel > nvBino());
   return [...lib, ...(prox ? [prox] : []), {id: 'voltar', nome: 'Voltar'}];
 }
-const binoMainEnabled = i => (i === 2 ? itemList().length > 1 : true);
+const binoMainEnabled = i => (i === 2 ? itemList().length > 1 : i === 4 ? podeFugir() : true);
 const binoHabEnabled = i => { const h = habBinoLista()[i]; return !!h && (h.id === 'voltar' || (h.nivel <= nvBino() && hero.mp >= h.mp)); };
 function chooseBino(i) {
   if (menu.level === 'main') {
@@ -75,6 +76,7 @@ function chooseBino(i) {
     if (i === 0) pedeAlvo('b_atq', 'main', 0);
     else if (i === 1) { menu.level = 'magic'; menu.idx = 0; menu.top = 0; }
     else if (i === 2) { menu.level = 'item'; menu.idx = 0; menu.top = 0; }
+    else if (i === 4) fugir();
     else heroTurn('guard');
     return;
   }

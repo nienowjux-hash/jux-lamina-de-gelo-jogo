@@ -22,33 +22,33 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
 <!-- aparece enquanto os sprites e as cenas das cinematicas (~5 MB) baixam; some quando o jogo comeca -->
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
-<script src="itens_icones.js?v=1795100183"></script>
-<script src="jogo.js?v=1795100183"></script>
-<script src="combate.js?v=1795100183"></script>
-<script src="bino_habs.js?v=1795100183"></script>
-<script src="jux_habs.js?v=1795100183"></script>
-<script src="ecos.js?v=1795100183"></script>
-<script src="sprites_anim.js?v=1795100183"></script>
-<script src="sprites_magias.js?v=1795100183"></script>
-<script src="sprites_ressonancia.js?v=1795100183"></script>
-<script src="sprites_danca.js?v=1795100183"></script>
-<script src="sprites_escudo.js?v=1795100183"></script>
-<script src="sprites_lanca.js?v=1795100183"></script>
-<script src="sprites_nevasca.js?v=1795100183"></script>
-<script src="sprites_zero.js?v=1795100183"></script>
-<script src="sprites_cine.js?v=1795100183"></script>
-<script src="sprites_bino.js?v=1795100183"></script>
-<script src="sprites_batalha.js?v=1795100183"></script>
-<script src="ecos_sprites.js?v=1795100183"></script>
-<script src="inimigos_sprites.js?v=1795100183"></script>
-<script src="efeitos_fx.js?v=1795100183"></script>
-<script src="fx_inimigos_sprites.js?v=1795100183"></script>
-<script src="fx_bino_sprites.js?v=1795100183"></script>
-<script src="efeitos_inimigos.js?v=1795100183"></script>
-<script src="sprites_cine_bino.js?v=1795100183"></script>
-<script src="jux_fx_golpes.js?v=1795100183"></script>
-<script src="fx_vento.js?v=1795100183"></script>
-<script src="bino_batalha.js?v=1795100183"></script>
+<script src="itens_icones.js?v=1795106711"></script>
+<script src="jogo.js?v=1795106711"></script>
+<script src="combate.js?v=1795106711"></script>
+<script src="bino_habs.js?v=1795106711"></script>
+<script src="jux_habs.js?v=1795106711"></script>
+<script src="ecos.js?v=1795106711"></script>
+<script src="sprites_anim.js?v=1795106711"></script>
+<script src="sprites_magias.js?v=1795106711"></script>
+<script src="sprites_ressonancia.js?v=1795106711"></script>
+<script src="sprites_danca.js?v=1795106711"></script>
+<script src="sprites_escudo.js?v=1795106711"></script>
+<script src="sprites_lanca.js?v=1795106711"></script>
+<script src="sprites_nevasca.js?v=1795106711"></script>
+<script src="sprites_zero.js?v=1795106711"></script>
+<script src="sprites_cine.js?v=1795106711"></script>
+<script src="sprites_bino.js?v=1795106711"></script>
+<script src="sprites_batalha.js?v=1795106711"></script>
+<script src="ecos_sprites.js?v=1795106711"></script>
+<script src="inimigos_sprites.js?v=1795106711"></script>
+<script src="efeitos_fx.js?v=1795106711"></script>
+<script src="fx_inimigos_sprites.js?v=1795106711"></script>
+<script src="fx_bino_sprites.js?v=1795106711"></script>
+<script src="efeitos_inimigos.js?v=1795106711"></script>
+<script src="sprites_cine_bino.js?v=1795106711"></script>
+<script src="jux_fx_golpes.js?v=1795106711"></script>
+<script src="fx_vento.js?v=1795106711"></script>
+<script src="bino_batalha.js?v=1795106711"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -627,7 +627,7 @@ function novoInimigo(i,nv,n,tipo){tipo=tipo||'ignarok';const T=TIPOS_INIMIGO[tip
 // quantos inimigos por luta: nivel 1-7: 1, 8-14: 2, 15-21: 3, 22+: 4
 const qtdInimigos=n=>Math.min(4,1+Math.floor((n-1)/7));
 const menu={open:false,level:'main',idx:0};
-const MAIN=['Atacar','Magia','Itens','Defender','Ressonância'];
+const MAIN=['Atacar','Magia','Itens','Defender','Ressonância','Fugir'];
 const ITENS_BAT=['pocao','hipocao','eter','elixir','antidoto','colirio','ecoervas','remedio','fenix'];
 // lista de itens da batalha: no laboratorio so a Pocao (contador da luta); no jogo, o que tem na bolsa
 function itemList(){const l=TESTE||typeof qtd!=='function'?[{id:'pocao',n:hero.pots}]:ITENS_BAT.filter(id=>qtd(id)>0).map(id=>({id,n:qtd(id)}));l.push({id:'voltar'});return l;}
@@ -765,6 +765,7 @@ function newBattle(){
   if(enc&&enc.elite){const ai=Math.max(0,tipos.indexOf('lobo')),A=ENEMIES[ai];A.elite=true;A.hp=A.max=Math.round(A.max*2.2);A.forca*=1.3;A.name='Lobo Alfa';}   // lobo alfa: raro, forte, paga 3x
   hero=JUX;Object.assign(JUX,{max:sh.hp,mmax:sh.mp});
   Object.assign(JUX,{branco:false,est:{},tickFeito:false,vontadeUsada:false,espelho:0,hp:sh.hp,mp:sh.mp,atb:.3,res:0,pots:(G.lutaReal||!TESTE)&&typeof qtd==='function'&&!TESTE?qtd('pocao'):3+Math.floor((n-1)/2),guard:false,escudo:0,ang:.12,lunge:0,ly:0,rise:0,charge:0,flash:0,dead:false,anim:'parado',at:0,back:false,hold:false});
+  if(!TESTE&&typeof vidaAtual==='function'&&JOGO.vida&&JOGO.vida.jux){const v=vidaAtual('jux');JUX.hp=Math.max(1,v.hp);JUX.mp=v.mp;}   // vida da ultima luta
   if(temBino())iniciaBino();
   menu.open=false;menu.level='main';menu.idx=0;menu.top=0;G.busy=false;G.dim=0;G.autoBuff=false;G.scene='battle';G.t0=performance.now();G.recompensa=null;parts.length=fx.length=pops.length=0;
   climaZera();
@@ -1544,15 +1545,29 @@ async function win(){G.busy=true;hero=JUX;musicaSome(1600);climaFim();
   if(!TESTE&&typeof daItem==='function')for(const d of drops)daItem(d.id,d.n);
   G.recompensa={...ganhaExp(si.exp*k),gil:si.gil*k,drops,eco:(!TESTE&&typeof ganhaPE==='function')?ganhaPE(Math.max(3,Math.round(si.exp*k/25))):null};if(!TESTE&&typeof JOGO==='object'){JOGO.gil+=si.gil*k;JOGO.vitorias=(JOGO.vitorias||0)+1;{const bs=JOGO.besta=JOGO.besta||{};for(const e of ENEMIES)if(e.tipo)bs[e.tipo]=(bs[e.tipo]||0)+1;}if(JOGO.cap1)JOGO.cap1.lobos=(JOGO.cap1.lobos||0)+ENEMIES.filter(e=>e.tipo==='lobo').length;if(G.encontro&&G.encontro.prova){if(G.encontro.prova.startsWith('chefe_')){(JOGO.chefes=JOGO.chefes||{})[G.encontro.prova.slice(6)]=true;JOGO.chefePend=G.encontro.prova.slice(6);}else (JOGO.provas=JOGO.provas||{})[G.encontro.prova]='vencida';}if(JOGO.buff){JOGO.buff.lutas--;if(JOGO.buff.lutas<=0)JOGO.buff=null;}salvaJogo();}
   if(temBino())G.recompensa.bino=ganhaExpBino(si.exp);
+  if(!TESTE&&typeof guardaVida==='function'){   // HP/MP continuam para a proxima luta; quem subiu de nivel enche
+    if(G.recompensa.para>G.recompensa.de)encheVida('jux');else guardaVida('jux',Math.max(1,JUX.hp),JUX.mp);
+    if(temBino()){const rb=G.recompensa.bino;if(rb&&rb.para>rb.de)encheVida('bino');else guardaVida('bino',Math.max(1,BINO.hp),BINO.mp);}
+    salvaJogo();}
   som('recompensa',.7);if(G.recompensa.para>G.recompensa.de)setTimeout(()=>som('nivel',.85),500);
   G.scene='win';G.t0=G.t;G.busy=false;}
 async function lose(){G.busy=true;hero=JUX;musicaSome(1200);
   if(temBino()&&!BINO.dead&&BINO_D){BINO.dead=true;BINO.guard=false;BINO.anim=(temEst(BINO,'furia')&&BINO_D.anims.derrota_furia)?'derrota_furia':'derrota';BINO.at=0;BINO.hold=false;BINO.back=false;}
   if(BAT&&BAT.anims.derrota&&!JUX.dead){hero.guard=false;setAnim('derrota');await wait(1500);}else await wait(600);   // folha nova: cambaleia, ajoelha na espada e cai
-  hero.dead=true;await wait(900);G.scene='lose';G.busy=false;}
+  hero.dead=true;if(!TESTE&&typeof encheVida==='function'){encheVida();salvaJogo();}   // perdeu: a Vovo arrasta de volta e cuida (tudo cheio)
+  await wait(900);G.scene='lose';G.busy=false;}
 
 /* ---------- menu ---------- */
-function mainEnabled(i){if(hero.quem==='bino')return binoMainEnabled(i);if(i===2)return itemList().length>1;if(i===4)return liberada('res')&&hero.res>=100&&resList().length>1;return true;}
+// FUGIR (pedido 2026-11-19): sai da luta sem ganhar NADA (nem EXP, gil ou item, mesmo com inimigo ja derrotado); HP/MP ficam como estao.
+// Nao vale nas lutas de prova e de chefe.
+const podeFugir=()=>!!(G.encontro&&!G.encontro.prova&&!G.encontro.chefe&&!G.busy);
+async function fugir(){if(!podeFugir()){som('ui_erro',.6);banner('Não dá para fugir desta luta!');return;}
+  G.busy=true;menu.open=false;banner('Fugiu!');som('whoosh',.7);musicaSome(900);
+  for(const h of [JUX,...(temBino()?[BINO]:[])]){h.guard=false;h.back=true;h.hold=false;if(h.anim!=='derrota')h.anim=h.quem==='bino'&&BINO_D&&BINO_D.anims.corrida?'corrida':(BAT&&BAT.anims.corrida?'corrida':h.anim);h.at=0;tween(h,'lunge',-420,900,easeIn);}
+  if(!TESTE&&typeof guardaVida==='function'){guardaVida('jux',Math.max(1,JUX.hp),JUX.mp);if(temBino())guardaVida('bino',Math.max(1,BINO.hp),BINO.mp);salvaJogo();}
+  await wait(1000);try{localStorage.setItem('jux_volta_luta',JSON.stringify({res:'fuga',t:Date.now()}));}catch(e){}
+  location.href=jp(G.encontro.volta||'vila.html');}
+function mainEnabled(i){if(hero.quem==='bino')return binoMainEnabled(i);if(i===5)return podeFugir();if(i===2)return itemList().length>1;if(i===4)return liberada('res')&&hero.res>=100&&resList().length>1;return true;}
 function magicEnabled(i){if(hero.quem==='bino')return binoHabEnabled(i);const h=magicList()[i];if(h.id!=='voltar'&&temEst(hero,'silencio')&&!(h.eco&&HABS[h.hab].t==='f'))return false;return h.id==='voltar'||(h.feito&&h.nivel<=prog.nivel&&hero.mp>=h.mp);}
 // com o Zero Absoluto (nivel 30) o comando Ressonancia abre a escolha entre as duas
 const resList=()=>[...(habLigada('res')?[{id:'res',nome:'Rei do Inverno (um alvo)'}]:[]),...(habLigada('zero')?[{id:'zero',nome:'Zero Absoluto (todos)'}]:[]),...(liberada('res3')&&habLigada('res3')?[{id:'res3',nome:'Coroa Boreal (todos)'}]:[]),...(liberada('final')&&habLigada('final')?[{id:'final',nome:'Era do Gelo (todos)'}]:[]),{id:'voltar',nome:'Voltar'}];
@@ -1562,7 +1577,7 @@ function pedeAlvo(kind,volta,vidx){const vivos=inimigos();
   if(vivos.length<=1){enemy=vivos[0]||enemy;heroTurn(kind);return;}
   menu.level='alvo';menu.acao=kind;menu.volta=[volta,vidx];menu.idx=Math.max(0,vivos.indexOf(enemy));menu.top=0;}
 // o menu mostra 5 linhas; com mais itens ele rola acompanhando o cursor
-const VIS=5;
+const VIS=6;   // 6 linhas: cabe o Fugir no menu principal sem rolar
 function fixTop(){menu.top=menu.top||0;if(menu.idx<menu.top)menu.top=menu.idx;if(menu.idx>=menu.top+VIS)menu.top=menu.idx-VIS+1;}
 function choose(i){
   if(G.busy||!menu.open)return;
@@ -1579,6 +1594,7 @@ function choose(i){
     som('ui_ok',.6);
     if(i===0)pedeAlvo('attack','main',0);else if(i===1){menu.level='magic';menu.idx=0;menu.top=0;}
     else if(i===2){menu.level='item';menu.idx=0;menu.top=0;}else if(i===3)heroTurn('guard');
+    else if(i===5)fugir();
     else if(liberada('zero')){menu.level='res';menu.idx=0;menu.top=0;}else pedeAlvo('res','main',4);
   }else{
     const h=magicList()[i];
@@ -2337,7 +2353,7 @@ requestAnimationFrame(frame);
 (function(){if(TESTE)return;try{const s=JSON.parse(localStorage.getItem('jux_encontro')||'null');
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
-<script src="bino_cines.js?v=1795100183"></script>
-<script src="tela_cheia.js?v=1795100183"></script>
+<script src="bino_cines.js?v=1795106711"></script>
+<script src="tela_cheia.js?v=1795106711"></script>
 </body>
 </html>

@@ -126,6 +126,12 @@ function carregaJogo(){
   }catch(e){}
   return false;
 }
+// VIDA ENTRE LUTAS (pedido 2026-11-19: 'voltar com a mesma vida da ultima batalha'): JOGO.vida = {jux:{hp,mp}, bino:{hp,mp}}
+// (sem registro = cheio). Enche so ao subir de nivel, no santuario de cristal, conversando com a Vovo ou perdendo (a Vovo cuida).
+function guardaVida(q,hp,mp){JOGO.vida=JOGO.vida||{};JOGO.vida[q]={hp:Math.max(0,Math.round(hp)),mp:Math.max(0,Math.round(mp))};}
+function encheVida(q){if(!JOGO.vida)return;if(q)delete JOGO.vida[q];else JOGO.vida={};}
+function vidaAtual(q){const s=q==='bino'?(typeof statusBino==='function'&&JOGO.bino?statusBino(JOGO.bino.nivel):{hp:400,mp:40}):statusJux(),v=(JOGO.vida||{})[q];
+  return v?{hp:Math.min(v.hp,s.hp),mp:Math.min(v.mp,s.mp),max:s.hp,mmax:s.mp}:{hp:s.hp,mp:s.mp,max:s.hp,mmax:s.mp};}
 function salvaJogo(){if(window.LAB_FIXO)return;try{localStorage.setItem(SAVE_J,JSON.stringify(JOGO));localStorage.setItem('jux_progresso',JSON.stringify({nivel:JOGO.nivel,exp:JOGO.exp}));}catch(e){}}
 function temSave(){try{return !!localStorage.getItem(SAVE_J);}catch(e){return false;}}
 function novoJogo(){try{localStorage.removeItem(SAVE_J);localStorage.removeItem('jux_progresso');localStorage.removeItem('jux_abertura_vista');}catch(e){}}

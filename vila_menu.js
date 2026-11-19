@@ -133,7 +133,8 @@ function uiFala(id){
 function escolhe(i){const e=UI.escolha;UI.escolha=null;
   if(e.id==='prova'){const q=e.prova||'fenrir';if(i===0&&q==='skoll'&&typeof tocaFilme==='function'&&typeof CENAS_SKOLL!=='undefined'){tocaFilme(CENAS_SKOLL,IMG_SKOLL,()=>iniciaProva('skoll'));return;}if(i===0&&q==='fenrir'&&typeof tocaFilme==='function'&&typeof CENAS_FENRIR!=='undefined'&&REGIAO==='pico'){tocaFilme(CENAS_FENRIR,IMG_FENRIR,()=>iniciaProva('fenrir'));return;}if(i===0)iniciaProva(q);else if(q.startsWith('chefe_'))aviso('Volte quando estiver pronto.','#c8d8f0');else abreFala(q==='skoll'?'caverna_depois':'prova_depois');return;}   // prova de um Eco: lutar agora ou voltar depois
   if(e.ops[i]==='Comprar'){UI.loja={id:e.id,sel:0,modo:'comprar'};som(SOM.ui_vez,.5);}
-  else if(e.ops[i]==='Conversar'){UI.pulaLoja=true;UI.soConversa=true;abreFala(e.id);UI.pulaLoja=false;UI.soConversa=false;}
+  else if(e.ops[i]==='Conversar'){UI.pulaLoja=true;UI.soConversa=true;abreFala(e.id);UI.pulaLoja=false;UI.soConversa=false;
+    if(e.id==='vovo'&&JOGO.vida&&Object.keys(JOGO.vida).length){encheVida();salvaJogo();setTimeout(()=>aviso('A Vovó enfiou uma sopa quente em todo mundo: HP e MP cheios!','#7dffa8'),400);}}
   else if(e.ops[i]!=='Sair'){UI.pulaLoja=true;abreFala(e.id);UI.pulaLoja=false;}
   else som(SOM.ui_mover,.4);}
 
@@ -187,6 +188,12 @@ function usaItem(id){const it=ITENS[id];
   if(it.repele){JOGO.repelente=it.repele;tiraItem(id);som(SOM.ui_vez,.6);aviso('Repelente ativo: '+it.repele+' passos sem lutas fora da vila.','#c8b0ff');salvaJogo();return;}
   if(it.tipo==='comida'){JOGO.buff={id,lutas:it.lutas};tiraItem(id);som(SOM.ui_vez,.6);aviso(it.nome+': '+it.desc,'#7dffa8');salvaJogo();return;}
   if(EQUIPAVEL.includes(it.tipo)){const q=quemPrevia(it),E=equipDe(q),sl=slotPara(it,q),old=E[sl];E[sl]=id;tiraItem(id);if(old)daItem(old);som(SOM.ui_vez,.6);aviso(it.nome+' equipado'+(grupoMenu().length>1?' em '+NOME_GRUPO[q]:'')+'!','#bff4ff');salvaJogo();return;}
+  if(it.tipo==='consumivel'&&(it.cura||it.mp||it.revive)){   // fora da luta: vai para quem mais precisa (HP ou MP)
+    const quem=grupoMenu(),V=quem.map(q=>[q,vidaAtual(q)]),falta=([q,v])=>it.revive?(v.hp<=1?1:0):it.cura&&it.mp?(1-v.hp/v.max)+(1-v.mp/v.mmax):it.mp?1-v.mp/v.mmax:1-v.hp/v.max;
+    const alvo=V.filter(a=>falta(a)>0).sort((a,b)=>falta(b)-falta(a))[0];
+    if(!alvo){som(SOM.ui_mover,.5);aviso(it.revive?'Ninguém caído.':'Todos já estão cheios.','#c8d8f0');return;}
+    const [q,v]=alvo;let hp=v.hp,mp=v.mp;if(it.revive)hp=Math.max(hp,Math.round(v.max*it.revive));if(it.cura)hp=Math.min(v.max,hp+it.cura);if(it.mp)mp=Math.min(v.mmax,mp+it.mp);
+    guardaVida(q,hp,mp);tiraItem(id);som(SOM.ui_vez,.6);aviso(NOME_GRUPO[q]+': '+(hp>v.hp?'+'+(hp-v.hp)+' HP ':'')+(mp>v.mp?'+'+(mp-v.mp)+' MP':''),'#7dffa8');salvaJogo();return;}
   som(SOM.ui_mover,.5);aviso(it.tipo==='consumivel'?'Use na batalha.':'Não dá para usar agora.','#ff9a9a');}
 function opcoesSlot(s){const E=equipDe(UI.quem);return [...new Set([null,E[s],...itensBolsa().filter(k=>ITENS[k].tipo===tipoDoSlot(s)&&serveEm(ITENS[k],UI.quem))].filter(x=>x!==undefined))];}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
@@ -436,7 +443,7 @@ function cartaoGrupo(x,y,w,h,nome,nv,ret,hp,mp,exp,prox,funcao){
   const ty=y+h*.57;texto('Nv. '+nv,x+12,ty,15,'#e8f6ff');texto(nome,x+12,ty+24,24,'#ffffff');
   texto('Próx. Nv.:',x+12,ty+50,13,'#b8d4ea');texto(prox+' EXP',x+w-12,ty+66,15,'#e8f6ff','right');
   const barra=(yy,lab,cor,val,max,col2)=>{texto(lab,x+12,yy,15,cor);texto(val+'/'+max,x+w-12,yy,16,'#fff','right');ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x+12,yy+5,w-24,5);ctx.fillStyle=col2;ctx.fillRect(x+12,yy+5,(w-24)*Math.min(1,val/max),5);};
-  barra(ty+92,'PV','#6fe0a0',hp,hp,'#3fe08a');barra(ty+122,'PM','#7fc8ff',mp,mp,'#4aa8e8');
+  const va=vidaAtual(ret);barra(ty+92,'PV','#6fe0a0',va.hp,va.max,'#3fe08a');barra(ty+122,'PM','#7fc8ff',va.mp,va.mmax,'#4aa8e8');
   texto(funcao,x+12,ty+152,13,'#b8d4ea');}
 function desenhaHome(){
   ctx.fillStyle='rgba(3,10,24,.82)';ctx.fillRect(0,0,W,H);
@@ -468,7 +475,7 @@ function desenhaMenu(){
     const prox=b.nivel>=100?0:expProx(b.nivel);
     ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(sx,cy+68,220,10);ctx.fillStyle='#ffb27a';ctx.fillRect(sx,cy+68,prox?220*Math.min(1,(b.exp||0)/prox):220,10);
     texto(prox?'EXP '+(b.exp||0)+' / '+prox:'Nível máximo',sx,cy+96,13,'#c8d8f0');
-    [['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crítico %'],['esq','Esquiva %']].forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(String(s[k]),sx+140,yy,15,'#fff','right');
+    const vb=vidaAtual('bino');[['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crítico %'],['esq','Esquiva %']].forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(k==='hp'?vb.hp+'/'+s.hp:k==='mp'?vb.mp+'/'+s.mp:String(s[k]),sx+140,yy,15,'#fff','right');
       const extra=s[k]-s.base[k];if(extra)texto((extra>0?'+':'')+extra,sx+188,yy,13,extra>0?'#7dffa8':'#ff9a9a','right');});
     // atributos de base (crescem com o nivel), embaixo do retrato igual ao Jux
     [['for','FOR'],['vig','VIG'],['mag','MAG'],['esp','ESP'],['vel','VEL'],['sor','SOR']].forEach(([k,n],i)=>{const bx=cx+8+(i%3)*68,by=cy+218+Math.floor(i/3)*22;
@@ -484,7 +491,7 @@ function desenhaMenu(){
     ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(sx,cy+68,220,10);ctx.fillStyle='#7fd6f5';ctx.fillRect(sx,cy+68,prox?220*JOGO.exp/prox:220,10);
     texto(prox?'EXP '+JOGO.exp+' / '+prox:'Nível máximo',sx,cy+96,13,'#c8d8f0');
     const nomes=[['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crítico %'],['esq','Esquiva %']];
-    nomes.forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(String(s[k]),sx+140,yy,15,'#fff','right');
+    const vj=vidaAtual('jux');nomes.forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(k==='hp'?vj.hp+'/'+s.hp:k==='mp'?vj.mp+'/'+s.mp:String(s[k]),sx+140,yy,15,'#fff','right');
       const extra=s[k]-s.base[k];if(extra)texto((extra>0?'+':'')+extra,sx+188,yy,13,extra>0?'#7dffa8':'#ff9a9a','right');});
     // atributos de base (crescem com o nivel)
     [['for','FOR'],['vig','VIG'],['mag','MAG'],['esp','ESP'],['vel','VEL'],['sor','SOR']].forEach(([k,n],i)=>{const bx=cx+8+(i%3)*68,by=cy+218+Math.floor(i/3)*22;
