@@ -656,7 +656,11 @@ const cenaDur=C=>C.reduce((a,c)=>a+c[1],0);
 function cenaQuadro(C,t){let a=0;for(const c of C){if(t<a+c[1])return {q:c[0],u:(t-a)/c[1],o:c[2]((t-a)/c[1]),ini:a};a+=c[1];}const c=C[C.length-1];return {q:c[0],u:1,o:c[2](1),ini:a-c[1]};}   // cena animada tocando (o Jux fica parado): {tipo, t, ...}
 const PONTO_LENHA={id:'prep_lenha',x:PREP_PILHA[0],y:PREP_PILHA[1]-6,r:0};if(NA_VILA)V.pontos.push(PONTO_LENHA);
 const caca={on:false,toques:0,susto:0,provoca:0,vx:0,vy:0,dir:1,pega:null,dist:0,lado:true,fuga:0,final:false};
-const porcoOk=(x,y)=>livre(x,y)&&!(x>650&&x<830&&y<652)&&Math.hypot(x-PREP_PEGA[0],y-PREP_PEGA[1])>34;   // atras da fogueira ele some na arte do fogo; longe do Bino
+// onde o porco pode andar: a praca (acima dos postes do portao), a passagem por baixo da fogueira (entre os postes),
+// fora do circulo de pedras da fogueira (antes ele entrava nas pedras e ficava preso tremendo) e longe do Bino
+const porcoArea=(x,y)=>x>=574&&x<=916&&y>=626&&y<=((x>672&&x<802)?702:678);
+const foraDoFogo=(x,y)=>((x-742)/74)**2+((y-648)/45)**2>1;
+const porcoOk=(x,y)=>porcoArea(x,y)&&foraDoFogo(x,y)&&livre(x,y)&&Math.hypot(x-PREP_PEGA[0],y-PREP_PEGA[1])>34;
 const binoLenha={on:false,x:0,y:0,dist:0,falou:0,olha:'direita'};
 // abre a tarefa ao falar (antes da loja e das missoes)
 function prepAbre(id){if(!emPreparo()||prepCena)return false;
@@ -665,7 +669,7 @@ function prepAbre(id){if(!emPreparo()||prepCena)return false;
   if(id==='borin'&&!prepFeita('borin')){fala={linhas:[['Borin','FORASTEIRO! Segura essa escada pra mim? Não, a outra ponta!'],['Jux','Seguro. Mas eu não me responsabilizo pela gravidade.']],i:0,letras:0,
     fim:()=>{prepCena={tipo:'borin',t:0};}};som(SOM.ui_vez,.5);return true;}
   if(id==='bacon'&&!prepFeita('pao')&&!caca.on){fala={linhas:[['Jux','Sir Bacon. Isso na sua boca é o pão da Ingrid?'],['Sir Bacon','…Oinc.'],['✦','Ele dispara pela praça! Corra (Shift) e encoste no Sir Bacon 3 vezes.']],i:0,letras:0,
-    fim:()=>{caca.on=true;caca.toques=0;caca.provoca=1;caca.final=false;caca.fuga=0;bacon.x=700;bacon.y=676;}};som(SOM.ui_vez,.5);return true;}
+    fim:()=>{caca.on=true;caca.toques=0;caca.provoca=1;caca.final=false;caca.fuga=0;caca.cansa=0;bacon.x=652;bacon.y=672;}};som(SOM.ui_vez,.5);return true;}
   if(id==='prep_lenha'&&!prepFeita('lenha')&&!binoLenha.on){fala={linhas:[['Oskar','Hm. A lenha da fogueira. Pesada.'],['Bino','…Eu levo.'],['✦','Acompanhe o Bino até a fogueira.']],i:0,letras:0,
     fim:()=>{binoLenha.on=true;binoLenha.x=PREP_PILHA[0]-30;binoLenha.y=676;binoLenha.dist=0;binoLenha.falou=0;}};som(SOM.ui_vez,.5);return true;}
   return false;}
@@ -685,22 +689,29 @@ function prepPasso(dt){if(!emPreparo())return;
     return;}
   // o Sir Bacon foge do Jux pela praca
   if(caca.on){const dx=bacon.x-hero.x,dy=bacon.y-hero.y,d=Math.hypot(dx,dy)||1;caca.susto=Math.max(0,caca.susto-dt);caca.provoca=Math.max(0,caca.provoca-dt);
-    if(caca.final){   // corrida final: vai direto para o Bino (que esta parado esperando) e a cena comeca quando chega
-      const ax=PREP_PEGA[0]+22-bacon.x,ay=PREP_PEGA[1]-bacon.y,dd=Math.hypot(ax,ay);
-      if(dd<5){prepCena={tipo:'pega',t:0,x:PREP_PEGA[0],y:PREP_PEGA[1],jx:hero.x,jy:hero.y};baloes.length=0;return;}
-      const st=Math.min(dd,130*dt);bacon.x+=ax/dd*st;bacon.y+=ay/dd*st;caca.dist+=st;caca.vx=ax/dd;caca.vy=ay/dd;caca.dir=ax<0?-1:1;caca.lado=Math.abs(ax)>=Math.abs(ay)*.6;
+    if(caca.final){   // corrida final ate o Bino por um caminho fixo que passa por BAIXO da fogueira (antes ele empacava em cima dela)
+      if(!caca.rota){caca.rota=[];if(bacon.x>742){if(bacon.y<674){if(bacon.x<840)caca.rota.push([840,bacon.y]);caca.rota.push([840,674]);}caca.rota.push([806,702],[680,702]);}
+        else if(bacon.x>676&&bacon.y>=672)caca.rota.push([bacon.x,Math.max(bacon.y,702)],[680,702]);caca.rota.push([PREP_PEGA[0]+22,PREP_PEGA[1]]);}   // embaixo da fogueira: desce e vai para a esquerda
+      const [tx,ty]=caca.rota[0],ax=tx-bacon.x,ay=ty-bacon.y,dd=Math.hypot(ax,ay),st=Math.min(dd,130*dt);
+      if(dd<3){caca.rota.shift();if(!caca.rota.length){caca.rota=null;prepCena={tipo:'pega',t:0,x:PREP_PEGA[0],y:PREP_PEGA[1],jx:hero.x,jy:hero.y};baloes.length=0;}return;}
+      bacon.x+=ax/dd*st;bacon.y+=ay/dd*st;caca.dist+=st;caca.vx=ax/dd;caca.vy=ay/dd;caca.dir=ax<0?-1:1;caca.lado=Math.abs(ax)>=Math.abs(ay)*.6;
       if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}return;}
-    if(d<15&&caca.susto<=0){caca.toques++;caca.susto=.9;caca.provoca=0;caca.fuga=.55;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
+    if(d<15&&caca.susto<=0){caca.toques++;caca.susto=.9;caca.provoca=0;caca.fuga=.55;caca.cansa=0;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
       if(caca.toques>=3){caca.final=true;caca.fuga=0;return;}}
     caca.fuga=Math.max(0,caca.fuga-dt);
     let vx=0,vy=0;if((d<90||caca.fuga>0)&&caca.provoca<=0){vx=dx/d;vy=dy/d;
-      const [x0,y0,x1,y1]=PREP_PRACA,cx=(x0+x1)/2,cy=(y0+y1)/2,borda=bacon.x<x0+40||bacon.x>x1-40||bacon.y<y0+24||bacon.y>y1-24;
+      const [x0,y0,x1,y1]=[574,626,916,690],cx=hero.x<742?860:620,cy=668,borda=bacon.x<x0+30||bacon.x>x1-30;
       if(borda){const ex=cx-bacon.x,ey=cy-bacon.y,ed=Math.hypot(ex,ey)||1,px=-vy,py=vx;vx=ex/ed*.7+px*.7;vy=ey/ed*.7+py*.7;const n2=Math.hypot(vx,vy)||1;vx/=n2;vy/=n2;}}   // na borda: corre pelo lado em direcao ao meio
     else if(d>130&&caca.provoca<=0&&Math.random()<dt*.35){caca.provoca=rnd(.9,1.5);}
-    const v=caca.provoca>0?0:(caca.fuga>0?150:96),k=Math.min(1,dt*(caca.fuga>0?9:5));   // a direcao muda aos poucos (antes virava de uma vez e parecia rodopiar)
+    // CANSACO: correndo ele vai ficando mais lento e, cansado, para ofegante (e a hora de pegar); cada toque renova o folego
+    caca.cansa=(caca.cansa||0)+(caca.provoca>0?-dt*2:dt);if(caca.cansa>6&&caca.provoca<=0&&caca.fuga<=0){caca.provoca=rnd(1.1,1.6);caca.cansa=3;balao(bacon,'(ofegante)');}
+    const v=caca.provoca>0?0:(caca.fuga>0?150:96*clamp(1-caca.cansa/14,.6,1)),k=Math.min(1,dt*(caca.fuga>0?9:5));   // a direcao muda aos poucos (antes virava de uma vez e parecia rodopiar)
     caca.vx+=(vx-caca.vx)*k;caca.vy+=(vy-caca.vy)*k;let ux=caca.vx,uy=caca.vy;const um=Math.hypot(ux,uy);
-    if(um>.15&&v>0){ux/=um;uy/=um;for(const [ax,ay] of [[ux,uy],[-uy,ux],[uy,-ux]]){const nx=clamp(bacon.x+ax*v*um*dt,PREP_PRACA[0],PREP_PRACA[2]),ny=clamp(bacon.y+ay*v*um*dt,PREP_PRACA[1],PREP_PRACA[3]);
-      if(porcoOk(nx,ny)){caca.dist+=Math.hypot(nx-bacon.x,ny-bacon.y);bacon.x=nx;bacon.y=ny;break;}}}
+    if(um>.15&&v>0){ux/=um;uy/=um;const a0=Math.atan2(uy,ux),passo=v*um*dt;let andou=false;
+      for(const da of [0,.44,-.44,.87,-.87,1.31,-1.31,1.75,-1.75,2.4,-2.4]){const a=a0+da,nx=bacon.x+Math.cos(a)*passo,ny=bacon.y+Math.sin(a)*passo;
+        if(porcoOk(nx,ny)){caca.dist+=passo;bacon.x=nx;bacon.y=ny;if(da){caca.vx=Math.cos(a)*um;caca.vy=Math.sin(a)*um;}andou=true;break;}}
+      if(!andou&&!porcoOk(bacon.x,bacon.y)){let ex,ey;if(!foraDoFogo(bacon.x,bacon.y)){ex=bacon.x-742;ey=bacon.y-648;}else{const alvo=bacon.x<742?[650,664]:[850,664];ex=alvo[0]-bacon.x;ey=alvo[1]-bacon.y;}
+        const ed=Math.hypot(ex,ey)||1;bacon.x+=ex/ed*Math.min(ed,passo);bacon.y+=ey/ed*Math.min(ed,passo);}}   // se caiu num lugar ruim, sai de dentro da fogueira
     if(Math.abs(caca.vx)>.35)caca.dir=caca.vx<0?-1:1;if(caca.lado?Math.abs(caca.vy)>Math.abs(caca.vx)*1.8:Math.abs(caca.vx)>Math.abs(caca.vy)*1.1)caca.lado=!caca.lado;      // troca lado/frente com folga
     if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}}
   // o Bino leva a lenha (so anda com o Jux perto)
