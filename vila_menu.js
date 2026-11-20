@@ -202,9 +202,10 @@ function abreEqLista(){const s=(SLOTS_EQ[UI.sel]||SLOTS_EQ[0])[0],l=listaEq(s);i
 function equipaEscolha(){const s=SLOTS_EQ[UI.sel][0],E=equipDe(UI.quem),cur=E[s]||null,nx=listaEq(s)[UI.eqLista.sel];UI.eqLista=null;
   if(nx===undefined||nx===cur){som(SOM.ui_mover,.4);return;}if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_vez,.6);
   aviso(nx?ITENS[nx].nome+' equipado'+(grupoMenu().length>1?' em '+NOME_GRUPO[UI.quem||'jux']:'')+'!':'Removido','#bff4ff');salvaJogo();}
+function assisteFilme(k){const f=FILMES[k];if(!f||!filmeVisto(f)){som(SOM.ui_mover,.4);aviso('Você ainda não viu esta cutscene','#ff9a9a');return;}UI.cines=null;fecha();reverFilme(f.id);}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
   if(nx===cur)return;if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_mover,.5);salvaJogo();}
-const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Dicas do tutorial','Controles do teclado','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
+const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Dicas do tutorial','Controles do teclado','Rever cutscenes','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
 // SAVE EM ARQUIVO (2026-11-19): leva o progresso para outro navegador/computador (o save fica no navegador, separado por site)
 function exportaSave(){salvaVila();const d={jogo:'jux-lamina-de-gelo',v:1,quando:new Date().toISOString(),dados:{}};
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('jux_')&&k!=='jux_pag_viva'&&k!=='jux_encontro')d.dados[k]=localStorage.getItem(k);}
@@ -225,8 +226,9 @@ function acaoSalvar(i,dir){
   if(i===3){const k=VEL_TEXTO.findIndex(v=>v[0]===OPC.texto),n=(Math.max(0,k)+(dir===-1?VEL_TEXTO.length-1:1))%VEL_TEXTO.length;OPC.texto=VEL_TEXTO[n][0];salvaOpc();som(SOM.ui_mover,.6);return;}
   if(i===4){OPC.tremor=!OPC.tremor;salvaOpc();som(SOM.ui_mover,.6);return;}
   if(i===5){OPC.dicas=OPC.dicas===false;salvaOpc();som(SOM.ui_mover,.6);aviso(OPC.dicas===false?'Dicas do tutorial desligadas':'Dicas do tutorial ligadas',OPC.dicas===false?'#ffb0b0':'#7dffa8');return;}
-  if(i===6){UI.controles=!UI.controles;som(SOM.ui_vez,.5);return;}
-  if(i>6)i-=4;
+  if(i===6){UI.controles=!UI.controles;UI.cines=null;som(SOM.ui_vez,.5);return;}
+  if(i===7){UI.cines={sel:0};UI.controles=false;som(SOM.ui_vez,.5);return;}
+  if(i>7)i-=5;
   if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}
   else if(i===1)exportaSave();else if(i===2)importaSave();
   else if(UI.confirmaNovo){novoJogo();location.reload();}else{UI.confirmaNovo=true;aviso('Toque de novo para confirmar','#ff9a9a');som(SOM.ui_mover,.5);}}
@@ -394,6 +396,11 @@ function uiTecla(k){
   if(!uiAberto()){if(k==='m'||k==='i'||k==='escape'||k==='tab'){abreMenu();return true;}return false;}
   if(UI.loja&&UI.loja.qtd){if(k==='arrowright'||k==='d')mudaQtd(1);else if(k==='arrowleft'||k==='a')mudaQtd(-1);else if(k==='arrowup'||k==='w')mudaQtd(10);else if(k==='arrowdown'||k==='s')mudaQtd(-10);
     else if(k==='enter'||k===' '||k==='e')confirmaQtd();else if(k==='escape'||k==='backspace'){UI.loja.qtd=null;som(SOM.ui_mover,.4);}return true;}
+  // lista de 'Rever cutscenes' aberta (Sistema): as teclas sao dela
+  if(UI.menu&&UI.aba===ABA_SALVAR&&UI.cines&&typeof FILMES!=='undefined'){const n=FILMES.length;
+    if(k==='arrowdown'||k==='s'){UI.cines.sel=(UI.cines.sel+1)%n;som(SOM.ui_mover,.3);}else if(k==='arrowup'||k==='w'){UI.cines.sel=(UI.cines.sel-1+n)%n;som(SOM.ui_mover,.3);}
+    else if(k==='enter'||k===' '||k==='e')assisteFilme(UI.cines.sel);else if(k==='escape'||k==='backspace'||k==='arrowleft'||k==='a'){UI.cines=null;som(SOM.ui_mover,.4);}
+    else if(k==='m'||k==='i'){UI.cines=null;fecha();}return true;}
   // lista de escolha do Equipar aberta: as teclas sao dela
   if(UI.menu&&UI.aba===2&&UI.eqLista){const ops=listaEq(SLOTS_EQ[UI.sel][0]),L=UI.eqLista;
     if(k==='arrowdown'||k==='s'){L.sel=(L.sel+1)%ops.length;som(SOM.ui_mover,.3);}else if(k==='arrowup'||k==='w'){L.sel=(L.sel-1+ops.length)%ops.length;som(SOM.ui_mover,.3);}
@@ -516,7 +523,8 @@ function desenhaHome(){
 }
 function desenhaMenu(){
   if(UI.home){desenhaHome();return;}
-  if(UI.aba!==2||UI.home)UI.eqLista=null;   // lista de escolha do Equipar so vive na aba Equipar
+  if(UI.aba!==2||UI.home)UI.eqLista=null;
+  if(UI.aba!==ABA_SALVAR||UI.home)UI.cines=null;   // lista de escolha do Equipar so vive na aba Equipar
   const x=90,y=40,w=W-180,h=H-90;painel(x,y,w,h);
   const PIT=ABAS.length>8?80:86;
   ABAS.forEach((a,i)=>{const bx=x+10+i*PIT,on=i===UI.aba,fs=a.length>8?12:15;ctx.fillStyle=on?'#7fd6f5':'rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(bx,y+14,PIT-4,30,7);ctx.fill();
@@ -602,20 +610,26 @@ function desenhaMenu(){
       else if(LE)texto(String(agora[k]),xx,by+57,14,'#5a6a88','center');});
     textoCabe(LE?'▲▼ escolhe · ENTER: equipar · Esc ou ◀: voltar · verde = fica melhor, vermelho = fica pior':'ENTER ou toque: escolher e comparar · ◀ ▶: troca rápida (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem':''),cx,y+h-14,13,'#c8d8f0',w-48);
   }else{   // Salvar
-    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*32;linhaSel(cx,yy,560,29,i===UI.sel);texto(o,cx+30,yy+21,16,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
-      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+21,15,'#9fe8ff');
-      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+21,15,OPC.tremor?'#7dffa8':'#ff9a9a');
-      if(i===5)texto(OPC.dicas===false?'Desligado':'Ligado',cx+330,yy+21,15,OPC.dicas===false?'#ff9a9a':'#7dffa8');
-      if(i===6)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+21,15,'#9fe8ff');
-      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+10,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+10,bw*v,10);
+    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*29;linhaSel(cx,yy,560,26,i===UI.sel);texto(o,cx+30,yy+19,15,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
+      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+19,14,'#9fe8ff');
+      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+19,14,OPC.tremor?'#7dffa8':'#ff9a9a');
+      if(i===5)texto(OPC.dicas===false?'Desligado':'Ligado',cx+330,yy+19,14,OPC.dicas===false?'#ff9a9a':'#7dffa8');
+      if(i===6)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+19,14,'#9fe8ff');
+      if(i===7)texto(UI.cines?'▲ fechar':'▶ ver a lista',cx+330,yy+19,14,'#9fe8ff');
+      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+8,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+8,bw*v,10);
         texto(Math.round(v*100)+'%',bx+bw+14,yy+20,15,'#e8f6ff');texto('◀',bx-24,yy+20,15,'#9fe8ff');texto('▶',bx+bw+62,yy+20,15,'#9fe8ff');
         ZONAS.push([bx-30,yy,bx-4,yy+30,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+30,()=>{UI.sel=i;acaoSalvar(i,1);}]);
         ZONAS.push([bx,yy,bx+bw,yy+30,(mx)=>{UI.sel=i;}]);}
       else ZONAS.push([cx,yy,cx+460,yy+30,()=>{UI.sel=i;acaoSalvar(i);}]);});
-    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*32+6,13,'#c8d8f0');
-    if(UI.controles){const px=cx+275,py=cy+7*32-2,pw=300,ph=148;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+24,16,'#ffe27a');
+    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*29+6,13,'#c8d8f0');
+    if(UI.controles){const px=cx+275,py=cy+7*29-2,pw=300,ph=148;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+24,16,'#ffe27a');
       [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+46+k*18,13,'#9fe8ff');texto(b,px+128,py+46+k*18,13,'#e8f6ff');});}
-    if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+7*32+21,17,'#7dffa8');
+    if(UI.cines&&typeof FILMES!=='undefined'){const px=cx+250,pw=w-48-250,lh=30,py=cy+2,ph=FILMES.length*lh+44;painel(px,py,pw,ph);
+      texto('Rever cutscenes',px+16,py+24,16,'#ffe27a');texto('ENTER assiste · Esc fecha',px+pw-14,py+24,11,'#9fb3d9','right');
+      FILMES.forEach((f,k)=>{const yy=py+34+k*lh,vis=filmeVisto(f);linhaSel(px+8,yy,pw-16,lh-4,k===UI.cines.sel);
+        texto((vis?'▶ ':'🔒 ')+(vis?f.nome:'???  (ainda não vista)'),px+30,yy+19,14,vis?'#fff':'#5a6688');
+        ZONAS.push([px+8,yy,px+pw-8,yy+lh-4,()=>{if(UI.cines.sel===k)assisteFilme(k);else UI.cines.sel=k;}]);});}
+    if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+8*29+19,16,'#7dffa8');
   }
   {const dica='M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar';ctx.font='bold 13px "Trebuchet MS"';const dw=ctx.measureText(dica).width+20;
     ctx.fillStyle='rgba(6,16,40,.8)';ctx.beginPath();ctx.roundRect(x+w-6-dw,y+h+8,dw,24,6);ctx.fill();texto(dica,x+w-16,y+h+24,13,'rgba(255,255,255,.75)','right');}

@@ -17,6 +17,24 @@ const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MAPA=new Image();MAPA.src=V.mapa;
+// ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
+const emFestival=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='noite');
+// o festival comeca quando o Jux volta para a vila depois de ter o Fenrir
+const festivalPronto=()=>!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita';
+// mapa da noite de festa (ref/vila/mapa_festival.png: o MESMO desenho, so de noite e enfeitado) e as frentes recortadas dele
+const MAPA_FEST=new Image();let festAplicado=false;
+function aplicaFestival(){if(festAplicado)return;festAplicado=true;
+  // musica da festa (assets/vila/musica_festival: 'Medieval: King's Feast', RandomMind, CC0)
+  {const tocava=MUS&&!MUS.paused;MUSICAS[0]=['Noite do Festival','musica_festival'];if(musI===0){pegaMus();if(tocava&&MUS)MUS.play().catch(()=>{});}if(typeof marcaMus==='function')marcaMus();}
+MAPA_FEST.onload=()=>{MAPA.src=MAPA_FEST.src;
+  for(const f of FR){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;const g=c.getContext('2d');
+    const faz=()=>{g.clearRect(0,0,f.w,f.h);g.drawImage(f.i0||f.i,0,0,f.w,f.h);g.globalCompositeOperation='source-in';g.drawImage(MAPA_FEST,f.x,f.y,f.w,f.h,0,0,f.w,f.h);g.globalCompositeOperation='source-over';f.i0=f.i0||f.i;f.i=c;};
+    if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_FEST.src='assets/vila/mapa_festival.jpg';}
+const POSTES_FEST=[[572,280,598,298],[922,280,948,298]];   // postes de bandeira que so existem no mapa da festa (pe bloqueia)
+const FEST_EFEITO={
+  ingrid:()=>{if(JOGO.cap2.ingrid)return;JOGO.cap2.ingrid=true;JOGO.buff={id:'ensopado',lutas:(ITENS.ensopado&&ITENS.ensopado.lutas)||5};som(SOM.ui_vez,.6);aviso('Ensopado do Festival: bônus de comida ativo!','#7dffa8');salvaJogo();},
+  vovo:()=>{aviso('A cerimônia (o ataque) chega na próxima parte da história.','#ffe27a');},
+};
 // caminhada em 4 direcoes (tools/cut_vila_heroi.py): sem espada no comeco, com espada depois do altar
 const ANDAR={};for(const n in AND){const i=new Image();i.src=AND[n].atlas;ANDAR[n]={...AND[n],i};}
 // Jux NO VENTO do Pico (vento_heroi.js, tools/cut_vento_heroi.py): andando e parado com cabelo e casaco voando (so com a espada)
@@ -39,7 +57,7 @@ const naGelo=(x,y)=>REGIAO==='trilha'?((x-GELO.x)/GELO.rx)**2+((y-GELO.y)/GELO.r
 // ENTRADAS do lago: a borda (pedras e arbustos) e parede; nestas passagens o chao fica livre ate o gelo (sul, sudoeste, sudeste, leste e oeste)
 const ENTR_GELO=[[730,636,810,692],[648,628,722,684],[832,628,925,692],[972,536,1040,602],[440,540,565,604]];
 const naEntrada=(x,y)=>REGIAO==='trilha'&&ENTR_GELO.some(r=>x>=r[0]&&x<=r[2]&&y>=r[1]&&y<=r[3]);
-function livre(x,y){if(naGelo(x,y)||naEntrada(x,y))return true;for(let dy=-4;dy<=2;dy+=2)for(let dx=-6;dx<=6;dx+=2)if(!(ter(x+dx,y+dy)&1))return false;return true;}
+function livre(x,y){if(festAplicado&&POSTES_FEST.some(([a,b,c,d])=>x+6>=a&&x-6<=c&&y+2>=b&&y-4<=d))return false;if(naGelo(x,y)||naEntrada(x,y))return true;for(let dy=-4;dy<=2;dy+=2)for(let dx=-6;dx<=6;dx+=2)if(!(ter(x+dx,y+dy)&1))return false;return true;}
 // cerca que da para pular: devolve o x de pouso do outro lado (ou null)
 // cercas que da para pular: [x0,y0,x1,y1,'h'|'v'] -> ponto de pouso do outro lado (ou null)
 function pouso(x,y,dx){const z=V.pulos.find(([a,b,c,d,t])=>t!=='v'&&x+dx*12>=a&&x+dx*12<=c&&y>=b&&y<=d);if(!z)return null;const px=dx>0?z[2]+9:z[0]-9;return livre(px,y)?{x:px,y}:null;}
@@ -93,6 +111,21 @@ bm.onclick=e=>{e.stopPropagation();if(window.__morta){window.__morta=false;try{l
 
 /* ---------- falas (o Jux e o cara foda, estrategista, e engracado pela confianca; a Aurora e a espada, sarcastica) */
 const FALAS={
+  // ---- CAPITULO 2, PARTE A: a noite do festival (FICHA_CAP2_FESTIVAL.md) ----
+  fest_chega:[['✦','O sol se esconde atrás das montanhas. Uma a uma, as lanternas de Invernália se acendem.'],['✦','É a noite do festival da Rainha do Inverno.'],
+    ['Jux','Luzinhas, fogueira e cheiro de pão. Ou é festa, ou é o melhor dia da minha vida em Elyria.'],['Aurora','As duas coisas, Portador. Aproveite. Noites assim são raras.',0]],
+  fest_vovo:[['Vovó Hilda','Hmpf. Chegou o herói. Tire a neve das botas, que hoje a praça está limpa.'],['Jux','Vovó, a senhora está… sorrindo?'],
+    ['Vovó Hilda','É o festival. Uma noite por ano eu sorrio. Não se acostume.'],['Vovó Hilda','Quando todos estiverem aqui, eu faço o brinde à Rainha do Inverno. Fale com o povo antes. Eles gostam de você, forasteiro sem sombra.']],
+  fest_borin:[['Borin','FORASTEIRO! Um brinde! À espada que eu nunca consegui puxar!'],['Jux','À espada que escolheu o cara mais bonito da vila.'],
+    ['Borin','HA! …Sabe, eu chorei quando ela voou para a sua mão. Hoje eu choro de novo. De alegria. Ou do hidromel.'],['Bino','…Os dois.'],['✦','Vocês brindaram. O Borin deu um abraço que estalou três costelas. Das boas.']],
+  fest_tico:[['Tico','JUX! Meu pai voltou e hoje tem festival! É o melhor dia do MUNDO!'],['Halvard','Ele não para quieto desde o pôr do sol. Obrigado, Jux. De novo.'],
+    ['Tico','Vem dançar perto da fogueira! O Bino também!'],['Bino','…Eu não danço.'],['Tico','TODO MUNDO dança no festival!'],
+    ['✦','O Bino dança. É como ver uma montanha tentando ser uma folha. O Tico ri até cair na neve.'],['Jux','Bino. Isso foi… lindo. Eu nunca vou esquecer.'],['Bino','…Ninguém viu nada.']],
+  fest_ingrid:[['Ingrid','Ensopado do festival! Hoje é de graça para quem trouxe o Halvard de volta!'],['Jux','Eu sabia que heroísmo um dia ia pagar o jantar.'],
+    ['✦','Você ganhou um Ensopado do Festival: bônus de comida nas próximas lutas.']],
+  fest_oskar:[['Oskar','Hm.'],['Jux','Festa boa, hein, Oskar?'],['Oskar','…Cortei a lenha da fogueira inteira.'],['Jux','Então a festa é sua.'],['Oskar','Hm. (sorriso)']],
+  fest_capitao:[['Capitão','Lanternas, música e ninguém vigiando as barracas. Noite perigosa para um ex-pirata.'],['Jux','Ex.'],['Capitão','EX. Comércio Honesto. Quase sempre.']],
+  fest_bacon:[['Sir Bacon','Oinc!'],['Jux','Sir Bacon de laço azul. Elegante. A noite é sua.'],['Sir Bacon','OINC.'],['Aurora','Esse porco me olha como se soubesse de alguma coisa.',0]],
   floco:[['Sr. Floco','Oi. Eu sou o Sr. Floco. Antes eu era maior.', 3],['Jux','Você ficou bem simpático assim.'],['Sr. Floco','O gelo daqui é o melhor de todos. Dica: se você correr e soltar, ele te leva sozinho.', 3],['Jux','Eu sei. Eu já testei. Várias vezes. Com certo prejuízo de dignidade.'],['Sr. Floco','Pode patinar. Só não pise na cenoura.', 1]],
   inicio:[['Jux','…'],['Jux','Tá bom. Vamos ver o que tem por aqui.'],['Sir Bacon','Oinc.']],
   pulo:[['Jux','Estrategista não procura porteira. Estrategista pula.']],
@@ -289,7 +322,7 @@ function baconQuadro(){
   const a=bacon.acao||'respira',c=Q[a]||Q.respira,fps={respira:1.4,fuca:4,dorme:.9,senta:1,coca:5}[a]||1.5;
   return c[Math.floor(bacon.at*fps)%c.length];
 }
-function desenhaBacon(){
+function desenhaBacon(){if(desenhaFesta(bacon))return;
   if(!BAC||!BACI.complete)return;
   const q=baconQuadro(),s=BAC.escala,pulo=bacon.p>=0?-Math.sin(Math.PI*bacon.p)*11:0;
   const quique=bacon.anda&&bacon.p<0?-Math.abs(Math.sin(bacon.animT*Math.PI))*.8:0;
@@ -342,7 +375,7 @@ function desenhaNpc(D,img,x,y,q,espelho,bw,bh){
   const bb=[x-bw,y-bh,x+bw,y];   // objetos na frente dele (atras de casa, cerca, arvore)
   for(const f of FR){if(y>=f.base||bb[2]<f.x||bb[0]>f.x+f.w||bb[3]<f.y||bb[1]>f.y+f.h)continue;ctx.drawImage(f.i,f.x,f.y,f.w,f.h);}
 }
-function desenhaTico(){
+function desenhaTico(){if(desenhaFesta(tico))return;
   if(!TIC||!TICI.complete)return;const Q=TIC.quadros;let q,oy=0,esp=false;
   if(tico.anda){const c=Q[tico.olha];q=c[Math.floor(tico.dist/(tico.corre?8:6))%c.length];oy=-Math.abs(Math.sin(tico.dist/(tico.corre?8:6)*Math.PI))*1.2;}
   else{const a=tico.acao,c=Q[a]||Q.respira;q=c[Math.floor(tico.at*1.6)%c.length];
@@ -392,7 +425,7 @@ function vovoPasso(dt){
   for(const b of baloes)b.v+=dt;for(let i=baloes.length-1;i>=0;i--)if(baloes[i].v>2.6)baloes.splice(i,1);
   if(VOVO_PONTO){VOVO_PONTO.x=vovo.x;VOVO_PONTO.y=vovo.y-4;VOVO_PONTO.r=vovo.fila.length?40:48;}
 }
-function desenhaVovo(){
+function desenhaVovo(){if(desenhaFesta(vovo))return;
   if(!VOV||!VOVI.complete)return;const Q=VOV.quadros;let q,oy=0,esp=false;
   if(vovo.anda){const c=Q[vovo.olha];q=c[Math.floor(vovo.dist/5)%c.length];oy=-Math.abs(Math.sin(vovo.dist/5*Math.PI))*.5;}
   else{const a=vovo.acao,c=Q[a]||Q.respira;q=c[Math.floor(vovo.at*(a==='respira'?.8:1.2))%c.length];
@@ -453,7 +486,7 @@ function borinPasso(dt){
   for(let i=faiscas.length-1;i>=0;i--)if(faiscas[i].v>faiscas[i].d)faiscas.splice(i,1);
   BORIN_PONTO.x=borin.x;BORIN_PONTO.y=borin.y-4;BORIN_PONTO.r=borin.anda?40:48;
 }
-function desenhaBorin(){
+function desenhaBorin(){if(desenhaFesta(borin))return;
   if(!BOR||!BORI.complete)return;const Q=BOR.quadros;let q,oy=0,esp=false;
   if(borin.anda){const c=Q[borin.olha];q=c[Math.floor(borin.dist/5)%c.length];oy=-Math.abs(Math.sin(borin.dist/5*Math.PI))*.6;}
   else{const a=borin.acao,c=Q[a]||Q.ombro;q=c[0];
@@ -513,7 +546,7 @@ function andarilhoPasso(n,dt){
   }
   n.ponto.x=n.x;n.ponto.y=n.y-4;n.ponto.r=n.anda?40:46;
 }
-function desenhaAndarilho(n){
+function desenhaAndarilho(n){if(desenhaFesta(n))return;
   if(!n.img.complete)return;const Q=n.D.quadros;let q,oy=0;
   if(n.anda){const c=Q[n.olha];q=c[Math.floor(n.dist/n.passo)%c.length];oy=-Math.abs(Math.sin(n.dist/n.passo*Math.PI))*.6;}
   else{const c=Q[n.acao]||Q.respira;q=c[Math.floor(n.at*1.2)%c.length];if(n.acao==='ri')oy=-Math.abs(Math.sin(n.at*14))*.6;}
@@ -530,6 +563,46 @@ criaAndarilho('oskar',{rota:[[1100,740],[1080,700],[1000,700],[942,688],[895,675
   oi:[['aceno',1.3],['sopra',1.4]],ola:['Hm.','Frio, hein.','Bom dia. ...Hm.','Lenha não se carrega sozinha, sabe.']});
 // Halvard (tools/cut_npc.py -> vila_npc_halvard.js): na CAVERNA (trilha) aparece acorrentado na cena do resgate e vai se erguendo
 // conforme as falas; na VILA, depois da missao Olhos Roxos, passeia devagar pela praca perto do Tico
+// ===================== A FESTA (FESTA_ANIMACOES.md): na noite do festival cada morador fica num lugar da praca,
+// dancando em loop com a folha de festa (tools/cut_festa.py -> vila_festa.js). Perto do Jux, para de dancar e fica de frente.
+// Figurantes (bardo e casal) so existem na festa. Por cima: lanternas de papel subindo, fogos de gelo e baloes de festa.
+const FESTA_D=window.JUX_FESTA||{},FESTA_I={};for(const k in FESTA_D){const i=new Image();i.src=FESTA_D[k].atlas;FESTA_I[k]=i;}
+// lugar de cada um na praca (x,y do pe), velocidade da danca (quadros por segundo) e baloes que ele solta
+const FESTA_LUGAR={
+  tico:[668,650,7,['Viva o festival!','Pai, olha eu!','Mais rápido!']],halvard:[632,670,6,['Isso, Tico!','Hahaha!']],
+  borin:[574,676,5,['SAÚDE!','À Rainha do Inverno!','Mais hidromel!']],vovo:[826,672,4,['Hmpf. Que música boa.','Ainda tenho ritmo!']],
+  oskar:[952,678,8,['…','(tum tum tum)']],ingrid:[918,632,5,['Ensopado quentinho!','Pão de mel!']],
+  bacon:[780,704,7,['Oinc!','OINC!']],bino:[724,700,5,['…','…Ninguém viu nada.','(dança, sério)']],bardo:[602,638,6,['♪ La la la ♪','♪ Pela Rainha! ♪']],casal:[868,648,6,['Hihi!','Mais uma!']],
+};
+const FIGURANTES=[];
+const festaNpcs=()=>{if(!emFestival())return [];return Object.keys(FESTA_LUGAR).filter(k=>FESTA_D[k]);};
+let festaPosto=false;
+function festaPoe(){if(festaPosto||!emFestival())return;festaPosto=true;
+  const M={tico,vovo,borin,bacon};for(const a of ANDARILHOS)M[a.id]=a;
+  for(const k in FESTA_LUGAR){const L=FESTA_LUGAR[k];const o=M[k];
+    if(o){o.x=L[0];o.y=L[1];o.festa=k;o.anda=false;o.fila=[];o.alvo=null;if(o.ponto){o.ponto.x=o.x;o.ponto.y=o.y-4;}}
+    else if(k==='bardo'||k==='casal'||(k==='bino'&&JOGO.bino&&JOGO.bino.ativo)){FIGURANTES.push({id:k,x:L[0],y:L[1],festa:k});}}}
+// o desenho de festa de um morador (devolve true se desenhou no lugar do desenho normal)
+function desenhaFesta(o){const k=o.festa;if(!k||!emFestival())return false;const D=FESTA_D[k],I=FESTA_I[k];if(!D||!I.complete)return false;
+  const L=FESTA_LUGAR[k],perto=Math.hypot(hero.x-o.x,hero.y-o.y)<46,n=D.quadros.length;
+  const q=perto?D.quadros[n-1]:D.quadros[Math.floor((t*L[2]+(o.x%7))%n)];   // perto do Jux: o ultimo quadro (de frente, sorrindo)
+  desenhaNpc(D,I,o.x,o.y,q,false,12,46);
+  if(!perto&&Math.random()<.0025&&!fala)balao(o,L[3][(Math.random()*L[3].length)|0]);
+  return true;}
+// efeitos da festa no ceu: lanternas de papel subindo e fogos de gelo
+const LANT=[],FOGOS=[];
+function festaCeu(dt){if(!emFestival())return;
+  if(Math.random()<dt*.9)LANT.push({x:rnd(380,1080),y:rnd(560,700),v:rnd(10,16),f:rnd(0,6),a:0});
+  if(Math.random()<dt*.18){const x=rnd(420,1040),y=rnd(110,260);for(let i=0;i<26;i++){const an=i/26*6.283;FOGOS.push({x,y,vx:Math.cos(an)*rnd(30,55),vy:Math.sin(an)*rnd(30,55),v:0,c:Math.random()<.5?'#bff4ff':'#7fd6f5'});}abSom&&Math.random()<.5&&abSom('brilho');}
+  for(let i=LANT.length-1;i>=0;i--){const l=LANT[i];l.y-=l.v*dt;l.x+=Math.sin(t+l.f)*6*dt;l.a+=dt;if(l.y<20)LANT.splice(i,1);}
+  for(let i=FOGOS.length-1;i>=0;i--){const f=FOGOS[i];f.v+=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=18*dt;if(f.v>1.4)FOGOS.splice(i,1);}}
+function desenhaFestaCeu(){if(!emFestival())return;ctx.save();
+  for(const l of LANT){const a=Math.min(1,l.a/1.2)*Math.min(1,(l.y-20)/120);ctx.globalAlpha=.85*a;
+    const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,9);g.addColorStop(0,'rgba(255,200,110,.75)');g.addColorStop(1,'rgba(255,140,40,0)');ctx.fillStyle=g;ctx.fillRect(l.x-9,l.y-9,18,18);
+    ctx.fillStyle='#ffcf7a';ctx.fillRect(l.x-2.5,l.y-3.5,5,6);ctx.fillStyle='#ffefc0';ctx.fillRect(l.x-1,l.y-2,2,3);}
+  ctx.globalCompositeOperation='lighter';
+  for(const f of FOGOS){ctx.globalAlpha=Math.max(0,1-f.v/1.4);ctx.fillStyle=f.c;ctx.fillRect(f.x-1.2,f.y-1.2,2.4,2.4);}
+  ctx.restore();}
 function halvardVila(){if(!NA_VILA||ANDARILHOS.some(n=>n.id==='halvard'))return;if(typeof estadoMissao!=='function'||estadoMissao('olhos_roxos')!=='feita')return;
   criaAndarilho('halvard',{rota:[[520,690],[560,686]],paradas:[0,1],poses:['alivio','respira'],inicio:0,vel:16,passo:7,larg:12,alt:46,
     oi:[['alivio',1.6]],ola:['Foi o Tico que me achou primeiro. Eu só deixei.','Obrigado, forasteiro.','Frio? Isso é verão perto da caverna.']});}
@@ -719,9 +792,11 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
+  if(!fim&&emFestival()&&FEST_EFEITO[id])fim=FEST_EFEITO[id];
   fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // falas que mudam com a historia (pedido 2026-11-19): antes da espada / depois da espada / depois do resgate do Halvard
-function falaDaFase(id){const res=typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita';
+function falaDaFase(id){if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
+  const res=typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita';
   if(id==='vovo'&&hero.espada&&FALAS.vovo_depois)return 'vovo_depois';
   if((id==='borin'||id==='tico')&&hero.espada){const k=id+(res?'_resgate':'_espada');if(FALAS[k])return k;}
   return id;}
@@ -926,7 +1001,20 @@ const IMG_BINO=imgsFilme(CENAS_BINO.map((c,i)=>'assets/cine_bino_entrada/cena_'+
 if(REGIAO==='vila'&&location.hash==='#cine_bino')setTimeout(()=>tocaFilme(CENAS_BINO,IMG_BINO,()=>{}),1500);   // lab: abre a cutscene direto
 const ALTV=new Image();if(V.altar_vazio)ALTV.src=V.altar_vazio.img;let espadaSobe=99;
 function tocaFilme(cenas,imgs,onFim){const t0=Date.now();(function vai(){if(imgs.some(i=>!i.complete||!i.naturalWidth)&&Date.now()-t0<10000)return setTimeout(vai,100);tocaFilme0(cenas,imgs,onFim);})();}
-function tocaFilme0(cenas,imgs,onFim){CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
+// REVER CUTSCENES (menu -> Sistema, pedido 2026-11-20): as cutscenes do mapa, na ordem da historia. visto(): saves de antes
+// desta lista contam pelo progresso; daqui em diante cada uma fica marcada em JOGO.cines quando toca
+const FILMES=[
+  {id:'intro',nome:'A abertura',c:()=>CENAS_INTRO,i:()=>IMG_INTRO,visto:()=>!!JOGO.vila},
+  {id:'espada',nome:'A lâmina no altar',c:()=>CENAS_ESPADA,i:()=>IMG_ESPADA,visto:()=>!!(hero.espada||(JOGO.vila&&JOGO.vila.espada))},
+  {id:'bino',nome:'O Bino entra no time',c:()=>CENAS_BINO,i:()=>IMG_BINO,visto:()=>!!(JOGO.bino&&JOGO.bino.ativo)},
+  {id:'ordem',nome:'A Ordem do Eclipse',c:()=>CENAS_ORDEM,i:()=>IMG_ORDEM,visto:()=>!!JOGO.ordemSabe},
+  {id:'skoll',nome:'O Skoll acorrentado',c:()=>CENAS_SKOLL,i:()=>IMG_SKOLL,visto:()=>typeof estProvas==='function'&&['vencida','feita'].includes(estProvas().skoll)},
+  {id:'fenrir',nome:'O Fenrir aparece',c:()=>CENAS_FENRIR,i:()=>IMG_FENRIR,visto:()=>typeof estProvas==='function'&&(['vencida','feita'].includes(estProvas().fenrir)||estadoEcos().tem.includes('lamina'))},
+  {id:'fenrir_v',nome:'O Fenrir se junta ao Jux',c:()=>CENAS_FENRIR_V,i:()=>IMG_FENRIR_V,visto:()=>typeof estProvas==='function'&&(estProvas().fenrir==='feita'||estadoEcos().tem.includes('lamina'))},
+];
+const filmeVisto=f=>!!((JOGO.cines||{})[f.id])||(()=>{try{return f.visto();}catch(e){return false;}})();
+function reverFilme(id){const f=FILMES.find(x=>x.id===id);if(!f||!filmeVisto(f))return;tocaFilme(f.c(),f.i(),()=>{});}
+function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
 const MUS_CINE={piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
@@ -1138,7 +1226,8 @@ function passo(dt){
   for(const q of trilhasNeve)q.v+=dt;for(let i=trilhasNeve.length-1;i>=0;i--)if(trilhasNeve[i].v>200)trilhasNeve.splice(i,1);
   for(const p of poeira){p.v+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;}while(poeira.length&&poeira[0].v>.6)poeira.shift();
   if(rioPx.length&&!(agTex&&agTex.complete))for(let i=0;i<3;i++)if(Math.random()<dt*20){const k=rioPx[(Math.random()*rioPx.length)|0];brilhoRio.push({x:k%V.w,y:(k/V.w)|0,v:0,l:rnd(3,9)});}
-  if(NA_VILA){vivoPasso(dt);peixePasso(dt);baconPasso(dt);ticoPasso(dt);vovoPasso(dt);borinPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
+  if(NA_VILA&&emFestival()){festaPoe();festaCeu(dt);vivoPasso(dt);peixePasso(dt);}
+  else if(NA_VILA){vivoPasso(dt);peixePasso(dt);baconPasso(dt);ticoPasso(dt);vovoPasso(dt);borinPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
   seguidorPasso(dt);
   if(!NA_VILA&&typeof passoDescobertas==='function')passoDescobertas();
   if(typeof vidaPasso==='function')vidaPasso(dt);
@@ -1292,7 +1381,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -1325,6 +1414,7 @@ function desenha(){
   for(const [y,f] of npcs)if(y>hero.y)f();
   desenhaBolas();
   desenhaEspiritoFenrir();   // o espirito do Fenrir entrando no Jux (depois da cutscene de vitoria)
+  desenhaFestaCeu();   // lanternas de papel e fogos de gelo na noite do festival
   // neve levantando nos passos
   ctx.fillStyle='rgba(235,248,255,.9)';for(const p of poeira){ctx.globalAlpha=1-p.v/.6;ctx.fillRect(p.x,p.y,1.2,1.2);}ctx.globalAlpha=1;
   if(NA_VILA){if(hero.y<520)desenhaLanternas();desenhaFumacas();desenhaBrilhos();}
@@ -1461,6 +1551,9 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
     if(!NA_VILA&&!JOGO.ordemSabe&&JOGO.cap1&&JOGO.cap1.acamp)setTimeout(()=>{if(!fala&&!ab.on&&!uiAberto())contaOrdem();},2600);
     salvaVila();}
   if(!uiCarregado&&TER){uiCarregado=true;uiCarrega();
+    // CAPITULO 2: voltando para a vila com o Fenrir, comeca a noite do festival
+    if(NA_VILA&&festivalPronto()){JOGO.cap2={fase:'noite'};salvaJogo();setTimeout(()=>abreFala('fest_chega'),900);}
+    if(emFestival())aplicaFestival();
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');localStorage.removeItem('jux_volta_luta');if(v&&v.res==='lose'&&Date.now()-v.t<120000)setTimeout(()=>abreFala('derrota'),600);}catch(e){}
     if(JOGO.vila){abVista=true;comecou=true;
       }}

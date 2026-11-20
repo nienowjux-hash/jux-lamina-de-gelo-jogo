@@ -49,3 +49,4 @@ chefe_fenrir.ogg/.mp3 — "Battle! (Rocky Cliffs)", Umplix (OpenGameArt.org), CC
 Vento do Pico do Uivo (assets/vila/vento_pico): "Strong Wind Blowing" - Flixberry Entertainment - CC-BY 3.0/4.0 - https://opengameart.org/content/strong-wind-blowing (trecho 0:05-1:05 emendado em loop). No Pico não toca música: só o vento e os passos.
 
 cine_ordem.ogg/.mp3 — "The Final Boss (Cutscene)", Umplix (OpenGameArt.org), CC0 — https://opengameart.org/content/the-final-bosscutscene (primeiros 55 s). Cutscene "A Ordem do Eclipse" (cena 1 usa espada_lenda; cenas 2-5 esta).
+Musica da noite do festival (assets/vila/musica_festival): "Medieval: King's Feast" (versao loop) - RandomMind - CC0 (credito opcional) - https://opengameart.org/content/medieval-kings-feast

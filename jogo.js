@@ -107,7 +107,7 @@ const VOL=(()=>{const d={mus:1,sfx:1,voz:1};try{return Object.assign(d,JSON.pars
 function tipoAudio(el){if(el.dataset&&el.dataset.tipo)return el.dataset.tipo;const s=el.currentSrc||el.src||'';return /\/voz[_\/]/.test(s)?'voz':/\/musica[\/_]|cine_|bino_[ab]\.|espada_lenda|espada_heroi|intro_piano|chefe_|batalha\./.test(s)?'mus':'sfx';}
 // acerto fino de volume por arquivo (medido em LUFS, 2026-11-19): a musica da vila era ~5 dB mais alta que a dos outros mapas
 // e a da batalha comum ~4 dB mais baixa que a dos chefes. Corrige aqui, sem mexer nos arquivos.
-const GANHO_ARQ=[[/musica_vila_2\./,.7],[/musica_(trilha|caverna|garganta)\./,1.2],[/\/batalha\.(ogg|mp3)/,1.35]];
+const GANHO_ARQ=[[/musica_vila_2\./,.7],[/musica_(trilha|caverna|garganta|festival)\./,1.2],[/\/batalha\.(ogg|mp3)/,1.35]];
 function ganhoArq(el){const s=el.currentSrc||el.src||'';for(const [r,g] of GANHO_ARQ)if(r.test(s))return g;return 1;}
 const AUDIOS_VIVOS=new Set();
 (()=>{const d=Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype,'volume');if(!d||!d.set)return;
