@@ -20,6 +20,7 @@ const MAPA=new Image();MAPA.src=V.mapa;
 // ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
 const emFestival=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='noite');
 // o festival comeca quando o Jux volta para a vila depois de ter o Fenrir
+const diaFestival=()=>NA_VILA&&!!(JOGO.cap2&&(JOGO.cap2.fase==='volta'||JOGO.cap2.fase==='preparo'));
 const festivalPronto=()=>!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita';
 // mapa da noite de festa (ref/vila/mapa_festival.png: o MESMO desenho, so de noite e enfeitado) e as frentes recortadas dele
 const MAPA_FEST=new Image();let festAplicado=false;
@@ -111,6 +112,26 @@ bm.onclick=e=>{e.stopPropagation();if(window.__morta){window.__morta=false;try{l
 
 /* ---------- falas (o Jux e o cara foda, estrategista, e engracado pela confianca; a Aurora e a espada, sarcastica) */
 const FALAS={
+  // ---- CAPITULO 2: a VOLTA para a vila (de dia) e os preparativos do festival (ligacao aprovada 2026-11-20) ----
+  fest_volta:[['✦','Invernália. Cheiro de pão e de fumaça de forja. Nunca pareceu tanto com casa.'],['Tico','JUX! BINO! VOCÊS VOLTARAM!'],
+    ['Tico','E o lobo gigante? Vocês acharam? Ele era do tamanho de uma casa?'],['Jux','Maior. E agora ele mora na minha espada. É complicado.'],
+    ['Tico','…ISSO É A COISA MAIS LEGAL QUE EU JÁ OUVI NA VIDA!'],['Halvard','Tico, deixa eles respirarem. …Que bom que voltaram inteiros.'],['Bino','…Inteiros.'],
+    ['Tico','A Vovó tá procurando vocês! Ela tá na frente da casa dela, mandando em todo mundo!']],
+  dia_vovo:[['Vovó Hilda','Hmpf. Voltaram inteiros. Ótimo.'],['Vovó Hilda','Hoje à noite é o festival da Rainha do Inverno. E eu preciso de braço forte.'],
+    ['Jux','Eu tenho um braço forte e um Bino. Os dois vêm no pacote.'],
+    ['Vovó Hilda','O Borin está pendurando as bandeirinhas e já caiu duas vezes. O porco roubou um pão da Ingrid. E alguém precisa carregar a lenha da fogueira.'],
+    ['Bino','…Eu carrego.'],['Vovó Hilda','Hmpf. Gostei desse.'],['Vovó Hilda','Ajudem o povo e, quando estiverem prontos, venham falar comigo. A noite cai rápido no inverno.']],
+  dia2_vovo:[['Vovó Hilda','Prontos? Então vão se arrumar. Quando o sol cair, a praça acende.'],['Jux','Arrumar? Eu tenho um casaco. Ele É a roupa de festa.'],
+    ['Vovó Hilda','Hmpf. Pelo menos tire a neve dele.']],
+  dia_borin:[['Borin','FORASTEIRO! Segura essa escada! Não, a outra ponta!'],['✦','Você segura a escada. O Borin pendura a última fileira de bandeirinhas azuis… e cai de costas num monte de neve.'],
+    ['Borin','…EU ESTOU BEM! As bandeirinhas também! É isso que importa!'],['Jux','Dez de dez na aterrissagem.']],
+  dia_bacon:[['Sir Bacon','(mastigando)'],['Jux','Sir Bacon. Isso na sua boca é o pão da Ingrid?'],['Sir Bacon','…Oinc.'],
+    ['✦','O Sir Bacon dispara com o pão. Você corre atrás. O Bino só estica um braço e pega o porco no ar.'],['Bino','…Pão.'],
+    ['Jux','Devolve o pão, Sir. Hoje à noite você ganha um laço azul. É uma negociação justa.']],
+  dia_tico:[['Tico','Hoje à noite vai ter dança, música e fogos de gelo! O Oskar cortou lenha pra uma fogueira GIGANTE!'],['Tico','Jux, você dança?'],
+    ['Jux','Eu sou um estrategista. Eu calculo a dança.'],['Tico','…Isso é um não.']],
+  dia_ingrid:[['Ingrid','Aquele porco levou meu melhor pão de mel! Se você achar, devolve? Eu guardo um pedaço pra você.']],
+  dia_oskar:[['Oskar','Hm.'],['Oskar','…Lenha da fogueira. Pronta.'],['Jux','Isso dá para aquecer a vila inteira.'],['Oskar','Hm. É a ideia.']],
   // ---- CAPITULO 2, PARTE A: a noite do festival (FICHA_CAP2_FESTIVAL.md) ----
   fest_chega:[['✦','O sol se esconde atrás das montanhas. Uma a uma, as lanternas de Invernália se acendem.'],['✦','É a noite do festival da Rainha do Inverno.'],
     ['Jux','Luzinhas, fogueira e cheiro de pão. Ou é festa, ou é o melhor dia da minha vida em Elyria.'],['Aurora','As duas coisas, Portador. Aproveite. Noites assim são raras.',0]],
@@ -793,9 +814,11 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
   if(!fim&&emFestival()&&FEST_EFEITO[id])fim=FEST_EFEITO[id];
+  if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Ajude nos preparativos (Borin, Sir Bacon…) e depois volte à Vovó','#ffe27a');};
   fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // falas que mudam com a historia (pedido 2026-11-19): antes da espada / depois da espada / depois do resgate do Halvard
 function falaDaFase(id){if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
+  if(diaFestival()){if(id==='vovo')return JOGO.cap2.fase==='preparo'?'dia2_vovo':'dia_vovo';if(FALAS['dia_'+id])return 'dia_'+id;}
   const res=typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita';
   if(id==='vovo'&&hero.espada&&FALAS.vovo_depois)return 'vovo_depois';
   if((id==='borin'||id==='tico')&&hero.espada){const k=id+(res?'_resgate':'_espada');if(FALAS[k])return k;}
@@ -854,7 +877,17 @@ function iniciaEncontro(){if(transicao)return;transicao=.001;hero.alvo=null;hero
   try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos,nv:elite?nv+1:nv,volta:ENC.volta,elite}));}catch(e){}
   salvaVila();setTimeout(()=>{paraAudio();location.href=jp('batalha.html');},1100);}
 // tela quebrando em cacos de gelo antes da luta
-function desenhaTransicao(){if(!transicao)return;transicao=Math.min(1,transicao+.022);const p=transicao;
+// "NAQUELA NOITE..." (ligacao do Capitulo 2): a tela escurece, aparece o texto, o mapa vira o da festa e a tela clareia na praca
+let noiteFade=null;
+function anoitecer(){if(noiteFade)return;noiteFade={t:0,virou:false};hero.alvo=null;hero.pontoAlvo=null;}
+function noiteFadePasso(dt){const N=noiteFade;if(!N)return;N.t+=dt;for(const k in teclas)teclas[k]=false;hero.alvo=null;
+  if(!N.virou&&N.t>=1.4){N.virou=true;JOGO.cap2.fase='noite';salvaJogo();aplicaFestival();festaPoe();hero.x=722;hero.y=716;hero.olha='cima';}
+  if(N.t>=4.6){noiteFade=null;setTimeout(()=>abreFala('fest_chega'),300);}}
+function desenhaNoiteFade(){const N=noiteFade;if(!N)return;const a=N.t<1.4?N.t/1.4:N.t<3.4?1:Math.max(0,1-(N.t-3.4)/1.2);
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='rgba(2,4,14,'+a+')';ctx.fillRect(0,0,W,H);
+  if(N.t>1.6&&N.t<3.6){const b=Math.min(1,(N.t-1.6)/.5,(3.6-N.t)/.5);ctx.globalAlpha=b;texto('Naquela noite…',W/2,H/2,30,'#ffe9b8','center');}
+  ctx.restore();}
+function desenhaTransicao(){desenhaNoiteFade();if(!transicao)return;transicao=Math.min(1,transicao+.022);const p=transicao;
   ctx.save();ctx.setTransform(1,0,0,1,0,0);
   for(let i=0;i<14;i++){const ang=i/14*6.283+p*2,rr=p*700;ctx.fillStyle=i%2?`rgba(191,244,255,${.55*p})`:`rgba(10,24,60,${.9*p})`;
     ctx.beginPath();ctx.moveTo(W/2,H/2);ctx.lineTo(W/2+Math.cos(ang)*rr,H/2+Math.sin(ang)*rr);ctx.lineTo(W/2+Math.cos(ang+.45)*rr,H/2+Math.sin(ang+.45)*rr);ctx.fill();}
@@ -1534,6 +1567,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
   // LIMITE DE QUADROS (2026-11-20: 'a Twitch trava com o jogo aberto'): no maximo 60 por segundo (monitor de 144 Hz desenhava 144),
   // e 30 quando a janela do jogo nao esta em foco (o jogador olhando outra coisa): sobra placa de video para o resto do PC
   if(now-ult<(document.hasFocus()?12:28)){requestAnimationFrame(quadro);return;}
+  if(noiteFade)noiteFadePasso(Math.min(.05,Math.max(0,(now-ult)/1000)));   // 'Naquela noite...' (depois do limite de quadros: conta o tempo uma vez so)
   tutChecaMapa();const dt=Math.max(0,Math.min(.05,(now-ult)/1000));ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
@@ -1552,7 +1586,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
     salvaVila();}
   if(!uiCarregado&&TER){uiCarregado=true;uiCarrega();
     // CAPITULO 2: voltando para a vila com o Fenrir, comeca a noite do festival
-    if(NA_VILA&&festivalPronto()){JOGO.cap2={fase:'noite'};salvaJogo();setTimeout(()=>abreFala('fest_chega'),900);}
+    if(NA_VILA&&festivalPronto()){JOGO.cap2={fase:'volta'};salvaJogo();setTimeout(()=>abreFala('fest_volta'),900);}
     if(emFestival())aplicaFestival();
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');localStorage.removeItem('jux_volta_luta');if(v&&v.res==='lose'&&Date.now()-v.t<120000)setTimeout(()=>abreFala('derrota'),600);}catch(e){}
     if(JOGO.vila){abVista=true;comecou=true;

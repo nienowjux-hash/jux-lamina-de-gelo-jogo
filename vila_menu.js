@@ -127,7 +127,9 @@ function uiPasso(dt){
 
 // ---------- conversa com quem vende: escolher Comprar / Conversar
 function uiFala(id){
-  if(!LOJAS[id]||uiAberto())return false;const mk=marcaMissao(id);
+  if(!LOJAS[id]||uiAberto())return false;
+  if(id==='vovo'&&typeof diaFestival==='function'&&diaFestival())return false;   // Capitulo 2: na volta/preparativos a Vovo fala direto da historia
+  const mk=marcaMissao(id);
   UI.escolha={id,ops:[...(mk?[mk==='!'?'❗ Missão':mk==='✔'?'✔ Entregar':'Missão']:[]),'Comprar','Conversar','Sair'],sel:0};som(SOM.ui_vez,.5);return true;
 }
 function escolhe(i){const e=UI.escolha;UI.escolha=null;
