@@ -128,11 +128,12 @@ function uiPasso(dt){
 // ---------- conversa com quem vende: escolher Comprar / Conversar
 function uiFala(id){
   if(!LOJAS[id]||uiAberto())return false;
-  if(id==='vovo'&&typeof diaFestival==='function'&&diaFestival())return false;   // Capitulo 2: na volta/preparativos a Vovo fala direto da historia
+  if(id==='vovo'&&typeof diaFestival==='function'&&(diaFestival()||emFestival()))return false;   // na festa ela vai direto ao brinde   // Capitulo 2: na volta/preparativos a Vovo fala direto da historia
   const mk=marcaMissao(id);
   UI.escolha={id,ops:[...(mk?[mk==='!'?'❗ Missão':mk==='✔'?'✔ Entregar':'Missão']:[]),'Comprar','Conversar','Sair'],sel:0};som(SOM.ui_vez,.5);return true;
 }
 function escolhe(i){const e=UI.escolha;UI.escolha=null;
+  if(e.id==='brinde'){if(i===0&&typeof comecaAtaque==='function')comecaAtaque();else aviso('Aproveite a festa. A Vovó espera.','#c8d8f0');return;}
   if(e.id==='prova'){const q=e.prova||'fenrir';if(i===0&&q==='skoll'&&typeof tocaFilme==='function'&&typeof CENAS_SKOLL!=='undefined'){tocaFilme(CENAS_SKOLL,IMG_SKOLL,()=>iniciaProva('skoll'));return;}if(i===0&&q==='fenrir'&&typeof tocaFilme==='function'&&typeof CENAS_FENRIR!=='undefined'&&REGIAO==='pico'){tocaFilme(CENAS_FENRIR,IMG_FENRIR,()=>iniciaProva('fenrir'));return;}if(i===0)iniciaProva(q);else if(q.startsWith('chefe_'))aviso('Volte quando estiver pronto.','#c8d8f0');else abreFala(q==='skoll'?'caverna_depois':'prova_depois');return;}   // prova de um Eco: lutar agora ou voltar depois
   if(e.ops[i]==='Comprar'){UI.loja={id:e.id,sel:0,modo:'comprar'};som(SOM.ui_vez,.5);}
   else if(e.ops[i]==='Conversar'){UI.pulaLoja=true;UI.soConversa=true;abreFala(e.id);UI.pulaLoja=false;UI.soConversa=false;
@@ -374,7 +375,7 @@ const POS_NPC=()=>{if(!NA_VILA)return {};const r={tico,vovo,borin,bacon};for(con
 const NOME_NPC={halvard:'Halvard',tico:'Tico',vovo:'Vovó Hilda',borin:'Borin',bacon:'Sir Bacon',ingrid:'Ingrid',oskar:'Oskar'};
 // marca de missão em cima da cabeça dos moradores (no mapa do jogo)
 const ALT_NPC={tico:34,bacon:24,vovo:46,borin:52,ingrid:48,oskar:52};
-function marcasNoMundo(){if(!NA_VILA)return;const pos=POS_NPC();for(const id in pos){const n=pos[id];if(!n)continue;const mk=marcaMissao(id);if(!mk||mk==='…')continue;
+function marcasNoMundo(){if(!NA_VILA||(typeof emAtaque==='function'&&emAtaque()))return;const pos=POS_NPC();for(const id in pos){const n=pos[id];if(!n)continue;const mk=marcaMissao(id);if(!mk||mk==='…')continue;
   const b=Math.sin(t*4)*3,x=W/2+(n.x-cam.x)*Z,y=H/2+(n.y-(ALT_NPC[id]||46)-cam.y)*Z+b;ctx.save();ctx.fillStyle=mk==='!'?'#ffd84a':'#7dffa8';ctx.strokeStyle='#3a2a00';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-6,9,11,0,0,6.283);ctx.fill();ctx.stroke();
     ctx.beginPath();ctx.moveTo(x-4,y+3);ctx.lineTo(x,y+10);ctx.lineTo(x+4,y+3);ctx.fill();ctx.font='bold 15px "Trebuchet MS"';ctx.textAlign='center';ctx.fillStyle='#2a1a00';ctx.fillText(mk,x,y-1);ctx.restore();}}
 // ---------- entrada

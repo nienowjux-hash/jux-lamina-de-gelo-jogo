@@ -49,6 +49,20 @@ const TIPOS_INIMIGO={
     atk:n=>20+1.5*(n-1),atkm:n=>30+2*(n-1),def:n=>8+.9*(n-1),defm:n=>16+1.3*(n-1),
     golpes:[{nome:'Esfera de Trevas',t:'m',el:'trevas',poder:34,peso:5,est:['cego',2,.3]},{nome:'Drenar Cristal',t:'m',el:'trevas',poder:46,peso:2,est:['silencio',2,.35]},{nome:'Toque do Vazio',t:'m',el:'trevas',poder:28,peso:2,est:['lento',2,.4]}],
     drops:[['eter',.3],['cristal',.15,1],['hipocao',.08,1]]},
+  // ---- Capitulo 2, Parte B (FICHA_CAP2_ATAQUE.md): moradores consumidos pela sombra. Vencer NAO mata: desmaiam e voltam a ser gente.
+  // Golpes em comum: Lamento (abaixa o ataque = Medo) e Abraco da Sombra (perde a vez). Cada uma tem o golpe dela (especial no index.html).
+  sombra_oskar:{nome:'Sombra do Oskar',el:'trevas',reacao:{luz:1.6,gelo:1.1,trevas:.5},fisico:1,magico:1,quebra:200,hp:.8,exp:1.2,gil:0,vel:1.3,imuneEst:['sono'],
+    atk:n=>20+1.6*(n-1),atkm:n=>26+1.8*(n-1),def:n=>10+1*(n-1),defm:n=>12+1.1*(n-1),
+    golpes:[{nome:'Lamento',t:'m',el:'trevas',poder:30,peso:4,est:['medo',2,.45]},{nome:'Abraço da Sombra',t:'f',poder:34,peso:2,est:['atordoado',1,.3]}],
+    drops:[]},
+  sombra_ingrid:{nome:'Sombra da Ingrid',el:'trevas',reacao:{luz:1.6,gelo:1.1,trevas:.5},fisico:1,magico:1,quebra:180,hp:.75,exp:1.2,gil:0,vel:1.3,imuneEst:['sono'],
+    atk:n=>18+1.5*(n-1),atkm:n=>28+1.9*(n-1),def:n=>9+.9*(n-1),defm:n=>13+1.2*(n-1),
+    golpes:[{nome:'Lamento',t:'m',el:'trevas',poder:30,peso:3,est:['medo',2,.45]},{nome:'Sopa Amarga',t:'m',el:'trevas',poder:30,peso:4,est:['veneno',3,.6]}],
+    drops:[]},
+  sombra_borin:{nome:'Sombra do Borin',el:'trevas',reacao:{luz:1.6,gelo:1.1,trevas:.5},fisico:1,magico:1.1,quebra:240,hp:1,exp:1.4,gil:0,vel:1.15,imuneEst:['sono','atordoado'],
+    atk:n=>24+1.9*(n-1),atkm:n=>20+1.4*(n-1),def:n=>14+1.2*(n-1),defm:n=>9+.9*(n-1),
+    golpes:[{nome:'Lamento',t:'m',el:'trevas',poder:28,peso:2,est:['medo',2,.45]},{nome:'Abraço da Sombra',t:'f',poder:38,peso:3,est:['atordoado',1,.3]}],
+    drops:[]},
   // chefe da area (caverna): o lobo que devora o sol, acorrentado pelo Eclipse
   skoll:{nome:'Skoll, o Alfa',el:'gelo',reacao:{gelo:.5,fogo:1.5,luz:1.4},fisico:1,magico:1,quebra:220,hp:3.2,exp:8,gil:5,vel:1.2,
     atk:n=>34+2.1*(n-1),atkm:n=>30+1.9*(n-1),def:n=>16+1.4*(n-1),defm:n=>16+1.4*(n-1),
@@ -124,6 +138,7 @@ const ESTADOS={
   aurora:   {nome:'Aurora',    cor:'#7dffc8',ruim:false,dano:1.25},
   regen:    {nome:'Regen',     cor:'#7dffa8',ruim:false,tick:.06},
   muralha:  {nome:'Muralha',   cor:'#7fb8ff',ruim:false,recebido:.7},
+  fraqueza: {nome:'Fraqueza',  cor:'#c06aff',ruim:true, recebido:1.3},   // Tambor do Medo (Sombra do Oskar): recebe +30% de dano
 };
 // imunidades por tipo de inimigo (chefes costumam ser imunes a atordoar e sono)
 function poeEstado(alvo,nome,turnos,chance,tipoInim){

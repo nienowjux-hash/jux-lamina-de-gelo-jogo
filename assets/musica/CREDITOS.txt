@@ -50,3 +50,7 @@ Vento do Pico do Uivo (assets/vila/vento_pico): "Strong Wind Blowing" - Flixberr
 
 cine_ordem.ogg/.mp3 — "The Final Boss (Cutscene)", Umplix (OpenGameArt.org), CC0 — https://opengameart.org/content/the-final-bosscutscene (primeiros 55 s). Cutscene "A Ordem do Eclipse" (cena 1 usa espada_lenda; cenas 2-5 esta).
 Musica da noite do festival (assets/vila/musica_festival): "Medieval: King's Feast" (versao loop) - RandomMind - CC0 (credito opcional) - https://opengameart.org/content/medieval-kings-feast
+
+cine_ataque.ogg/.mp3 — "The Confrontation", Umplix (OpenGameArt.org), CC0 — https://opengameart.org/content/the-confrontation. Cutscene "A aurora preta" (Cap. 2, Parte B), da cena 2 em diante (a cena 1 continua com a musica do festival).
+Musica da vila em ataque (assets/vila/musica_ataque): "Evil Awaits" - bosslevelaudio - CC-BY 3.0 - https://opengameart.org/content/evil-awaits (credito obrigatorio: bosslevelaudio).
+Vozes da cutscene "A aurora preta" (assets/cine_ataque/voz_ataque_*): geradas pelo usuario; a voz do Arauto recebeu eco e uma segunda voz grave (ffmpeg).

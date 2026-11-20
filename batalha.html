@@ -26,7 +26,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="itens_icones.js?v=1795117438"></script>
 <script src="jogo.js?v=1795228300"></script>
 <script src="tutorial.js?v=1795226200"></script>
-<script src="combate.js?v=1795138379"></script>
+<script src="combate.js?v=1795241200"></script>
 <script src="bino_habs.js?v=1795225300"></script>
 <script src="jux_habs.js?v=1795117438"></script>
 <script src="ecos.js?v=1795225300"></script>
@@ -42,11 +42,11 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_bino.js?v=1795117438"></script>
 <script src="sprites_batalha.js?v=1795117438"></script>
 <script src="ecos_sprites.js?v=1795117438"></script>
-<script src="inimigos_sprites.js?v=1795117438"></script>
+<script src="inimigos_sprites.js?v=1795241500"></script>
 <script src="efeitos_fx.js?v=1795117438"></script>
-<script src="fx_inimigos_sprites.js?v=1795117438"></script>
+<script src="fx_inimigos_sprites.js?v=1795241500"></script>
 <script src="fx_bino_sprites.js?v=1795117438"></script>
-<script src="efeitos_inimigos.js?v=1795117438"></script>
+<script src="efeitos_inimigos.js?v=1795241000"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
@@ -429,6 +429,9 @@ const DESENHO_INIM={ignarok:[drawEnemy,7],
   presa:[drawInimSprite('presa',2.9),2,{sprite:1,sombra:150}],
   bolotao:INIM.bolotao?[drawInimSprite('bolotao',2),4,{sprite:1,sombra:170}]:[drawBolota,7],
   acolito:[drawInimSprite('acolito',2.2,5),2,{sprite:1,sombra:50}],
+  sombra_oskar:[drawInimSprite('sombra_oskar',2),2,{sprite:1,sombra:60}],
+  sombra_ingrid:[drawInimSprite('sombra_ingrid',2.2),2,{sprite:1,sombra:52}],
+  sombra_borin:[drawInimSprite('sombra_borin',1.8),2.4,{sprite:1,sombra:86}],
   skoll:[drawInimSprite('skoll',2.2),2,{sprite:1,sombra:130}],
   fenrir_prova:[drawFenrirProva,1]};
 
@@ -455,7 +458,7 @@ const bg=document.createElement('canvas');bg.width=W;bg.height=H;
 })();
 const snow=Array.from({length:110},()=>({x:rnd(0,W),y:rnd(0,H),r:rnd(1,2.6),v:rnd(20,60),w:rnd(0,6)}));
 // fundos desenhados (imagem do usuario) para cada regiao; por cima o jogo anima aurora, brilho do cristal, lago, nevoa e neve
-const FUNDOS={trilha:'assets/batalha/fundo_trilha.jpg',trilha2:'assets/batalha/fundo_trilha2.jpg',garganta:'assets/batalha/fundo_garganta.jpg',vale:'assets/batalha/fundo_vale.jpg',caverna:'assets/batalha/fundo_caverna.jpg',skoll:'assets/batalha/fundo_skoll.jpg',santuario:'assets/batalha/fundo_santuario.jpg',pico:'assets/batalha/fundo_pico.jpg'},FUNDO_IMG={};
+const FUNDOS={ataque:'assets/batalha/fundo_ataque.jpg',trilha:'assets/batalha/fundo_trilha.jpg',trilha2:'assets/batalha/fundo_trilha2.jpg',garganta:'assets/batalha/fundo_garganta.jpg',vale:'assets/batalha/fundo_vale.jpg',caverna:'assets/batalha/fundo_caverna.jpg',skoll:'assets/batalha/fundo_skoll.jpg',santuario:'assets/batalha/fundo_santuario.jpg',pico:'assets/batalha/fundo_pico.jpg'},FUNDO_IMG={};
 for(const k in FUNDOS){const i=new Image();i.src=FUNDOS[k];FUNDO_IMG[k]=i;}
 const motesF=Array.from({length:26},()=>({x:rnd(0,W),y:rnd(160,520),v:rnd(0,6),s:rnd(.6,1.4)}));
 function fundoTrilha(c,t,dt){const im=FUNDO_IMG.trilha;c.drawImage(im,0,0,W,H);
@@ -565,7 +568,7 @@ function fundoSantuario(c,t,dt){c.drawImage(FUNDO_IMG.santuario,0,0,W,H);
 function drawBackdrop(c,t,dt,dim){
   const fi=G.fundo&&FUNDO_IMG[G.fundo];
   if(G.fundo==='santuario'&&fi&&fi.complete&&fi.naturalWidth){fundoSantuario(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}return;}
-  if(fi&&fi.complete&&fi.naturalWidth){if(G.fundo==='trilha2')fundoTrilha2(c,t,dt);else if(G.fundo==='garganta')fundoGarganta(c,t,dt);else if(G.fundo==='vale')fundoVale(c,t,dt);else if(G.fundo==='caverna')fundoCaverna(c,t,dt);else if(G.fundo==='skoll')fundoSkoll(c,t,dt);else if(G.fundo==='pico')fundoPico(c,t,dt);else fundoTrilha(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}
+  if(fi&&fi.complete&&fi.naturalWidth){if(G.fundo==='ataque')c.drawImage(fi,0,0,W,H);else if(G.fundo==='trilha2')fundoTrilha2(c,t,dt);else if(G.fundo==='garganta')fundoGarganta(c,t,dt);else if(G.fundo==='vale')fundoVale(c,t,dt);else if(G.fundo==='caverna')fundoCaverna(c,t,dt);else if(G.fundo==='skoll')fundoSkoll(c,t,dt);else if(G.fundo==='pico')fundoPico(c,t,dt);else fundoTrilha(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}
     for(const f of snow){f.y+=f.v*dt;f.x+=Math.sin(t+f.w)*12*dt;if(f.y>H){f.y=-4;f.x=rnd(0,W);}c.fillStyle='rgba(255,255,255,.8)';c.fillRect(Math.round(f.x),Math.round(f.y),f.r,f.r);}
     return;}
   c.drawImage(bg,0,0);
@@ -712,6 +715,10 @@ const alvosCampo=()=>inimigos();
 // inimigos que zeraram a vida somem (todos juntos); devolve quando a animacao acaba
 async function mortes(){let caem=ENEMIES.filter(e=>e.hp<=0&&!e.dead&&!e.morrendo);if(!caem.length)return;
   {const sk=caem.find(e=>e.tipo==='skoll');if(sk){await skollCai(sk);if(clima.ativo&&!inimigos().some(e=>e.nevasca>0))climaFim();return;}}
+  // as Sombras NAO morrem: desmaiam (quadro 8 = a pessoa voltando) e ficam no campo, a fumaca saindo
+  {const sb=caem.filter(e=>SOMBRA_FALA[e.tipo]);if(sb.length){for(const e of sb){e.morrendo=true;e.desmaio=true;som('magia_brilho',.6);
+      for(let i=0;i<30;i++)spark(e.x+rnd(-60,60),e.y-rnd(20,160),1,'#b070ff',260,1.4,6);ecoPensa(SOMBRA_FALA[e.tipo].fim,3000,SOMBRA_FALA[e.tipo].nome.replace('Sombra d','').replace(/^[oa] /,''),'#ffe9a8',true);tween(e,'alpha',.9,600);}
+    caem=caem.filter(e=>!SOMBRA_FALA[e.tipo]);if(!caem.length)return;}}
   som('inimigo_morre',.8);som('pedras',.5);
   await Promise.all(caem.map(async e=>{e.morrendo=true;for(let i=0;i<24;i++)spark(e.x+rnd(-80,80),e.y-rnd(20,180),1,'#ff9a3c',200,1.2,6);
     await tween(e,'alpha',0,700);e.dead=true;e.morrendo=false;}));
@@ -774,7 +781,7 @@ function newBattle(){
   // laboratorio: 1 inimigo imortal (ou 4 no campo cheio); "luta de verdade" usa as regras normais do nivel escolhido
   const vitrine=TESTE&&!G.lutaReal;
   const enc=G.encontro,tl=G.tipoLab&&G.tipoLab!=='misto'?G.tipoLab:null;
-  G.fundo=enc?((enc.prova==='acolito'&&FUNDOS.santuario)?'santuario':enc.prova==='skoll'?'skoll':(enc.regiao==='trilha'?(Math.random()<.5?'trilha':'trilha2'):FUNDOS[enc.regiao]?enc.regiao:(enc.regiao==='garganta'?'garganta':enc.regiao==='caverna'?'caverna':null))):(G.fundoLab||null);
+  G.fundo=enc?((enc.prova&&enc.prova.startsWith('atq_'))?'ataque':(enc.prova==='acolito'&&FUNDOS.santuario)?'santuario':enc.prova==='skoll'?'skoll':(enc.regiao==='trilha'?(Math.random()<.5?'trilha':'trilha2'):FUNDOS[enc.regiao]?enc.regiao:(enc.regiao==='garganta'?'garganta':enc.regiao==='caverna'?'caverna':null))):(G.fundoLab||null);
   const tipos=enc?enc.tipos:G.campoCheio?[0,1,2,3].map(i=>tl||(G.tipoLab==='misto'?['lobo','bolota','goblin','ignarok'][i]:'ignarok')):vitrine?[tl||(G.tipoLab==='misto'?'lobo':'ignarok')]:G.tipoLab==='misto'?['lobo','bolota','goblin'].slice(0,Math.max(2,qtdInimigos(prog.nivel))):Array(qtdInimigos(prog.nivel)).fill(tl||'ignarok');
   const n=tipos.length;ENEMIES=[];for(let i=0;i<n;i++)ENEMIES.push(novoInimigo(i,enc?enc.nv:prog.nivel,n,tipos[i]));enemy=ENEMIES[0];
   if(enc&&enc.chefe){const C=enc.chefe,A=ENEMIES[0];A.chefe=true;A.hp=A.max=Math.round(A.max*C.hp);A.forca*=C.forca;A.name=C.nome;}   // mini-chefe opcional do mapa
@@ -790,6 +797,7 @@ function newBattle(){
    if(ENEMIES[0].tipo==='capitao'&&!vitrine){setTimeout(()=>{ecoPensa('ALTO! Isto é território do Capitão Dente-de-Ferro!',3000,'Capitão','#c9e89a');som('capitao_bravata',.9);},1400);}
    if(ENEMIES[0].tipo==='bolotao'&&!vitrine){setTimeout(()=>{ecoPensa('MEU. LAGO.',2600,'Bolotão','#9fd8ff');som('bolotao_rosna',.95);},1400);}
    if(ENEMIES[0].tipo==='skoll'&&!vitrine){setTimeout(()=>{ecoPensa('Fuja… eu não consigo parar.',3000,'Skoll','#c9a6ff');som('lobo_rosna',.9);},1500);}
+   if(SOMBRA_FALA[ENEMIES[0].tipo]&&!vitrine){const F=SOMBRA_FALA[ENEMIES[0].tipo];setTimeout(()=>ecoPensa(F.abre,3200,F.nome,'#d6a6ff',true),1400);}
    if(ENEMIES[0].tipo==='fenrir_prova'){setTimeout(()=>{ecoPensa('Mostre que é digno.',2600,'Fenrir','#9fe8ff');som('fenrir_rosna',.8);},1400);}
    const ps=Object.entries(nomes).map(([nm,q])=>q>1?q+'× '+nm:nm);banner((ps.length>1?ps.slice(0,-1).join(', ')+' e '+ps.at(-1):ps[0])+' (Nv '+nv+')'+(n>1?' apareceram!':' apareceu!'));}
 }
@@ -1427,9 +1435,31 @@ async function skollCai(sk){   // queda gentil: ele nao morre de raiva, e libert
   await wait(900);ecoPensa('Obrigado… sem sombra.',3000,'Skoll','#9fe8ff');fxBrilho(sk.x+90,sk.y-30,{raio:120,ms:2200,cor:'150,200,255',a:.7});
   fxFaiscas(sk.x+90,sk.y-30,16,{cor:'160,210,255',vel:120,g:-60,vida:1.8,ang:-1.57,abre:1.2});await wait(3000);
   await tween(sk,'alpha',0,1200);sk.dead=true;sk.morrendo=false;}
+// ---------- SOMBRAS (Cap. 2, Parte B): falas em legenda (choram) e o golpe de cada uma ----------
+const SOMBRA_FALA={
+  sombra_oskar:{nome:'Sombra do Oskar',abre:'Jux… o tambor… eu não sinto as mãos…',meio:'Me desculpa… o tambor não para…',fim:'…Eu ouvi você. Lá de dentro.'},
+  sombra_ingrid:{nome:'Sombra da Ingrid',abre:'Jux… me desculpa…',meio:'Tá tão frio aqui dentro…',fim:'…Jux? O frio… passou.'},
+  sombra_borin:{nome:'Sombra do Borin',abre:'Garoto… sai daqui… eu não mando mais no meu braço!',meio:'BATE MAIS FORTE, ENTÃO!',fim:'…Ainda bem que você bate como um ferreiro.'}};
+async function sombraTodos(g,est){for(const a of aliados().filter(x=>x.hp>0)){hero=a;golpeAplica(g,g.poder);
+    if(est&&hero.hp>0&&!hero.guard&&poeEstado(hero,est[0],est[1],est[2]))setTimeout(()=>pop(a.x,a.y-240,ESTADOS[est[0]].nome.toUpperCase(),ESTADOS[est[0]].cor),300);
+    await wait(240);if(aliadoCaiu())break;}}
+async function sombraEspecial(){const e=enemy;
+  // Oskar: Tambor do Medo (a cada 3 vezes): todos recebem dano e ficam com Fraqueza (+30% de dano recebido)
+  if(e.tipo==='sombra_oskar'&&e.turn%3===0){const g={nome:'Tambor do Medo',t:'m',el:'trevas',poder:24};banner(g.nome);const ef=EFX_INIM[g.nome];if(ef.prep)ef.prep(e,g);
+    await tween(e,'glow',1,ef.glow);await ef.cast(e,g);await sombraTodos(g,['fraqueza',2,.6]);tween(e,'glow',0,300);await wait(200);return true;}
+  // Borin: Martelada de Sombra (a cada 3 vezes): a onda pelo chao acerta todos
+  if(e.tipo==='sombra_borin'&&e.turn%3===0){const g={nome:'Martelada de Sombra',t:'f',poder:36};banner(g.nome);await tween(e,'glow',1,650);
+    tween(e,'ly',JUX.y-e.y,200);await tween(e,'lunge',140,200,easeIn);EFX_INIM[g.nome].hit(e,g);for(let i=0;i<14;i++)spark(e.x+180+i*40,e.y-10,2,'#b070ff',200,1,6);
+    await sombraTodos(g,null);tween(e,'glow',0,300);tween(e,'ly',0,300,easeOut);await tween(e,'lunge',0,300,easeOut);return true;}
+  // Ingrid: Lagrima roxa: cura um acolito ferido (as Sombras obedecem), no maximo a cada 3 vezes
+  if(e.tipo==='sombra_ingrid'&&e.turn-(e.curou||-9)>=3){const ac=inimigos().filter(x=>x!==e&&x.hp<x.max*.6).sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
+    if(ac){e.curou=e.turn;banner('Lágrima roxa');await tween(e,'glow',1,500);fxBrilho(ac.x,ac.y-90,{raio:150,ms:600,cor:'200,150,255'});som('magia_brilho',.6);
+      const q=Math.round(ac.max*.3);ac.hp=Math.min(ac.max,ac.hp+q);pop(ac.x,ac.y-250,'+'+q,'#c9a6ff');await wait(400);tween(e,'glow',0,300);return true;}}
+  return false;}
 async function enemyTurn(e){
   const alvo=enemy;enemy=e||inimigos()[0];if(!enemy){G.busy=false;return;}
   hero=escolheAlvoAliado();   // Jux ou Bino (provocar/muralha = Bino)
+  if(SOMBRA_FALA[enemy.tipo]&&!enemy.pensou&&enemy.hp<enemy.max*.5){enemy.pensou=true;const F=SOMBRA_FALA[enemy.tipo];ecoPensa(F.meio,3000,F.nome,'#d6a6ff',true);}
   if(enemy.tipo==='fenrir_prova'&&!enemy.pensou&&enemy.hp<enemy.max*.5){enemy.pensou=true;ecoPensa('Ainda não terminou, Portador.',2400,'Fenrir','#9fe8ff');som('fenrir_uivo',.7);}
   if(Math.random()<.45)som(ROSNA_TIPO[enemy.tipo]||'inimigo_rosna',ROSNA_TIPO[enemy.tipo]?.75:.55);   // as vezes o inimigo rosna antes de atacar
   const fim=()=>{enemy=(alvo&&!alvo.dead&&!alvo.morrendo)?alvo:(inimigos()[0]||enemy);hero=JUX;G.busy=false;};
@@ -1453,6 +1483,7 @@ async function enemyTurn(e){
   if(enemy.tipo==='capitao'&&!(TESTE&&!G.lutaReal)){if(await capitaoEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo==='presa'&&!(TESTE&&!G.lutaReal)){if(await presaEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo==='bolotao'&&!(TESTE&&!G.lutaReal)){if(await bolotaoEspecial()){if(aliadoCaiu())return lose();return fim();}}
+  if(SOMBRA_FALA[enemy.tipo]&&!(TESTE&&!G.lutaReal)){if(await sombraEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo&&enemy.tipo!=='ignarok'){const esc=await golpeDoTipo();if(aliadoCaiu())return lose();
     if(enemy.hp<=0){await mortes();if(!inimigos().length)return win();return fim();}
     if(esc){await contraEscudo();await mortes();if(!inimigos().length)return win();}return fim();}
@@ -1851,7 +1882,7 @@ function cineFx(c,s,i,p,dt,ox,oy,dw,dh,im,info){
 let BARRA=56;   // faixas pretas de cinema (em cima e embaixo)
 // PENSAMENTO do Eco: o Fenrir nao fala com voz (e um lobo): a criatura "pensa" em legenda, como um espirito, so nos momentos importantes
 const PENS={txt:'',nome:'',cor:'#bff6ff',t:0,dur:0};
-function ecoPensa(txt,ms,nome,cor){PENS.txt=txt;PENS.nome=nome||(()=>{const q=typeof ecoEmCampo==='function'?ecoEmCampo():estadoEcos().equip;return ECOS&&ECOS[q]?{lamina:'Fenrir'}[q]||'Eco':'Eco';})();PENS.cor=cor||'#bff6ff';PENS.t=0;PENS.dur=(ms||2200)/1000;}
+function ecoPensa(txt,ms,nome,cor,fala){PENS.fala=!!fala;PENS.txt=txt;PENS.nome=nome||(()=>{const q=typeof ecoEmCampo==='function'?ecoEmCampo():estadoEcos().equip;return ECOS&&ECOS[q]?{lamina:'Fenrir'}[q]||'Eco':'Eco';})();PENS.cor=cor||'#bff6ff';PENS.t=0;PENS.dur=(ms||2200)/1000;}
 function drawPensamento(c,dt){if(!PENS.txt)return;PENS.t+=dt;if(PENS.t>PENS.dur){PENS.txt='';return;}
   const a=Math.min(1,PENS.t/.35,(PENS.dur-PENS.t)/.45),bw=570,bx=28,by=104,ls=26;   // fica a esquerda do menu de comandos
   c.save();c.font='italic bold 20px "Trebuchet MS"';
@@ -1861,7 +1892,7 @@ function drawPensamento(c,dt){if(!PENS.txt)return;PENS.t+=dt;if(PENS.t>PENS.dur)
   const bh=22+lin.length*ls;
   c.globalAlpha=a*.92;c.fillStyle='rgba(6,16,44,.82)';c.strokeStyle=PENS.cor;c.lineWidth=2;c.beginPath();c.roundRect(bx,by,bw,bh,14);c.fill();c.stroke();
   c.shadowColor=PENS.cor;c.shadowBlur=14;c.globalAlpha=a;c.textAlign='center';c.fillStyle='#eaf8ff';lin.forEach((l,k)=>c.fillText(l,bx+bw/2,by+31+k*ls));
-  c.shadowBlur=0;c.font='bold 13px "Trebuchet MS"';c.textAlign='left';c.fillStyle=PENS.cor;c.fillText('\u2022 '+PENS.nome+' (pensamento)',bx+16,by-6);c.restore();}
+  c.shadowBlur=0;c.font='bold 13px "Trebuchet MS"';c.textAlign='left';c.fillStyle=PENS.cor;c.fillText('\u2022 '+PENS.nome+(PENS.fala?'':' (pensamento)'),bx+16,by-6);c.restore();}
 function drawCine(c,dt){if(!cine)return;BARRA=(CINES[cine.id]&&CINES[cine.id].barra)||56;
   const C=CINES[cine.id];cine.t+=dt;
   let t=cine.t,i=0;while(i<C.tomadas.length&&t>C.tomadas[i].d){t-=C.tomadas[i].d;i++;}
@@ -2381,7 +2412,7 @@ if(TESTE){
 }
 requestAnimationFrame(frame);
 (function(){if(TESTE)return;try{const s=JSON.parse(localStorage.getItem('jux_encontro')||'null');
-  if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
+  if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova&&s.prova.startsWith('atq_')){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/vila/musica_ataque.ogg':'assets/vila/musica_ataque.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
 <script src="tela_cheia.js?v=1795225900"></script>
