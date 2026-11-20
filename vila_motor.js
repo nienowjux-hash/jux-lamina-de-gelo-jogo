@@ -840,7 +840,7 @@ function desenhaBaconCaca(){if(!emPreparo()||!(caca.on||(prepCena&&prepCena.tipo
   else if(corre){dy=-Math.abs(Math.sin(f*Math.PI/2))*1.3;if(caca.lado){q=n;esp=caca.dir<0;}else q=4+(Math.floor(f/2)%2);}
   else{q=6;esp=hero.x>bacon.x;if(caca.estado==='cansado')sy=1+.06*Math.sin(t*9);}   // parado olhando o Jux (provocando); cansado: ofegando
   return prepQuadroT('bacon_pao',q,bacon.x,bacon.y,{esp,dy,sy});}
-function halvardVila(){if(!NA_VILA||ANDARILHOS.some(n=>n.id==='halvard'))return;if(typeof estadoMissao!=='function'||estadoMissao('olhos_roxos')!=='feita')return;
+function halvardVila(){if(!NA_VILA||ANDARILHOS.some(n=>n.id==='halvard'))return;if(JOGO.cap2&&JOGO.cap2.halvardMorreu)return;   // Parte D: o Halvard morreuif(typeof estadoMissao!=='function'||estadoMissao('olhos_roxos')!=='feita')return;
   criaAndarilho('halvard',{rota:[[520,690],[560,686]],paradas:[0,1],poses:['alivio','respira'],inicio:0,vel:16,passo:7,larg:12,alt:46,
     oi:[['alivio',1.6]],ola:['Foi o Tico que me achou primeiro. Eu só deixei.','Obrigado, forasteiro.','Frio? Isso é verão perto da caverna.']});}
 const HAL=(window.JUX_NPC||{}).halvard||null,HALI=new Image();if(HAL)HALI.src=HAL.atlas;
@@ -1248,6 +1248,29 @@ const CENAS_IGNAROK=[
 for(const [k,f] of [['ig1j','1_jux'],['ig1a','1_arauto'],['ig2a','2_aurora'],['ig3b','3_bino'],['ig3j','3_jux'],['ig4a','4_aurora'],['ig4j','4_jux']])VOZES[k]=arq('assets/cine_ignarok/voz_ignarok_'+f);
 const IMG_IGNAROK=imgsFilme(CENAS_IGNAROK.map(c=>'assets/cine_ignarok/'+c.img.replace('cena','cena_').replace('cena__','cena_')+'.jpg'));
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#cine_ignarok')setTimeout(()=>tocaFilme(CENAS_IGNAROK,IMG_IGNAROK,()=>{}),1500);   // lab: so o filme
+// CUTSCENE "O PRECO" (FICHA_CAP2_PRECO.md, aprovada 2026-11-20): logo depois da vitoria contra o Ignarok. O Halvard morre protegendo o Tico.
+// Cenas 1-3 com a musica do Ignarok; a 4 em silencio (so o impacto); a 5 com 'Bleeding Out' (haeldb, CC0) e a 6 com 'Lament for a Warrior's Soul'
+// (RandomMind, CC0), sem tremer. Tempos acertados pelas vozes (2026-11-20).
+// Vozes: assets/cine_preco/voz_preco_* (ROTEIRO_VOZ_PRECO.md). Os tempos sao ajustados quando as vozes chegam.
+const CENAS_PRECO=[
+  {img:'cena_1',mus:'ignarok',cam:[.5,.5,1.12, .5,.4,1.0],dur:5,fx:'neve',vozes:[[1.2,'pr1a']],falas:[[1.2,'Aurora','Portador… ele ainda não acabou!',1]],sons:[[.2,'ig_rosna']],treme:[.2,1.2]},
+  {img:'cena_2',mus:'ignarok',cam:[.55,.5,1.0, .55,.42,1.12],dur:7,fx:'neve',vozes:[[.8,'pr2t'],[5,'pr2h']],falas:[[.8,'Tico','Jux! Eu vim ajudar! Eu também sou da vila!'],[5,'Halvard','TICO! Volta aqui!']],sons:[]},
+  {img:'cena_3',mus:'ignarok',cam:[.6,.5,1.0, .4,.45,1.12],dur:4.5,fx:'neve',vozes:[[2.2,'pr3j']],falas:[[.4,'Ignarok','…QUEIMA.',4],[2.2,'Jux','NÃO!']],sons:[[.2,'ig_erupcao']],treme:[.2,2]},
+  {img:'cena_4',mus:'nada',cam:[.5,.5,1.0, .5,.5,1.1],dur:5,fx:'neve',vozes:[],falas:[],sons:[[.1,'ig_queda'],[1.4,'quebra']],treme:[.1,1.2],flash:.1},
+  {img:'cena_5',mus:'preco_morte',cam:[.5,.55,1.0, .48,.52,1.12],dur:29.5,fx:'neve',vozes:[[1.2,'pr5t'],[5,'pr5ha'],[10,'pr5hb'],[17.5,'pr5j'],[21,'pr5hc'],[25.5,'pr5b']],
+   falas:[[1.2,'Tico','Pai… pai, levanta…'],[5,'Halvard','Você tá bem? …Que bom. Então valeu a pena.'],[10,'Halvard','Forasteiro… você me trouxe de volta uma vez. Agora cuida dele por mim.'],
+     [17.5,'Jux','…Eu cuido. Eu prometo.'],[21,'Halvard','Bino… come. Pergunta depois.'],[25.5,'Bino','…Halvard.']],sons:[]},
+  {img:'cena_6',mus:'preco',cam:[.6,.5,1.0, .55,.45,1.1],dur:27,fx:'neve',vozes:[[1.2,'pr6a'],[9.2,'pr6ja'],[15.2,'pr6jb'],[19.6,'pr6jc']],
+   falas:[[1.2,'Aurora','O Cristal do Gelo trincou, Portador. A Ordem levou uma parte da luz dele.',1],[9.2,'Jux','Até hoje eu achei que isso era um jogo. Que em algum momento eu ia acordar.'],
+     [15.2,'Jux','Não é. E eu não vou acordar.'],[19.6,'Jux','A Ordem vai pagar por cada um. Começando agora.']],sons:[]},
+];
+for(const [k,f] of [['pr1a','1_aurora'],['pr2t','2_tico'],['pr2h','2_halvard'],['pr3j','3_jux'],['pr5t','5_tico'],['pr5ha','5_halvard_a'],['pr5hb','5_halvard_b'],['pr5j','5_jux'],['pr5hc','5_halvard_c'],['pr5b','5_bino'],
+  ['pr6a','6_aurora'],['pr6ja','6_jux_a'],['pr6jb','6_jux_b'],['pr6jc','6_jux_c']])VOZES[k]=arq('assets/cine_preco/voz_preco_'+f);
+const IMG_PRECO=imgsFilme(CENAS_PRECO.map(c=>'assets/cine_preco/'+c.img+'.jpg'));
+if(REGIAO==='vila'&&location.hash.split('?')[0]==='#cine_preco')setTimeout(()=>tocaFilme(CENAS_PRECO,IMG_PRECO,()=>{}),1500);   // lab: so o filme
+// depois do filme: o Halvard morreu (some do jogo para sempre) e a historia segue para a Parte E
+function precoFim(){JOGO.cap2.halvardMorreu=true;JOGO.cap2.preco=true;salvaJogo();
+  {const i=ANDARILHOS.findIndex(n=>n.id==='halvard');if(i>=0){const n=ANDARILHOS[i];ANDARILHOS.splice(i,1);const k=V.pontos.indexOf(n.ponto);if(k>=0)V.pontos.splice(k,1);}}setTimeout(()=>aviso('Continua na Parte E (em breve)','#ffe27a'),600);}
 // o altar na vila em ataque: com as 3 lutas feitas (e o Capitulo 1 completo), a cutscene e a luta; depois de perder, so a luta
 function altarIgnarok(){const C=JOGO.cap2;if(cap1Trava()){falaPendencias('aurora');return;}
   if((JOGO.provas||{}).ignarok==='vencida')return;
@@ -1324,6 +1347,7 @@ const FILMES=[
   {id:'skoll',nome:'O Skoll acorrentado',c:()=>CENAS_SKOLL,i:()=>IMG_SKOLL,visto:()=>typeof estProvas==='function'&&['vencida','feita'].includes(estProvas().skoll)},
   {id:'fenrir',nome:'O Fenrir aparece',c:()=>CENAS_FENRIR,i:()=>IMG_FENRIR,visto:()=>typeof estProvas==='function'&&(['vencida','feita'].includes(estProvas().fenrir)||estadoEcos().tem.includes('lamina'))},
   {id:'fenrir_v',nome:'O Fenrir se junta ao Jux',c:()=>CENAS_FENRIR_V,i:()=>IMG_FENRIR_V,visto:()=>typeof estProvas==='function'&&(estProvas().fenrir==='feita'||estadoEcos().tem.includes('lamina'))},
+  {id:'preco',nome:'O preço',c:()=>CENAS_PRECO,i:()=>IMG_PRECO,visto:()=>!!(JOGO.cap2&&JOGO.cap2.preco)},
   {id:'ignarok',nome:'O Ignarok',c:()=>CENAS_IGNAROK,i:()=>IMG_IGNAROK,visto:()=>!!(JOGO.cap2&&JOGO.cap2.ignVisto)},
   {id:'ataque',nome:'A aurora preta',c:()=>CENAS_ATAQUE,i:()=>IMG_ATAQUE,visto:()=>!!(JOGO.cap2&&JOGO.cap2.fase&&!['volta','preparo','noite'].includes(JOGO.cap2.fase))},
 ];
@@ -1332,7 +1356,7 @@ function reverFilme(id){const f=FILMES.find(x=>x.id===id);if(!f||!filmeVisto(f))
 function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
-const MUS_CINE={ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
+const MUS_CINE={preco_morte:arq('assets/musica/cine_preco_morte'),preco:arq('assets/musica/cine_preco'),ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
 let musAtual=null,musNome=null,drone=null;
 function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone grave sintetizado; 'vila' = musica da vila (continua no jogo)
   if(nome===musNome||window.__morta)return;musNome=nome;
@@ -1884,7 +1908,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
         if(window.__semSalvar)try{sessionStorage.setItem('jux_atq_teste',JSON.stringify(JOGO.cap2.lutas));}catch(e){}
         const ult=atqFeitas()>=3;setTimeout(()=>abreFala(l.id+'_fim',()=>aviso(ult?'O ataque: 3/3 · Suba ao altar!':'O ataque: '+atqFeitas()+'/3','#ff9ae8')),700);break;}
       // venceu o Ignarok: por enquanto termina aqui (a Parte D vem depois)
-      if(pv.ignarok==='vencida'&&!JOGO.cap2.ignVenceu){JOGO.cap2.ignVenceu=true;salvaJogo();setTimeout(()=>abreFala('ign_vence',()=>aviso('Continua na Parte D (em breve)','#ffe27a')),700);}}
+      if(pv.ignarok==='vencida'&&!JOGO.cap2.ignVenceu){JOGO.cap2.ignVenceu=true;salvaJogo();setTimeout(()=>tocaFilme(CENAS_PRECO,IMG_PRECO,precoFim),700);}}
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');if(v&&v.res==='lose_chefe'&&Date.now()-v.t<120000&&emAtaque()){localStorage.removeItem('jux_volta_luta');setTimeout(()=>abreFala('derrota_chefe'),600);}}catch(e){}
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');localStorage.removeItem('jux_volta_luta');if(v&&v.res==='lose'&&Date.now()-v.t<120000)setTimeout(()=>abreFala('derrota'),600);}catch(e){}
     if(JOGO.vila){abVista=true;comecou=true;
