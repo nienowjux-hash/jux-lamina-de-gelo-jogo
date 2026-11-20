@@ -4,6 +4,19 @@
    ate todas chegarem, ou 20 s no maximo. Enquanto isso o jogo fica parado (window.__carregando), para a luta nao
    comecar escondida atras da tela. As paginas chamam fimCarregar() no lugar de tirar a tela na hora. */
 'use strict';
+// MOLDURA DA TELA CHEIA (pedido 2026-11-20): no site, o jogo roda dentro da pagina inicial (index.html = moldura com um iframe),
+// assim a tela cheia fica na moldura e nao sai quando o mapa ou a luta trocam de pagina. Se alguem abrir uma pagina do jogo
+// direto no site (favorito, link), ela volta para dentro da moldura. No PC (localhost/arquivo) e no laboratorio nada muda.
+(function () {
+  try {
+    const site = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+    const lab = window.LAB_FIXO || /[?&]teste|#teste/.test(location.search + location.hash) || /lab\.html$/.test(location.pathname);
+    if (site && !lab && window.top === window) {
+      const pag = location.pathname.split('/').pop() || 'index.html';
+      if (pag !== 'index.html') location.replace('./?ir=' + encodeURIComponent(pag + location.search + location.hash));
+    }
+  } catch (e) {}
+})();
 (function () {
   let tot = 0, ok = 0, pronto = false;
   // depois(fn): coisas que NAO precisam segurar a entrada (imagens das cutscenes) so comecam a baixar quando a tela de carregamento sai

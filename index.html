@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jux e a Lâmina de Gelo</title>
-<style>html,body{margin:0;height:100%;background:#03050c;color:#bff0ff;font:bold 22px "Trebuchet MS",sans-serif;display:flex;align-items:center;justify-content:center}</style>
-</head><body>&#10052;&nbsp;CARREGANDO&hellip;
+<style>html,body{margin:0;height:100%;background:#03050c;overflow:hidden}iframe{border:0;width:100%;height:100%;display:block;background:#03050c}</style>
+</head><body><iframe id="jogo" title="Jux e a Lâmina de Gelo" allow="fullscreen; autoplay" allowfullscreen></iframe>
 <script>
-var r='vila';
-try{var s=JSON.parse(localStorage.getItem('jux_save')||'null');
-  if(s&&['vila','trilha','garganta','vale','caverna','pico'].indexOf(s.local)>=0)r=s.local;}catch(e){}
-location.replace(r+'.html');
+// MOLDURA (2026-11-20): o jogo roda aqui dentro; a tela cheia e desta pagina, entao nao sai quando o mapa ou a luta trocam
+window.JUX_MOLDURA=true;
+var REG=['vila','trilha','garganta','vale','caverna','pico'];
+var ir=new URLSearchParams(location.search).get('ir');
+if(!ir||!/^[a-z_]+[.]html([?#].*)?$/.test(ir)){var r='vila';
+  try{var s=JSON.parse(localStorage.getItem('jux_save')||'null');if(s&&REG.indexOf(s.local)>=0)r=s.local;}catch(e){}
+  ir=r+'.html';}
+var f=document.getElementById('jogo');f.src=ir;
+try{history.replaceState(null,'',location.pathname);}catch(e){}
+f.addEventListener('load',function(){try{document.title=f.contentDocument.title||document.title;}catch(e){}try{f.contentWindow.focus();}catch(e){}});
+addEventListener('focus',function(){try{f.contentWindow.focus();}catch(e){}});
 </script></body></html>

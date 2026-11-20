@@ -3,13 +3,18 @@
   const b = document.createElement('button');
   b.textContent = '⛶ Tela cheia (F)';
   b.style.cssText = 'position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:8;border:0;border-radius:6px;padding:5px 11px;cursor:pointer;background:rgba(127,214,245,.55);color:#0c1a2a;font:bold 12px "Trebuchet MS",sans-serif';
-  const el = document.documentElement;
+  // dentro da moldura do site (index.html com JUX_MOLDURA): a tela cheia e da MOLDURA, entao continua ao trocar de pagina
+  const topo = (() => { try { return window.top !== window && window.top.JUX_MOLDURA ? window.top : null; } catch (e) { return null; } })();
+  const doc = topo ? topo.document : document, el = doc.documentElement;
   const alterna = () => {
-    if (document.fullscreenElement) { document.exitFullscreen(); return; }
-    const f = el.requestFullscreen || el.webkitRequestFullscreen; if (f) f.call(el).catch(() => {});
+    if (doc.fullscreenElement) { doc.exitFullscreen(); return; }
+    const f = el.requestFullscreen || el.webkitRequestFullscreen; if (!f) return;
+    // se a moldura recusar, cai na tela cheia so desta pagina (o jeito antigo)
+    Promise.resolve(f.call(el)).catch(() => { if (topo) { const g = document.documentElement; (g.requestFullscreen || g.webkitRequestFullscreen).call(g).catch(() => {}); } });
   };
   b.onclick = e => { e.stopPropagation(); alterna(); b.blur(); };
   addEventListener('keydown', e => { if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) alterna(); });
-  document.addEventListener('fullscreenchange', () => { b.style.display = document.fullscreenElement ? 'none' : 'block'; });
+  const mostra = () => { b.style.display = doc.fullscreenElement ? 'none' : 'block'; };
+  doc.addEventListener('fullscreenchange', mostra); mostra();
   document.body.appendChild(b);
 })();

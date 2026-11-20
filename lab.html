@@ -22,7 +22,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
 <!-- aparece enquanto os sprites e as cenas das cinematicas (~5 MB) baixam; some quando o jogo comeca -->
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
-<script src="carrega.js?v=1795120505"></script>
+<script src="carrega.js?v=1795225800"></script>
 <script src="itens_icones.js?v=1795117438"></script>
 <script src="jogo.js?v=1795225300"></script>
 <script src="tutorial.js?v=1795225300"></script>
@@ -661,6 +661,8 @@ const stats=n=>statusJux(n,TESTE&&!G.labEco)   // no lab os bonus do Eco so entr
 const inimigoNv=n=>({hp:Math.round(560*(1+.12*(n-1))),forca:1+.08*(n-1),exp:Math.max(8,Math.round(expPara(n)/((4+n*.2)*.9))),gil:Math.round(30+8*Math.pow(n,1.35))});
 const liberada=id=>{const h=HABILIDADES.find(h=>h.id===id);return !!h&&prog.nivel>=h.nivel;};
 const nivelDe=id=>HABILIDADES.find(h=>h.id===id).nivel;
+// RESSONANCIA mais lenta (pedido 2026-11-20: 'usou umas 10 vezes contra o Fenrir'): bater 3 (5 na fraqueza), apanhar 7, defender 5,
+// escudo 4 e a QUEBRA de todos os inimigos da +35 (antes enchia a barra inteira: contra um chefe sozinho era a cada quebra)
 function addRes(v){if(hero===JUX&&liberada('res'))hero.res=Math.min(100,hero.res+v);}
 // menu Magia: as liberadas + a proxima ainda bloqueada (o jogador ve o que vem) + Voltar
 function magicList(){const lib=HABILIDADES.filter(h=>h.magia&&h.nivel<=prog.nivel&&habLigada(h.id)),prox=HABILIDADES.find(h=>h.magia&&h.nivel>prog.nivel);
@@ -801,13 +803,13 @@ function hitEnemy(n,weak,mudo){
   e.kx=-26;tween(e,'kx',0,260,easeOut);shake=Math.max(shake,r.crit?14:r.fraco?12:8);
   const sub=r.imune?'IMUNE':r.crit&&r.fraco?'CRÍTICO! FRAQUEZA!':r.crit?'CRÍTICO!':r.fraco?'FRAQUEZA!':r.resiste?'RESISTE':'';
   pop(e.x+rnd(-30,30),e.y-170,n,r.crit?'#ffe27a':r.fraco?'#8fe9ff':r.resiste?'#a9a9c8':'#fff',sub);
-  addRes(r.fraco?7:4);if(!mudo)hitSfx();
+  addRes(r.fraco?5:3);if(!mudo)hitSfx();
   // barra de Quebra: enche com o dano (muito mais no ponto fraco); cheia = QUEBRADO por 1 turno, toma +50% e o Jux age de novo
   if(e.hp>0&&!(e.quebrado>0)){e.qb=Math.min(100,(e.qb||0)+Math.max(2,Math.min(30,n/e.max*100*.9))*r.quebra*(1+((st.esp_||{}).quebra||0)));
     if(e.qb>=100){e.qb=0;e.quebrado=1;pop(e.x,e.y-260,'QUEBRA!','#ffb400');shake=Math.max(shake,16);som('gelo_quebra',.8);
       if(e.tipo==='bolotao'&&e.acumulo){e.forca/=Math.pow(1.1,e.acumulo);e.acumulo=0;setTimeout(()=>pop(e.x,e.y-290,'A NEVE CAIU!','#9fe8ff'),500);}
       hero.atb=1;G.bonus=true;
-      if(inimigos().every(x=>x.quebrado>0)){addRes(100);setTimeout(()=>banner('FASE BÔNUS! Ressonância pronta!'),300);}}}
+      if(inimigos().every(x=>x.quebrado>0)){addRes(35);setTimeout(()=>banner('FASE BÔNUS! Ressonância +35'),300);}}}
 }
 function hitHero(n){
   n=Math.round(n*(enemy.forca||1));
@@ -829,7 +831,7 @@ function hitHero(n){
   if(bAn()&&bAn().anims.guarda_empurra&&hero.guard&&hero.hp>0){setAnim('guarda_empurra');}
   if(bAn()&&bAn().anims.dano&&!hero.guard&&hero.hp>0){setAnim('dano');{const h0=hero,D0=bAn();setTimeout(()=>{if(h0.anim==='dano'||h0.anim==='dano_furia'){h0.anim=furiaDe('parado');h0.at=0;h0.hold=false;}},D0.anims.dano.quadros.length/D0.anims.dano.fps*1000);}}
   pop(hero.x,hero.y-190,n,hero.guard||hero.escudo>0?'#9cc7ff':'#ffd9a0',hero.escudo>0?'ESCUDO':hero.guard?'GUARDA':'');
-  addRes(12);spark(hero.x-30,hero.y-90,16,'#ff9a3c',240,.6);som('inimigo_ataca',.8);sfx(140,.18,'sawtooth',.05,.5);contraBino();
+  addRes(7);spark(hero.x-30,hero.y-90,16,'#ff9a3c',240,.6);som('inimigo_ataca',.8);sfx(140,.18,'sawtooth',.05,.5);contraBino();
 }
 function slashFx(cx,cy,col,big){addFx(.35,(c,p)=>{const q=Math.min(1,p*2.2);c.save();c.globalAlpha=1-p;c.shadowColor=col;c.shadowBlur=20;c.fillStyle='#fff';
   const R1=(big?150:100),a0=-2.4,a1=a0+2.9*q;c.beginPath();c.arc(cx,cy,R1,a0,a1,false);c.arc(cx+R1*.2,cy-R1*.05,R1*.88,a1,a0,true);c.closePath();c.fill();c.restore();});}
@@ -972,7 +974,7 @@ async function actEscudo(){
   frostSfx(.6,900);golpeSfx(4,40,.6);
   {const hx=hero.x-hero.lunge;fxPilar(hx,hero.y+10,{larg:150,ms:900});fxAnel(hx,hero.y+10,{raio:420,achata:.3,ms:700,esp:30});setTimeout(()=>fxAnel(hx,hero.y+10,{raio:300,achata:.3,ms:600}),180);
     fxRaios(hx,hero.y-110,{raio:560,ms:900,n:12,a:.35});fxBrilho(hx,hero.y-110,{raio:300,ms:800,a:.6});fxFaiscas(hx,hero.y-20,22,{ang:-1.57,abre:.9,vel:800,vida:1.1});fxFlash('170,230,255',.3,300);}
-  await wait(250);hero.escudo=3;addRes(6);pop(hero.x,hero.y-200,'ESCUDO x3','#9cc7ff');
+  await wait(250);hero.escudo=3;addRes(4);pop(hero.x,hero.y-200,'ESCUDO x3','#9cc7ff');
   await wait(450);hero.charge=0;setFrame('escudo',5);await wait(300);setAnim('parado');
 }
 // Ressonancia II: Zero Absoluto (folha ref/zero2.png): o Jux crava a espada e VIRA GELO (cabelo e roupa brancos, aura de
@@ -1289,7 +1291,7 @@ async function actItem(id){if(bAn()&&bAn().anims.pocao){setAnim('pocao');await w
   await wait(500);if(bAn()&&bAn().anims.pocao)setAnim('parado');}
 async function actPotion(){if(BAT&&BAT.anims.pocao){setAnim('pocao');await wait(560);}   // folha nova: pega e bebe; a cura entra no gole
   hero.pots--;if(!TESTE&&typeof tiraItem==='function'){tiraItem('pocao');salvaJogo();}const n=Math.min(150,hero.max-hero.hp);hero.hp+=n;banner('Poção');som('pocao',.8);spark(hero.x,hero.y-100,22,'#7dffa8',140,1,4);pop(hero.x,hero.y-190,'+'+n,'#7dffa8');await wait(500);if(BAT&&BAT.anims.pocao)setAnim('parado');}
-async function actGuard(){hero.guard=true;setAnim('guarda');banner('Defender');addRes(8);som('defender',.8);await wait(350);hero.atb=.45;}
+async function actGuard(){hero.guard=true;setAnim('guarda');banner('Defender');addRes(5);som('defender',.8);await wait(350);hero.atb=.45;}
 
 async function heroTurn(kind){
   if(hero.espelho>0&&kind!=='espelho'){hero.espelho--;if(!hero.espelho)espelhoSome(false);}
@@ -2375,6 +2377,6 @@ requestAnimationFrame(frame);
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
-<script src="tela_cheia.js?v=1795117438"></script>
+<script src="tela_cheia.js?v=1795225900"></script>
 </body>
 </html>
