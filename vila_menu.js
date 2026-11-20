@@ -314,7 +314,11 @@ function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),ap=apUsado(),lim=limiteAP
 // ---------- Diário de missões
 function listaDiario(){const at=[],fe=[];for(const k of ORDEM_MISSOES){const s=estadoMissao(k);if(s==='ativa')at.push(k);else if(s==='feita')fe.push(k);}return ['_historia',...(JOGO.ordemSabe?['_ordem']:[]),...at,...fe];}
 function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_historia';
-  l.forEach((k,i)=>{const yy=cy+6+i*40;linhaSel(cx,yy,300,36,i===UI.sel);
+  // lista com rolagem (2026-11-20): so cabem N missoes na janela; o resto aparece ao descer com ▲▼
+  const N=Math.max(3,Math.floor((y+h-34-(cy+6))/40)),top=Math.max(0,Math.min(UI.sel-N+2,l.length-N));
+  if(l.length>N){const xs=cx+311,pu=top>0,pd=top+N<l.length;texto('▲',xs,cy+24,16,pu?'#7fd6f5':'#3a4a6a','center');texto('▼',xs,cy+6+N*40-14,16,pd?'#7fd6f5':'#3a4a6a','center');
+    ZONAS.push([xs-14,cy+6,xs+14,cy+40,()=>{if(pu)UI.sel=Math.max(0,top-1);}]);ZONAS.push([xs-14,cy+N*40-34,xs+14,cy+6+N*40,()=>{if(pd)UI.sel=Math.min(l.length-1,top+N);}]);}
+  l.forEach((k,i)=>{if(i<top||i>=top+N)return;const yy=cy+6+(i-top)*40;linhaSel(cx,yy,300,36,i===UI.sel);
     if(k==='_historia'){texto('★ '+(hero.espada?'Além de Invernália':'A lâmina no altar'),cx+22,yy+23,15,'#ffe27a');}
     else if(k==='_ordem'){texto('◉ A Ordem do Eclipse',cx+22,yy+23,15,'#ff8a8a');}
     else{const st=estadoMissao(k),pr=missaoPronta(k);texto((st==='feita'?'✓ ':pr?'✔ ':'! ')+MISSOES[k].nome,cx+22,yy+23,15,st==='feita'?'#7a8aa8':pr?'#7dffa8':'#fff');if(JOGO.rastreio===k&&st==='ativa')formaMarca(ctx,'losango',cx+276,yy+18,6,COR_S);else if(MISSOES[k].principal&&st==='ativa')formaMarca(ctx,'estrela',cx+276,yy+18,7,COR_P);
@@ -403,6 +407,8 @@ function uiClique(x,y){
 }
 
 // ---------- desenho
+// texto que diminui a letra ate caber na largura (2026-11-20: nada mais sai da janela)
+function textoCabe(s,x,y,size,cor,maxw,al){let t=size;for(;t>9;t--){ctx.font=`bold ${t}px "Trebuchet MS"`;if(ctx.measureText(s).width<=maxw)break;}texto(s,x,y,t,cor,al);}
 function painel(x,y,w,h){ctx.fillStyle='rgba(6,16,40,.94)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();}
 function linhaSel(x,y,w,h,on){if(on){ctx.fillStyle='rgba(127,214,245,.22)';ctx.beginPath();ctx.roundRect(x,y,w,h,6);ctx.fill();ctx.fillStyle='#7fd6f5';ctx.beginPath();ctx.moveTo(x+6,y+h/2-5);ctx.lineTo(x+12,y+h/2);ctx.lineTo(x+6,y+h/2+5);ctx.fill();}}
 function botaoMenu(){ctx.save();ctx.fillStyle='rgba(6,16,40,.8)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(W-118,46,108,30,7);ctx.fill();ctx.stroke();
@@ -548,12 +554,21 @@ function desenhaMenu(){
   }else if(UI.aba===ABA_BESTA){desenhaBestiario(cx,cy,w,h,y);
   }else if(UI.aba===ABA_MAPA){desenhaMapa(x,y,w,h);
   }else if(UI.aba===2){   // Equipar
-    const EQ=equipDe(UI.quem),LH=40;SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*LH,id=EQ[s];linhaSel(cx,yy,w-48,LH-4,i===UI.sel);texto(n,cx+24,yy+24,16,'#9fe8ff');
-      if(id){iconeItem(ctx,id,cx+150,yy+5,26);texto(ITENS[id].nome,cx+190,yy+25,17,'#fff');if(ITENS[id])texto(ITENS[id].desc,cx+w-90,yy+25,13,'#7dffa8','right');}
-      else texto(s==='arma'?nomeArmaDe(UI.quem)+' (arma de base)':'— vazio —',cx+190,yy+25,16,'#7a8aa8');
-      texto('◀ ▶',cx+w-56,yy+24,11,'rgba(255,255,255,.4)','right');
+    const EQ=equipDe(UI.quem),LH=34;SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*LH,id=EQ[s];linhaSel(cx,yy,w-48,LH-4,i===UI.sel);texto(n,cx+24,yy+21,15,'#9fe8ff');
+      if(id){iconeItem(ctx,id,cx+150,yy+3,24);texto(ITENS[id].nome,cx+190,yy+22,16,'#fff');if(ITENS[id])texto(ITENS[id].desc,cx+w-90,yy+21,13,'#7dffa8','right');}
+      else texto(s==='arma'?nomeArmaDe(UI.quem)+' (arma de base)':'— vazio —',cx+190,yy+22,15,'#7a8aa8');
+      texto('◀ ▶',cx+w-56,yy+21,11,'rgba(255,255,255,.4)','right');
       ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;trocaSlot(s,1);}]);});
-    texto('◀ ▶ ou toque: trocar o equipamento (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-20,13,'#c8d8f0');
+    // STATUS NA TROCA (pedido 2026-11-20): os atributos de agora e, embaixo, como ficam se apertar ▶ no espaço escolhido
+    const q=UI.quem||'jux',agora=statusDe(q),sl=(SLOTS_EQ[UI.sel]||SLOTS_EQ[0])[0],ops=opcoesSlot(sl),cur=EQ[sl]||null,nx=ops[(ops.indexOf(cur)+1)%ops.length];
+    let dep=null;if(nx!==cur){const sv=EQ[sl];EQ[sl]=nx;dep=statusDe(q);EQ[sl]=sv;}
+    const by=cy+7*LH+4,bw=w-48,bh=62;ctx.fillStyle='rgba(20,34,70,.7)';ctx.beginPath();ctx.roundRect(cx,by,bw,bh,8);ctx.fill();
+    textoCabe('Status '+(NOME_GRUPO&&NOME_GRUPO[q]||'Jux'),cx+12,by+20,14,COR_GRUPO&&COR_GRUPO[q]||'#bff0ff',104);
+    texto('agora',cx+12,by+39,12,'#9fb3d9');
+    if(dep)textoCabe('▶ '+(nx?ITENS[nx].nome:'tirar'),cx+12,by+56,12,'#ffe27a',104);else texto('nada para trocar',cx+12,by+56,11,'#7a8aa8');
+    const cw=(bw-120)/9;NOMES_ST.forEach(([k,n],j)=>{const xx=cx+120+cw*j+cw/2;texto(n,xx,by+20,12,'#9fe8ff','center');texto(String(agora[k]),xx,by+39,15,'#fff','center');
+      if(dep){const d=dep[k]-agora[k];texto(d?(d>0?'+':'')+d:'·',xx,by+56,d?14:12,d>0?'#7dffa8':d<0?'#ff9a9a':'#5a6a88','center');}});
+    textoCabe('◀ ▶ ou toque: trocar (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-14,13,'#c8d8f0',w-48);
   }else{   // Salvar
     SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*36;linhaSel(cx,yy,560,32,i===UI.sel);texto(o,cx+30,yy+26,17,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
       if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+26,16,'#9fe8ff');
@@ -569,5 +584,6 @@ function desenhaMenu(){
       [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+54+k*19,13,'#9fe8ff');texto(b,px+128,py+54+k*19,13,'#e8f6ff');});}
     if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+178,18,'#7dffa8');
   }
-  texto('M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar',x+w-16,y+h+24,13,'rgba(255,255,255,.6)','right');
+  {const dica='M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar';ctx.font='bold 13px "Trebuchet MS"';const dw=ctx.measureText(dica).width+20;
+    ctx.fillStyle='rgba(6,16,40,.8)';ctx.beginPath();ctx.roundRect(x+w-6-dw,y+h+8,dw,24,6);ctx.fill();texto(dica,x+w-16,y+h+24,13,'rgba(255,255,255,.75)','right');}
 }

@@ -50,8 +50,12 @@ function desenhaBestiario(cx, cy, w, h, y) {
   const l = BESTIARIO; if (UI.sel >= l.length) UI.sel = 0;
   const ab = l.filter(b => benta(b.id) > 0).length;
   texto('Bestiário  ' + ab + '/' + l.length + ' descobertos' + (titulosBesta().length ? '  ·  Títulos: ' + titulosBesta().join(', ') : ''), cx, cy - 4, 14, '#9fe8ff');
+  // rolagem (2026-11-20): se o bestiario crescer alem da janela, a lista anda com o cursor
+  const N = Math.max(3, Math.floor((y + h - 34 - (cy + 10)) / 40)), top = Math.max(0, Math.min(UI.sel - N + 2, l.length - N));
+  if (l.length > N) {texto('▲', cx + 294, cy + 28, 15, top > 0 ? '#7fd6f5' : '#3a4a6a', 'center'); texto('▼', cx + 294, cy + 10 + N * 40 - 14, 15, top + N < l.length ? '#7fd6f5' : '#3a4a6a', 'center');}
   l.forEach((b, i) => {
-    const yy = cy + 10 + i * 40, k = benta(b.id), on = i === UI.sel;
+    if (i < top || i >= top + N) return;
+    const yy = cy + 10 + (i - top) * 40, k = benta(b.id), on = i === UI.sel;
     linhaSel(cx, yy, 280, 36, on); texto(k ? b.nome : '? ? ?', cx + 22, yy + 24, 15, k ? '#fff' : '#5a6688');
     if (k) texto('×' + k, cx + 270, yy + 24, 13, '#ffe27a', 'right');
     ZONAS.push([cx, yy, cx + 280, yy + 36, () => {UI.sel = i;}]);

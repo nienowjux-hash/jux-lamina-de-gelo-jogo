@@ -20,6 +20,8 @@ const MAPA=new Image();MAPA.src=V.mapa;
 // caminhada em 4 direcoes (tools/cut_vila_heroi.py): sem espada no comeco, com espada depois do altar
 const ANDAR={};for(const n in AND){const i=new Image();i.src=AND[n].atlas;ANDAR[n]={...AND[n],i};}
 // Jux NO VENTO do Pico (vento_heroi.js, tools/cut_vento_heroi.py): andando e parado com cabelo e casaco voando (so com a espada)
+// ESCALADA (FICHA_ESCALADA.md, 2026-11-20): subir/descer beirada (pulos tipo 'v') com as folhas de tools/cut_escalar.py
+const ESCALAR=window.JUX_ESCALAR?(()=>{const i=new Image();i.src=window.JUX_ESCALAR.atlas;return {...window.JUX_ESCALAR,i};})():null;
 const VH=window.JUX_VENTO_HEROI?(()=>{const i=new Image();i.src=window.JUX_VENTO_HEROI.atlas;return {...window.JUX_VENTO_HEROI,i};})():null;
 const FR=V.frentes.filter(f=>!f.bandeira).map(f=>{const i=new Image(),o={...f,i,al:null};i.onload=()=>{const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const g=c.getContext('2d');g.drawImage(i,0,0);const d=g.getImageData(0,0,i.width,i.height).data,al=new Uint8Array(i.width*i.height);for(let k=0;k<al.length;k++)al[k]=d[k*4+3]>100?1:0;o.al=al;o.aw=i.width;o.ah=i.height;};i.src=f.img;return o;});
 // o objeto cobre de verdade o corpo do Jux? (confere alguns pontos do corpo no desenho da frente)
@@ -241,7 +243,7 @@ function baconPasso(dt){
   oincT-=dt;if(oincT<=0){oincT=bacon.acao==='dorme'?rnd(6,10):rnd(3,8);oinc(bacon.acao==='dorme'?.25:.6);}
   // trilha do Jux (a cada 3 px, e todo quadro durante o pulo)
   const u=trilha[trilha.length-1];
-  if(!u||hero.pulo>0||Math.hypot(hero.x-u.x,hero.y-u.y)>=3){trilha.push({x:hero.x,y:hero.y,p:hero.pulo>0?1-clamp(hero.pulo/PULO,0,1):-1});if(trilha.length>700)trilha.shift();}
+  if(!u||hero.pulo>0||Math.hypot(hero.x-u.x,hero.y-u.y)>=3){trilha.push({x:hero.x,y:hero.y,p:hero.pulo>0?1-clamp(hero.pulo/(hero.puloD||PULO),0,1):-1});if(trilha.length>700)trilha.shift();}
   if(bacon.vaiSeguir>0){bacon.vaiSeguir-=dt;if(bacon.vaiSeguir<=0){bacon.segue=true;
     // comeca do ponto onde o Jux comecou o pulo para fora do chiqueiro
     let i=trilha.length-1;while(i>0&&trilha[i].p<0)i--;while(i>0&&trilha[i-1].p>=0)i--;bacon.pts=trilha.slice(Math.max(0,i-4));trilha.length=0;
@@ -743,7 +745,8 @@ const ENCONTROS={
   caverna:{nv:[6,8],volta:'caverna.html',seguros:[[693,1000,110],[720,250,170]],
     grupos:[[['lobo','lobo'],4],[['lobo','lobo','lobo'],2],[['acolito'],2],[['lobo','acolito'],2],[['goblin','lobo'],1]]},
   // PICO DO UIVO (PICO_DO_UIVO.md): lobos fortes e acolitos que vigiam o circulo; perto da subida e no circulo e seguro
-  pico:{nv:[9,11],volta:'pico.html',seguros:[[650,1000,120],[655,280,200]],
+  // 2026-11-20 (pedido): o Pico e so para a luta com o Fenrir, SEM lutas aleatorias
+  pico:{semLutas:true,nv:[9,11],volta:'pico.html',seguros:[[650,1000,120],[655,280,200]],
     grupos:[[['lobo','lobo'],4],[['lobo','lobo','lobo'],3],[['acolito','lobo'],2],[['acolito','acolito'],1]]},
   // VALE DOS LOBOS (VALE_DOS_LOBOS.md): lugar de upar antes do Skoll. Lutas mais frequentes (passos), mais lobos, Lobo Alfa 20% (elite) e EXP +30% (index.html win)
   vale:{nv:[5,7],volta:'vale.html',passos:[60,120],alfa:.2,seguros:[[735,1000,120]],
@@ -753,7 +756,7 @@ const ENC=ENCONTROS[REGIAO]||null;let encDist=0,encPassos=0,transicao=0;const so
 const lobosPendentes=()=>REGIAO!=='vila'&&typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='ativa'&&((JOGO.cap1||{}).lobos||0)<3;
 const acolitoLiberado=()=>['vencida','feita'].includes((JOGO.provas||{}).acolito);   // o Acolito so aparece nas lutas aleatorias DEPOIS de vencido no santuario
 function sorteiaGrupo(){const gs=lobosPendentes()?[[['lobo'],3],[['lobo','lobo'],3],[['lobo','lobo','goblin'],1]]:ENC.grupos.filter(g=>acolitoLiberado()||!g[0].includes('acolito'));let r=Math.random()*gs.reduce((s,g)=>s+g[1],0);for(const g of gs){r-=g[1];if(r<=0)return g[0];}return gs[0][0];}
-function passoEncontro(){
+function passoEncontro(){if(ENC.semLutas)return;
   if((JOGO.repelente||0)>0){JOGO.repelente--;if(!JOGO.repelente)aviso('O Repelente acabou.','#c8b0ff');return;}
   if(ENC.seguros.some(([x,y,r])=>Math.hypot(hero.x-x,hero.y-y)<r))return;
   // estilo Final Fantasy: contador de passos com limiar sorteado. 1 passo = 16 px (andando ~4,4 passos/s): 110 a 240 passos = uns 25 a 55 s andando (14 a 31 s correndo) sem luta nenhuma
@@ -1033,13 +1036,21 @@ function passo(dt){
     moveu=false;
   }else if(hero.gv){hero.gv=null;hero.desliza=0;}
   if(emGelo){}else if(hero.pulo>0){   // pulo na cerca: arco rapido, passa por cima
-    hero.pulo-=dt;const q=1-clamp(hero.pulo/PULO,0,1);hero.x=hero.px0+(hero.px1-hero.px0)*q;hero.y=hero.py0+(hero.py1-hero.py0)*q;if(hero.pulo<=0){hero.pulo=0;hero.x=hero.px1;hero.y=hero.py1;poeiraNeve(hero.x,hero.y,10);som(PASSOS[0],.7);}   // pedido do usuario (2026-11-18): o Sir Bacon fica no chiqueiro, nao segue mais o Jux depois do pulo
+    hero.pulo-=dt;const q=1-clamp(hero.pulo/(hero.puloD||PULO),0,1);let qm=q;
+    // escalada: o corpo so sobe do meio da animacao (quadros pendurado/puxando); descendo, fica em cima ate o salto e aterrissa na metade
+    if(hero.esc==='subir'){const p=clamp((q-.22)/.56,0,1);qm=p*p*(3-2*p);if(q>.3&&!hero.escN){hero.escN=1;poeiraNeve(hero.px0,hero.py1+6,5);}}
+    else if(hero.esc==='descer'){qm=clamp((q-.2)/.32,0,1);}
+    hero.x=hero.px0+(hero.px1-hero.px0)*qm;hero.y=hero.py0+(hero.py1-hero.py0)*qm;
+    if(hero.esc==='descer'&&q>=.52&&!hero.escN){hero.escN=1;poeiraNeve(hero.x,hero.y,14);som(PASSOS[0],.8);}
+    if(hero.pulo<=0){hero.pulo=0;hero.x=hero.px1;hero.y=hero.py1;if(hero.esc==='subir'){hero.olha='cima';som(PASSOS[0],.6);}else if(hero.esc==='descer')hero.olha='baixo';else{poeiraNeve(hero.x,hero.y,10);som(PASSOS[0],.7);}hero.esc=null;hero.puloD=0;}   // pedido do usuario (2026-11-18): o Sir Bacon fica no chiqueiro, nao segue mais o Jux depois do pulo
     moveu=true;
   }else if(n){dx/=n;dy/=n;hero.corre=!!(teclas['shift']||(hero.alvo&&hero.alvoLonge));const v=(hero.corre?VELC:VEL)*dt,nx=hero.x+dx*v,ny=hero.y+dy*v;
     const pp=Math.abs(dx)>.5&&!livre(nx,hero.y)?pouso(hero.x,hero.y,dx>0?1:-1):Math.abs(dy)>.5&&!livre(hero.x,ny)?pousoV(hero.x,hero.y,dy>0?1:-1):null;
     if(pp!==null){   // chegou na cerca andando de lado: pula por cima
-      hero.pulo=PULO;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;if(Math.abs(dx)>.5){hero.dir=dx<0?-1:1;}hero.olha=hero.dir<0?'esquerda':'direita';hero.alvo=null;som(SOM.whoosh,.55);
-      if(!puloFalado){puloFalado=true;setTimeout(()=>abreFala('pulo'),450);}
+      hero.pulo=PULO;hero.puloD=PULO;hero.esc=null;hero.escN=0;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;hero.alvo=null;
+      if(pp.x===hero.x&&ESCALAR&&hero.espada){hero.esc=pp.y<hero.y?'subir':'descer';hero.puloD=hero.pulo=hero.esc==='subir'?1.05:.8;hero.olha=hero.esc==='subir'?'cima':'baixo';som(SOM.whoosh,.4);}
+      else{if(Math.abs(dx)>.5){hero.dir=dx<0?-1:1;}hero.olha=hero.dir<0?'esquerda':'direita';som(SOM.whoosh,.55);
+      if(!puloFalado&&NA_VILA){puloFalado=true;setTimeout(()=>abreFala('pulo'),450);}}
     }else if(livre(nx,ny)){hero.x=nx;hero.y=ny;moveu=true;}
     else if(dx&&livre(nx,hero.y)){hero.x=nx;moveu=true;}
     else if(dy&&livre(hero.x,ny)){hero.y=ny;moveu=true;}
@@ -1109,7 +1120,8 @@ function passoDist(){if(hero.corre&&folhaCorrida())return folhaCorrida().ciclos[
 function folhaCorrida(){const S=ANDAR[hero.espada?'correr_espada':'correr'];return S&&S.ciclos[hero.olha]?S:null;}
 function quadroHeroi(){
   let S,q,corre=false;
-  if(hero.pulo>0){S=hero.espada&&ANDAR.pulo_espada?ANDAR.pulo_espada:ANDAR.pulo;const qs=S.anims[hero.olha==='esquerda'?'esquerda':'direita'];q=qs[Math.min(qs.length-1,Math.floor((1-hero.pulo/PULO)*qs.length))];}
+  if(hero.pulo>0&&hero.esc&&ESCALAR){S=ESCALAR;const qs=S.anims[hero.esc];q=qs[clamp(Math.floor((1-hero.pulo/hero.puloD)*qs.length),0,qs.length-1)];}
+  else if(hero.pulo>0){S=hero.espada&&ANDAR.pulo_espada?ANDAR.pulo_espada:ANDAR.pulo;const qs=S.anims[hero.olha==='esquerda'?'esquerda':'direita'];q=qs[Math.min(qs.length-1,Math.floor((1-hero.pulo/PULO)*qs.length))];}
   else if(VH&&hero.espada&&hero.anda){S=VH;const cs=VH.ciclos[hero.olha];q=cs[Math.floor(hero.dist/(hero.corre?PASSO_C:PASSO_A)*.5)%cs.length];corre=hero.corre?'folha':false;}
   else if(VH&&hero.espada&&!hero.pose){S=VH;const ps=VH.parado[hero.olha];q=ps[Math.floor(t*6)%ps.length];}
   else if(hero.anda&&hero.corre&&folhaCorrida()){S=folhaCorrida();const cs=S.ciclos[hero.olha];q=cs[Math.floor(hero.dist/PASSO_R)%cs.length];corre='folha';}
@@ -1246,7 +1258,8 @@ function desenha(){
   // frentes por cima do heroi: vao para uma camada separada e ganham um "buraco" transparente e suave em volta dele
   // (arvore, casa ou torre ficam meio transparentes so ali: da para ver o Jux inteiro sem perder o objeto)
   const tr=ctx.getTransform();octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,W,H);octx.setTransform(tr);
-  for(const f of FR){if(hero.y>=f.base)continue;
+  const hyD=hero.esc?Math.max(hero.py0,hero.py1)+2:hero.y;   // escalando: fica NA FRENTE do paredao
+  for(const f of FR){if(hyD>=f.base)continue;
     if(hb[2]<f.x||hb[0]>f.x+f.w||hb[3]<f.y||hb[1]>f.y+f.h){ctx.drawImage(f.i,f.x,f.y,f.w,f.h);continue;}
     if(!cobre(f)){ctx.drawImage(f.i,f.x,f.y,f.w,f.h);continue;}
     octx.drawImage(f.i,f.x,f.y,f.w,f.h);escondido=true;}
@@ -1326,10 +1339,15 @@ function caixaFala(){
   ctx.font='bold 18px "Trebuchet MS"';const nw=ctx.measureText(quem).width+36;
   ctx.fillStyle='rgba(6,16,40,.95)';ctx.beginPath();ctx.roundRect(x+18+tx,y-18,nw,32,8);ctx.fill();ctx.stroke();
   texto(quem,x+36+tx,y+5,18,COR[quem]||'#fff');
-  ctx.font='19px "Trebuchet MS"';const vis=L.slice(0,Math.floor(fala.letras)),pal=vis.split(' ');let linha='',ly=y+48;
-  ctx.fillStyle='#f2f8ff';ctx.textAlign='left';
-  for(const p of pal){const tst=linha?linha+' '+p:p;if(ctx.measureText(tst).width>w-60-tx){ctx.fillText(linha,x+30+tx,ly);linha=p;ly+=28;}else linha=tst;}
-  ctx.fillText(linha,x+30+tx,ly);
+  // texto sempre dentro da caixa (2026-11-20): quebra a fala INTEIRA (as linhas nao pulam enquanto as letras aparecem);
+  // se passar de 3 linhas, diminui a letra ate caber
+  const larg=w-60-tx;let tam=19,linhas;
+  for(;;){ctx.font=tam+'px "Trebuchet MS"';linhas=[];let linha='';
+    for(const p of L.split(' ')){const tst=linha?linha+' '+p:p;if(linha&&ctx.measureText(tst).width>larg){linhas.push(linha);linha=p;}else linha=tst;}
+    linhas.push(linha);if(linhas.length*tam*1.47<=h-30||tam<=13)break;tam--;}
+  const passo=Math.round(tam*1.47),ly0=y+30+Math.round(tam*.95);
+  ctx.fillStyle='#f2f8ff';ctx.textAlign='left';let resta=Math.floor(fala.letras);
+  linhas.forEach((ln,k)=>{if(resta<=0)return;ctx.fillText(ln.slice(0,resta),x+30+tx,ly0+k*passo);resta-=ln.length+1;});
   if(fala.letras>=L.length){ctx.fillStyle='#8fdcff';ctx.beginPath();const ay=y+h-18+Math.sin(t*6)*2;ctx.moveTo(x+w-30,ay);ctx.lineTo(x+w-18,ay);ctx.lineTo(x+w-24,ay+7);ctx.fill();}
   ctx.restore();
 }
@@ -1344,7 +1362,7 @@ setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){sem
 // um erro num quadro nao congela mais o jogo: mostra o erro (jogo.js mostraErro) e segue
 function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.filter='none';c.globalCompositeOperation='source-over';}catch(_){}}
 function quadro(now){try{quadro0(now);}catch(e){zeraCtx(ctx);if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(quadro);}}
-function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}const dt=Math.min(.05,(now-ult)/1000);ult=now;
+function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}const dt=Math.max(0,Math.min(.05,(now-ult)/1000));ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);

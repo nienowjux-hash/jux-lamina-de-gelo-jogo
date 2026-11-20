@@ -13,6 +13,7 @@ const COR_P = '#ffd84a', COR_S = '#5fe3ff';
 
 function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg,x,y,txt} ou null
   if (k === '_historia') return hero.espada ? null : {reg: 'vila', x: 790, y: 140, txt: 'Suba ao altar e pegue a lâmina'};
+  if (k === '_pegadas') {const p = window.JUX_PEGADAS ? JUX_PEGADAS.rotas.garganta[1] : [1330, 905]; return {reg: 'garganta', x: p[0], y: p[1], txt: 'Ache as pegadas enormes na Garganta'};}
   const M = MISSOES[k]; if (!M) return null;
   if (k === 'prova_fenrir' && estadoMissao(k) === 'ativa') return {reg: 'pico', x: 655, y: 280, txt: 'Suba ao Pico do Uivo (siga as pegadas)'};
   const st = estadoMissao(k), npc = () => {const p = (typeof POS_NPC === 'function' && NA_VILA) ? POS_NPC()[M.quem] : null; return p ? {reg: 'vila', x: p.x, y: p.y} : {reg: 'vila', x: 722, y: 560};};
@@ -31,7 +32,11 @@ function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg
   }
   return Object.assign(npc(), {txt: M.nome});
 }
-const missaoPrincipalAtual = () => !hero.espada ? '_historia' : (estadoMissao('olhos_roxos') !== 'feita' ? 'olhos_roxos' : null);
+// 2026-11-20 (pedido: 'o jogador as vezes e noob, sempre deixar marcada a direcao da principal'): depois de Olhos Roxos,
+// a estrela segue para as pegadas do Fenrir na Garganta e, aceita a prova, para o circulo de pedras no Pico do Uivo
+const missaoPrincipalAtual = () => {if (!hero.espada) return '_historia'; if (estadoMissao('olhos_roxos') !== 'feita') return 'olhos_roxos';
+  const pf = typeof provaFenrirEstado === 'function' ? provaFenrirEstado() : null;
+  if (pf === 'pegadas') return '_pegadas'; if (estadoMissao('prova_fenrir') === 'ativa') return 'prova_fenrir'; return null;};
 function missaoRastreada() {const r = JOGO.rastreio; return (r && MISSOES[r] && !MISSOES[r].principal && estadoMissao(r) === 'ativa') ? r : null;}
 function alternaRastreio(k) {
   if (!MISSOES[k] || MISSOES[k].principal || estadoMissao(k) !== 'ativa') return;
@@ -128,7 +133,10 @@ function desenhaMapa(x, y, w, h) {
   const [hx, hy] = P(hero.x, hero.y); ctx.fillStyle = '#6fe3ff'; ctx.beginPath(); ctx.arc(hx, hy, 5 + 1.5 * Math.sin(t * 5), 0, 6.283); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); texto('Jux', hx, hy - 11, 12, '#bff4ff', 'center');
   // coluna da direita
   const lx = px + pw + 14, lw = 248; let ly = py + 4;
-  texto(NA_VILA ? 'Invernália' : 'Trilha dos Pinheiros', lx, ly + 16, 20, '#ffe27a'); ly += 22; texto(NA_VILA ? 'Vila do Norte' : 'Lobos, Bolotas e Goblins · Nv 3–6', lx, ly + 12, 12, '#9fb3d9'); ly += 28;
+  // nome da regiao certo em cada mapa (2026-11-20: antes todo mapa fora da vila dizia 'Trilha dos Pinheiros')
+  const NR = {vila: ['Invernália', 'Vila do Norte'], trilha: ['Trilha dos Pinheiros', 'Lobos, Bolotas e Goblins'], garganta: ['Garganta Gelada', 'Goblins e acampamentos'], vale: ['Vale dos Lobos', 'Lobos e a Presa-Antiga'], caverna: ['Caverna de Gelo', 'Onde a Ordem prendeu o Skoll'], pico: ['Pico do Uivo', 'O círculo de pedras · sem lutas aleatórias']}[REGIAO] || ['', ''];
+  const nvR = typeof ENCONTROS !== 'undefined' && ENCONTROS[REGIAO] && !ENCONTROS[REGIAO].semLutas && ENCONTROS[REGIAO].nv;
+  texto(NR[0], lx, ly + 16, 20, '#ffe27a'); ly += 22; texto(NR[1] + (nvR ? ' · Nv ' + nvR[0] + '–' + nvR[1] : ''), lx, ly + 12, 12, '#9fb3d9'); ly += 28;
   ctx.fillStyle = 'rgba(127,214,245,.35)'; ctx.fillRect(lx, ly, lw - 6, 1); ly += 14;
   texto('Objetivos', lx, ly + 4, 14, '#9fe8ff'); ly += 20;
   const quebra = (s, xx, yy, ww, tam, cor) => {ctx.font = `bold ${tam}px "Trebuchet MS"`; let lin = ''; for (const p of s.split(' ')) {if (ctx.measureText(lin + p).width > ww) {texto(lin, xx, yy, tam, cor); yy += tam + 4; lin = '';} lin += p + ' ';} if (lin) {texto(lin, xx, yy, tam, cor); yy += tam + 4;} return yy;};
@@ -136,7 +144,7 @@ function desenhaMapa(x, y, w, h) {
   for (const [kk, cor, forma, rot2] of [[kp, COR_P, 'estrela', 'Principal'], [kr, COR_S, 'losango', 'Rastreada']]) {
     formaMarca(ctx, forma, lx + 8, ly, 7, kk ? cor : '#4a5878'); texto(rot2, lx + 22, ly + 4, 13, kk ? cor : '#5a6688');
     const d = kk && destinoMissao(kk); ly += 18;
-    if (kk) {texto(kk === '_historia' ? 'A lâmina no altar' : MISSOES[kk].nome, lx + 22, ly + 2, 13, '#fff'); ly += 16; ly = quebra(d ? d.txt : '', lx + 22, ly + 2, lw - 40, 12, '#c8d8f0') + 4;}
+    if (kk) {texto(kk === '_historia' ? 'A lâmina no altar' : kk === '_pegadas' ? 'Pegadas enormes' : MISSOES[kk].nome, lx + 22, ly + 2, 13, '#fff'); ly += 16; ly = quebra(d ? d.txt : '', lx + 22, ly + 2, lw - 40, 12, '#c8d8f0') + 4;}
     else {texto(forma === 'losango' ? 'Nenhuma (Missões → ENTER)' : 'Nenhuma agora', lx + 22, ly + 2, 12, '#5a6688'); ly += 20;}
     ly += 4;
   }

@@ -61,7 +61,7 @@ const MISSOES={
       ['Jux','Pesada é bom. Pesada quebra coisas.'],['Oskar','Hm. Toma uma Hi-Poção. Pra não quebrar você.']]},
 };
 // a Prova do Lobo nao tem morador: nasce das pegadas na trilha (provaFenrirEstado, vila_motor.js)
-MISSOES.prova_fenrir={nome:'A prova do lobo',quem:null,quemNome:'as pegadas enormes',
+MISSOES.prova_fenrir={nome:'A prova do lobo',quem:null,principal:true,quemNome:'as pegadas enormes',
   desc:'Pegadas enormes, brilhando na neve, saem da caverna do lobo, atravessam o Vale dos Lobos e sobem até o Pico do Uivo. Um Eco antigo, um lobo caçador, só se entrega a quem provar valor: lute contra o espírito dele. Ele é forte: nível recomendado 12. Se estiver fraco, treine e melhore o equipamento.',
   pede:{prova:'fenrir'},rec:{eco:'lamina'}};
 // MISSAO SECUNDARIA LIGADA AO MINI-CHEFE DA GARGANTA (CHEFE_CAPITAO.md): o Halvard, ja resgatado, pede o machado e a cota de volta
