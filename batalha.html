@@ -303,8 +303,14 @@ const ECO_GOLPES={mordida:ecoMordida,garra:ecoGarra,uivo:ecoUivo,matilha:ecoMati
 function heroSrc(name){if(BAT&&BAT.anims[name])return{D:BAT,img:ATLAS_B};return M.heroi.anims[name]?{D:M.heroi,img:ATLAS_M}:RES.heroi.anims[name]?{D:RES.heroi,img:ATLAS_R}:DAN.heroi.anims[name]?{D:DAN.heroi,img:ATLAS_D}:ESC.heroi.anims[name]?{D:ESC.heroi,img:ATLAS_S}:LAN.heroi.anims[name]?{D:LAN.heroi,img:ATLAS_L}:NEV.heroi.anims[name]?{D:NEV.heroi,img:ATLAS_N}:ZER.heroi.anims[name]?{D:ZER.heroi,img:ATLAS_Z}:{D:A,img:ATLAS};}
 function animFrame(name,at,bino){const src=bino&&BINO_D?{D:BINO_D,img:ATLAS_BINO}:heroSrc(name),an=src.D.anims[name]||(bino&&src.D.anims.parado);let i=Math.floor(at*an.fps);i=an.loop?i%an.quadros.length:Math.min(i,an.quadros.length-1);return{j:an.quadros[i],tip:an.pontas[i],D:src.D,img:src.img};}
 // s = tamanho de cada pixel do sprite na tela; o sprite olha para a direita, flip vira para a esquerda
+// TAMANHO IGUAL EM TODAS AS POSES (pedido 2026-11-20: 'fica pequeno e maior toda hora'): o 'parado' e o 'ataque' foram
+// desenhados maiores que as outras poses (8 a 25%, medido pelo tamanho do rosto em cada quadro). Aqui as outras sao
+// desenhadas maiores em volta do pe para empatar com o 'parado', sem gerar sprites novos. Vale tambem para as versoes _branco.
+const ESCALA_POSE={corrida:1.1,dano:1.1,guarda:1.08,guarda_empurra:1.1,pocao:1.15,vitoria:1.15,derrota:1.12,lamina:1.18,tempestade:1.08,danca:1.15,
+  escudo:1.12,lanca:1.18,nevasca:1.15,ressonancia:1.18,zero:1.12,prisao:1.12,espelho:1.12,coroa:1.18,estalactites:1.2,coracao:1.18,aurora:1.2,kelvin:1.2};
 function drawHero(c,x,y,s,o){
   o=o||{};const f=animFrame(o.anim||'parado',o.at||0,o.bino),dir=o.flip?-1:1,yy=Math.round(y+(o.bob||0));
+  if(!o.bino&&f.D===BAT)s*=ESCALA_POSE[(o.anim||'parado').replace(/_branco$/,'')]||1;
   c.save();c.translate(Math.round(x),yy);c.scale(dir*s,s);
   const fl=[];if(o.filter)fl.push(o.filter);if(o.charge>0)fl.push(`drop-shadow(0 0 ${Math.round(1+o.charge*3)}px #6fe3ff)`);if(fl.length)c.filter=fl.join(' ');
   const D=f.D;c.drawImage(f.img,f.j*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1]-1,D.w,D.h);
