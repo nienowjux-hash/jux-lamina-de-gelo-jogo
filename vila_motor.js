@@ -63,7 +63,11 @@ function livre(x,y){if(festAplicado&&POSTES_FEST.some(([a,b,c,d])=>x+6>=a&&x-6<=
 // cercas que da para pular: [x0,y0,x1,y1,'h'|'v'] -> ponto de pouso do outro lado (ou null)
 function pouso(x,y,dx){const z=V.pulos.find(([a,b,c,d,t])=>t!=='v'&&x+dx*12>=a&&x+dx*12<=c&&y>=b&&y<=d);if(!z)return null;const px=dx>0?z[2]+9:z[0]-9;return livre(px,y)?{x:px,y}:null;}
 // pouso do pulo/escalada vertical: o primeiro lugar livre depois da faixa (procura ate 30 px: a beirada desenhada e torta)
-function pousoV(x,y,dy){const z=V.pulos.find(([a,b,c,d,t])=>t==='v'&&x>=a&&x<=c&&(dy>0?y<b&&y+26>=b:y>d&&y-26<=d));if(!z)return null;const p0=dy>0?z[3]-4:z[1]+4;for(let k=0;k<=40;k+=2){const py=p0+dy*k;if((dy>0?py>z[3]-6:py<z[1]+6)&&livre(x,py))return {x,y:py};}return null;}
+function pousoV(x,y,dy){const z=V.pulos.find(([a,b,c,d,t])=>t==='v'&&x>=a&&x<=c&&(dy>0?y<d&&y+26>=b:y>b&&y-26<=d));
+  // dentro da faixa vale qualquer altura (a cerca e torta)
+  if(!z)return null;const p0=dy>0?z[3]-4:z[1]+4;
+  // procura o pouso reto e, se ali tiver obstaculo (ex.: o cocho do chiqueiro), um pouco para os lados (ate 70 px)
+  for(const ox of [0,-6,6,-12,12,-20,-30,-42,-56,-70,-84,-100,-116]){const px=x+ox;for(let k=0;k<=40;k+=2){const py=p0+dy*k;if((dy>0?py>z[3]-6:py<z[1]+6)&&livre(px,py))return {x:px,y:py};}}return null;}
 
 // cada troca de pagina pede o arquivo "novo" (?t=hora): o navegador/artefato nunca mostra uma pagina velha guardada (era o que podia fazer a trilha tocar a musica da vila)
 const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();
@@ -646,13 +650,13 @@ const CENA_BORIN=[[0,.9,u=>({dy:7*(1-u)-Math.abs(Math.sin(u*Math.PI*3))*1.2})],[
   [2,.7,u=>({dy:-Math.abs(Math.sin(u*Math.PI*2))*3})],[3,.75,u=>({rot:Math.sin(u*Math.PI*6)*.07*u,dx:-2*u})],
   [4,.45,u=>({dx:-8*u,dy:-9*Math.sin(u*Math.PI)+6*u,rot:-.3*u})],[5,.85,u=>({sy:1-.14*Math.sin(Math.min(1,u*3)*Math.PI),dy:0})],
   [6,.95,u=>({dy:-Math.abs(Math.sin(u*Math.PI*4))*1.6})],[7,.85,u=>({sy:1+.05*Math.sin(u*Math.PI)})]];
-const CENA_PEGA=[[0,.45,u=>({dy:-Math.sin(u*Math.PI)*.6})],[1,.4,u=>({})],[2,.3,u=>({dx:1.5*u})],[3,.7,u=>({dx:Math.sin(u*40)*.9})],
+const CENA_PEGA=[[1,.45,u=>({})],[2,.3,u=>({dx:1.5*u})],[3,.7,u=>({dx:Math.sin(u*40)*.9})],
   [4,.75,u=>({dy:-Math.sin(u*Math.PI)*1})],[5,.55,u=>({dy:Math.sin(u*Math.PI)*1.2})],[6,.65,u=>({})],[7,1,u=>({sy:1+.04*Math.sin(u*Math.PI*2)})]];
 const cenaDur=C=>C.reduce((a,c)=>a+c[1],0);
 function cenaQuadro(C,t){let a=0;for(const c of C){if(t<a+c[1])return {q:c[0],u:(t-a)/c[1],o:c[2]((t-a)/c[1]),ini:a};a+=c[1];}const c=C[C.length-1];return {q:c[0],u:1,o:c[2](1),ini:a-c[1]};}   // cena animada tocando (o Jux fica parado): {tipo, t, ...}
 const PONTO_LENHA={id:'prep_lenha',x:PREP_PILHA[0],y:PREP_PILHA[1]-6,r:0};if(NA_VILA)V.pontos.push(PONTO_LENHA);
-const caca={on:false,toques:0,susto:0,provoca:0,vx:0,vy:0,dir:1,pega:null,dist:0,lado:true};
-const porcoOk=(x,y)=>livre(x,y)&&!(x>650&&x<830&&y<652);   // atras da fogueira ele some na arte do fogo
+const caca={on:false,toques:0,susto:0,provoca:0,vx:0,vy:0,dir:1,pega:null,dist:0,lado:true,fuga:0,final:false};
+const porcoOk=(x,y)=>livre(x,y)&&!(x>650&&x<830&&y<652)&&Math.hypot(x-PREP_PEGA[0],y-PREP_PEGA[1])>34;   // atras da fogueira ele some na arte do fogo; longe do Bino
 const binoLenha={on:false,x:0,y:0,dist:0,falou:0,olha:'direita'};
 // abre a tarefa ao falar (antes da loja e das missoes)
 function prepAbre(id){if(!emPreparo()||prepCena)return false;
@@ -661,7 +665,7 @@ function prepAbre(id){if(!emPreparo()||prepCena)return false;
   if(id==='borin'&&!prepFeita('borin')){fala={linhas:[['Borin','FORASTEIRO! Segura essa escada pra mim? Não, a outra ponta!'],['Jux','Seguro. Mas eu não me responsabilizo pela gravidade.']],i:0,letras:0,
     fim:()=>{prepCena={tipo:'borin',t:0};}};som(SOM.ui_vez,.5);return true;}
   if(id==='bacon'&&!prepFeita('pao')&&!caca.on){fala={linhas:[['Jux','Sir Bacon. Isso na sua boca é o pão da Ingrid?'],['Sir Bacon','…Oinc.'],['✦','Ele dispara pela praça! Corra (Shift) e encoste no Sir Bacon 3 vezes.']],i:0,letras:0,
-    fim:()=>{caca.on=true;caca.toques=0;caca.provoca=1;bacon.x=640;bacon.y=684;}};som(SOM.ui_vez,.5);return true;}
+    fim:()=>{caca.on=true;caca.toques=0;caca.provoca=1;caca.final=false;caca.fuga=0;bacon.x=700;bacon.y=676;}};som(SOM.ui_vez,.5);return true;}
   if(id==='prep_lenha'&&!prepFeita('lenha')&&!binoLenha.on){fala={linhas:[['Oskar','Hm. A lenha da fogueira. Pesada.'],['Bino','…Eu levo.'],['✦','Acompanhe o Bino até a fogueira.']],i:0,letras:0,
     fim:()=>{binoLenha.on=true;binoLenha.x=PREP_PILHA[0]-30;binoLenha.y=676;binoLenha.dist=0;binoLenha.falou=0;}};som(SOM.ui_vez,.5);return true;}
   return false;}
@@ -673,20 +677,27 @@ function prepPasso(dt){if(!emPreparo())return;
   if(prepCena){const C=prepCena;C.t+=dt;for(const k in teclas)teclas[k]=false;hero.alvo=null;
     if(C.tipo==='borin'){if(!C.puf&&cenaQuadro(CENA_BORIN,C.t).q>=5){C.puf=true;poeiraNeve(PREP_ESCADA[0]-8,PREP_ESCADA[1],30);abSom('impacto');clarao=Math.max(clarao,.08);}
       if(C.t>=cenaDur(CENA_BORIN)){prepCena=null;fala={linhas:[['Borin','…EU ESTOU BEM! As bandeirinhas também! É isso que importa!'],['Jux','Dez de dez na aterrissagem.']],i:0,letras:0,fim:()=>prepConclui('borin')};}}
-    else if(C.tipo==='pega'){if(C.t>=cenaDur(CENA_PEGA)){prepCena=null;caca.on=false;
+    else if(C.tipo==='pega'){
+      // o Jux da uns passos para o lado (nao fica colado no Bino) e olha para ele
+      {const tx=PREP_PEGA[0]+62,ty=PREP_PEGA[1]+10,u=Math.min(1,C.t/.5);if(Math.hypot(C.jx-PREP_PEGA[0],C.jy-PREP_PEGA[1])<70){hero.x=C.jx+(tx-C.jx)*u;hero.y=C.jy+(ty-C.jy)*u;}hero.olha='esquerda';hero.dir=-1;}
+      if(C.t>=cenaDur(CENA_PEGA)){prepCena=null;caca.on=false;
       fala={linhas:[['Bino','…Pão.'],['Jux','Devolve o pão, Sir. Hoje à noite você ganha um laço azul. É uma negociação justa.'],['Ingrid','MEU PÃO! Obrigada! Hoje à noite tem um pedaço guardado pra vocês!']],i:0,letras:0,fim:()=>prepConclui('pao')};}}
     return;}
   // o Sir Bacon foge do Jux pela praca
   if(caca.on){const dx=bacon.x-hero.x,dy=bacon.y-hero.y,d=Math.hypot(dx,dy)||1;caca.susto=Math.max(0,caca.susto-dt);caca.provoca=Math.max(0,caca.provoca-dt);
-    if(d<15&&caca.susto<=0){caca.toques++;caca.susto=1.1;caca.provoca=0;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
-      if(caca.toques>=3){prepCena={tipo:'pega',t:0,x:PREP_PEGA[0],y:PREP_PEGA[1]};bacon.x=PREP_PEGA[0]+30;bacon.y=PREP_PEGA[1];hero.x=PREP_PEGA[0]+64;hero.y=PREP_PEGA[1]+6;hero.olha='esquerda';hero.dir=-1;return;}
-      {let melhor=null,md=-1;for(let i=0;i<12;i++){const a=i/12*6.283,nx=clamp(bacon.x+Math.cos(a)*64,PREP_PRACA[0],PREP_PRACA[2]),ny=clamp(bacon.y+Math.sin(a)*36,PREP_PRACA[1],PREP_PRACA[3]);
-        if(!porcoOk(nx,ny))continue;const dd=Math.hypot(nx-hero.x,ny-hero.y);if(dd>md){md=dd;melhor=[nx,ny];}}if(melhor){bacon.x=melhor[0];bacon.y=melhor[1];}}}   // da um pulo para o lugar livre mais longe do Jux
-    let vx=0,vy=0;if(d<90&&caca.provoca<=0){vx=dx/d;vy=dy/d;
+    if(caca.final){   // corrida final: vai direto para o Bino (que esta parado esperando) e a cena comeca quando chega
+      const ax=PREP_PEGA[0]+22-bacon.x,ay=PREP_PEGA[1]-bacon.y,dd=Math.hypot(ax,ay);
+      if(dd<5){prepCena={tipo:'pega',t:0,x:PREP_PEGA[0],y:PREP_PEGA[1],jx:hero.x,jy:hero.y};baloes.length=0;return;}
+      const st=Math.min(dd,130*dt);bacon.x+=ax/dd*st;bacon.y+=ay/dd*st;caca.dist+=st;caca.vx=ax/dd;caca.vy=ay/dd;caca.dir=ax<0?-1:1;caca.lado=Math.abs(ax)>=Math.abs(ay)*.6;
+      if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}return;}
+    if(d<15&&caca.susto<=0){caca.toques++;caca.susto=.9;caca.provoca=0;caca.fuga=.55;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
+      if(caca.toques>=3){caca.final=true;caca.fuga=0;return;}}
+    caca.fuga=Math.max(0,caca.fuga-dt);
+    let vx=0,vy=0;if((d<90||caca.fuga>0)&&caca.provoca<=0){vx=dx/d;vy=dy/d;
       const [x0,y0,x1,y1]=PREP_PRACA,cx=(x0+x1)/2,cy=(y0+y1)/2,borda=bacon.x<x0+40||bacon.x>x1-40||bacon.y<y0+24||bacon.y>y1-24;
       if(borda){const ex=cx-bacon.x,ey=cy-bacon.y,ed=Math.hypot(ex,ey)||1,px=-vy,py=vx;vx=ex/ed*.7+px*.7;vy=ey/ed*.7+py*.7;const n2=Math.hypot(vx,vy)||1;vx/=n2;vy/=n2;}}   // na borda: corre pelo lado em direcao ao meio
-    else if(caca.provoca<=0&&Math.random()<dt*.6){caca.provoca=rnd(.8,1.6);}
-    const v=caca.provoca>0?0:96,k=Math.min(1,dt*5);   // a direcao muda aos poucos (antes virava de uma vez e parecia rodopiar)
+    else if(d>130&&caca.provoca<=0&&Math.random()<dt*.35){caca.provoca=rnd(.9,1.5);}
+    const v=caca.provoca>0?0:(caca.fuga>0?150:96),k=Math.min(1,dt*(caca.fuga>0?9:5));   // a direcao muda aos poucos (antes virava de uma vez e parecia rodopiar)
     caca.vx+=(vx-caca.vx)*k;caca.vy+=(vy-caca.vy)*k;let ux=caca.vx,uy=caca.vy;const um=Math.hypot(ux,uy);
     if(um>.15&&v>0){ux/=um;uy/=um;for(const [ax,ay] of [[ux,uy],[-uy,ux],[uy,-ux]]){const nx=clamp(bacon.x+ax*v*um*dt,PREP_PRACA[0],PREP_PRACA[2]),ny=clamp(bacon.y+ay*v*um*dt,PREP_PRACA[1],PREP_PRACA[3]);
       if(porcoOk(nx,ny)){caca.dist+=Math.hypot(nx-bacon.x,ny-bacon.y);bacon.x=nx;bacon.y=ny;break;}}}
@@ -718,6 +729,7 @@ function prepDesenhos(){if(!emPreparo())return [];const L=[];
   // a pilha de lenha (grande antes, pequena depois)
   L.push([PREP_PILHA[1],()=>prepQuadro(prepFeita('lenha')||binoLenha.on?'obj_pilha_peq':'obj_pilha',0,PREP_PILHA[0],PREP_PILHA[1])]);
   if(binoLenha.on){const B=binoLenha,f=B.dist/7,n=Math.floor(f)%4;L.push([B.y,()=>prepQuadroT('bino_lenha',B.olha==='lado'?n:4+n,B.x,B.y,{esp:B.olha==='lado'&&B.dir<0,dy:-Math.abs(Math.sin(f*Math.PI))*1.1,rot:Math.sin(f*Math.PI)*.02})]);}
+  if(caca.on&&!(prepCena&&prepCena.tipo==='pega'))L.push([PREP_PEGA[1],()=>prepQuadroT('bino_pega',0,PREP_PEGA[0],PREP_PEGA[1],{sy:1+.015*Math.sin(t*2.2)})]);
   if(prepCena&&prepCena.tipo==='pega'){const C=prepCena,c=cenaQuadro(CENA_PEGA,C.t);L.push([C.y,()=>prepQuadroT('bino_pega',c.q,C.x,C.y,c.o)]);}
   // marcas '!'
   L.push([2000,()=>{if(prepCena)return;
@@ -728,8 +740,8 @@ function prepDesenhos(){if(!emPreparo())return [];const L=[];
 // o Sir Bacon fujao (com o pao) no lugar do desenho normal
 function desenhaBaconCaca(){if(!emPreparo()||!(caca.on||(prepCena&&prepCena.tipo==='pega')))return false;
   if(prepCena&&prepCena.tipo==='pega')return true;   // na cena ele esta na folha do Bino
-  const anda=caca.provoca<=0&&(Math.abs(caca.vx)+Math.abs(caca.vy))>.25,f=caca.dist/9,n=Math.floor(f)%4;
-  let q,esp=false,dy=0;if(caca.susto>.7)q=7,dy=-3*Math.sin((1.1-caca.susto)/.4*Math.PI);else if(!anda)q=6,esp=hero.x>bacon.x,dy=0;
+  const anda=caca.final||(caca.provoca<=0&&(Math.abs(caca.vx)+Math.abs(caca.vy))>.25),f=caca.dist/9,n=Math.floor(f)%4;
+  let q,esp=false,dy=0;if(caca.susto>.6&&!caca.final)q=7,esp=caca.dir<0,dy=-4*Math.sin((.9-caca.susto)/.3*Math.PI);else if(!anda)q=6,esp=hero.x>bacon.x,dy=0;
   else{dy=-Math.abs(Math.sin(f*Math.PI/2))*1.4;if(caca.lado)q=n,esp=caca.dir<0;else q=4+(Math.floor(f/2)%2);}
   return prepQuadroT('bacon_pao',q,bacon.x,bacon.y,{esp,dy});}
 function halvardVila(){if(!NA_VILA||ANDARILHOS.some(n=>n.id==='halvard'))return;if(typeof estadoMissao!=='function'||estadoMissao('olhos_roxos')!=='feita')return;
@@ -1324,7 +1336,7 @@ function passo(dt){
     const pp=Math.abs(dx)>.5&&!livre(nx,hero.y)?pouso(hero.x,hero.y,dx>0?1:-1):Math.abs(dy)>.5&&!livre(hero.x,ny)?pousoV(hero.x,hero.y,dy>0?1:-1):null;
     if(pp!==null){   // chegou na cerca andando de lado: pula por cima
       hero.pulo=PULO;hero.puloD=PULO;hero.esc=null;hero.escN=0;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;hero.alvo=null;
-      if(pp.x===hero.x&&ESCALAR&&hero.espada){hero.esc=pp.y<hero.y?'subir':'descer';hero.puloD=hero.pulo=hero.esc==='subir'?1.05:.8;hero.olha=hero.esc==='subir'?'cima':'baixo';som(SOM.whoosh,.4);}
+      if(ESCALAR&&hero.espada&&Math.abs(pp.y-hero.y)>Math.abs(pp.x-hero.x)){hero.esc=pp.y<hero.y?'subir':'descer';hero.puloD=hero.pulo=hero.esc==='subir'?1.05:.8;hero.olha=hero.esc==='subir'?'cima':'baixo';som(SOM.whoosh,.4);}
       else{if(Math.abs(dx)>.5){hero.dir=dx<0?-1:1;}hero.olha=hero.dir<0?'esquerda':'direita';som(SOM.whoosh,.55);
       if(!puloFalado&&NA_VILA){puloFalado=true;setTimeout(()=>abreFala('pulo'),450);}}
     }else if(livre(nx,ny)){hero.x=nx;hero.y=ny;moveu=true;}
