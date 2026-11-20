@@ -118,6 +118,21 @@ const EFX_INIM = {
       for (let i = 0; i < 8; i++) setTimeout(() => fxFaiscas(a.x + (enemy.x - a.x) * i / 8, a.y + (enemy.y - 60 - a.y) * i / 8, 4, {cor: '255,225,110', vel: 120, g: 0, vida: .5}), i * 45);
       fxEstrela(a.x, a.y, {raio: 130, ms: 320, cor: '255,225,110'}); }},
 
+  // ---------------- Ignarok (Cap. 2, Parte C): efeitos desenhados (ref/inimigos_fx/ignarok_*.png) ----------------
+  'Punho de Magma': {
+    prep(e) { som('ignarok_rosna', .8); fxBrilho(e.x + 80, e.y - 160, {raio: 150, ms: 500, cor: '255,140,40', cresce: true}); },
+    hit(e) { const a = alvoHeroi(); som('ignarok_punho', .95); fxiPlay('ignarok_punho', a.x, a.y, 900, {escala: 1.7}); fxFlash('255,110,20', .25, 300); shake = Math.max(shake, 14); }},
+  'Derreter': {
+    glow: 700,
+    prep(e) { som('ignarok_rosna', .6); fxBrilho(e.x + 60, e.y - 150, {raio: 170, ms: 700, cor: '255,120,30', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('ignarok_derreter', .9);
+      fxiPlay('ignarok_derreter', a.x, a.y, 1100, {escala: 1.6}); await wait(500);
+      // o calor derrete as defesas do alvo: Escudo de Cristal, Muralha e Regen
+      let tirou = false; if (hero.escudo > 0) {hero.escudo = 0; tirou = true;}
+      for (const k of ['muralha', 'regen']) if (hero.est && hero.est[k] > 0) {hero.est[k] = 0; tirou = true;}
+      if (tirou) setTimeout(() => pop(hero.x, hero.y - 250, 'DEFESAS DERRETIDAS', '#ffb060'), 100);
+      fxFlash('255,120,30', .2, 320); shake = Math.max(shake, 6); await wait(250); }},
+
   // ---------------- Sombras (Cap. 2, Parte B): o golpe ja vem desenhado no quadro 5 da folha; aqui so o impacto ----------------
   'Lamento': {
     glow: 750,

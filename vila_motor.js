@@ -21,7 +21,11 @@ const MAPA=new Image();MAPA.src=V.mapa;
 const emFestival=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='noite');
 // o festival comeca quando o Jux volta para a vila depois de ter o Fenrir
 const diaFestival=()=>NA_VILA&&!!(JOGO.cap2&&(JOGO.cap2.fase==='volta'||JOGO.cap2.fase==='preparo'));
-const festivalPronto=()=>!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita';
+const festivalPronto=()=>!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita'&&(typeof cap1Completo!=='function'||cap1Completo());
+// trava de capitulo: o que ainda falta do Capitulo 1 (aviso da Aurora ao voltar e a Vovo segurando a historia)
+const cap1Trava=()=>typeof cap1Completo==='function'&&!cap1Completo()&&!window.__semSalvar;   // nos modos de teste a trava nao atrapalha
+function falaPendencias(quem){const l=cap1Faltam();fala={linhas:quem==='vovo'?[['Vovó Hilda','Hmpf. O festival espera. Primeiro termine o que deixou pela metade, forasteiro.'],['✦','Falta do Capítulo 1: '+l.join(', ')+'. (A ★ mostra o caminho.)']]
+  :[['Aurora','Antes do festival, Portador, ainda tem gente contando com você.',1],['✦','Falta do Capítulo 1: '+l.join(', ')+'.'],['Jux','Herói que se preza não deixa serviço pela metade.'],['✦','A ★ agora leva até cada pendência, uma por vez. Quando tudo estiver feito, a Vovó chama para o festival.']],i:0,letras:0,fim:null};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // mapa da noite de festa (ref/vila/mapa_festival.png: o MESMO desenho, so de noite e enfeitado) e as frentes recortadas dele
 const MAPA_FEST=new Image();let festAplicado=false;
 function aplicaFestival(){if(festAplicado)return;festAplicado=true;
@@ -58,7 +62,7 @@ const ATQ_LUTAS=[{id:'atq_1',x:742,y:712,nome:'Praça'},{id:'atq_2',x:1150,y:612
 const atqFeitas=()=>ATQ_LUTAS.filter(l=>((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]).length;
 const atqProxima=()=>ATQ_LUTAS.find(l=>!(((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]))||null;
 // na vila em ataque so estes pontos respondem (os moradores se esconderam)
-const ATQ_PODE=new Set(['portao','entrada_trilha','atq_1','atq_2','atq_3']);
+const ATQ_PODE=new Set(['portao','entrada_trilha','atq_1','atq_2','atq_3','altar']);
 const POSTES_FEST=[[572,280,598,298],[922,280,948,298]];   // postes de bandeira que so existem no mapa da festa (pe bloqueia)
 const FEST_EFEITO={
   ingrid:()=>{if(JOGO.cap2.ingrid)return;JOGO.cap2.ingrid=true;JOGO.buff={id:'ensopado',lutas:(ITENS.ensopado&&ITENS.ensopado.lutas)||5};som(SOM.ui_vez,.6);aviso('Ensopado do Festival: bônus de comida ativo!','#7dffa8');salvaJogo();},
@@ -167,6 +171,8 @@ const FALAS={
   atq_1_fim:[['✦','A fumaça roxa sai do corpo do Oskar. Ele abre os olhos, abraçado ao tambor.'],['Oskar','Eu… ouvi você. Lá de dentro.'],['Jux','Então ouve isso também: corre para a casa da Vovó.'],['✦','O Oskar corre para a casa onde os outros se esconderam.']],
   atq_2_fim:[['✦','A fumaça sai do Borin. Ele tomba de joelhos, ofegando.'],['Borin','Ainda bem que você bate como um ferreiro.'],['Bino','…Ele bate mais.'],['✦','O Borin se levanta e corre para a casa da Vovó.']],
   atq_3_fim:[['✦','A fumaça sai da Ingrid. Ela segura o braço do Jux, tremendo.'],['Ingrid','Eles foram para o altar… estão cavando embaixo da espada!'],['Aurora','O Cristal do Gelo, Portador. Está escondido debaixo do altar.',1],['Jux','Então é para lá que a gente vai.']],
+  ign_calor:[['Bino','…Calor. Lá em cima.'],['Jux','A neve da escada está derretendo. Isso não é a Vovó fazendo sopa.']],
+  ign_vence:[['✦','O Ignarok desaba dentro da fenda. O magma esfria e vira pedra preta.'],['Jux','…Ninguém derrete nada hoje. Eu avisei.'],['Aurora','O Cristal ainda está lá embaixo, Portador. Mas sinto ele… rachado.',1]],
   atq_portao:[['Jux','Não vou sair daqui com a vila assim.'],['Bino','…Ninguém sai.']],
   atq_comeca:[['Aurora','As Sombras ainda estão lá dentro, Portador. Derrube sem quebrar.',1],['Jux','Derrubar sem quebrar. Tipo a minha vida amorosa.'],['Bino','…Foco.']],
   atq_1:[['✦','Na praça, a Sombra do Oskar abraça o tambor. Dois acólitos apontam os cajados para você.'],['Oskar','Jux… o tambor… eu não sinto as mãos…'],['Jux','Aguenta, Oskar. Eu vou te tirar daí.']],
@@ -742,7 +748,8 @@ function prepAbre(id){if(!emPreparo()||prepCena)return false;
     fim:()=>{binoLenha.indo=true;binoLenha.dist=0;binoLenha.falou=0;SEG.vaiPara=[PREP_PILHA[0]-30,676];SEG.chegou=false;}};som(SOM.ui_vez,.5);return true;}
   return false;}
 // passo de cada quadro (so de dia, na fase preparo)
-function prepPasso(dt){if(!emPreparo())return;
+function ignCalorPasso(){if(!emAtaque()||atqFeitas()<3||JOGO.cap2.binoCalor||fala||ab.on)return;if(hero.y<330&&Math.abs(hero.x-790)<80){JOGO.cap2.binoCalor=true;salvaJogo();abreFala('ign_calor');}}
+function prepPasso(dt){ignCalorPasso();if(!emPreparo())return;
   SEG.cena=!!(JOGO.bino&&JOGO.bino.ativo);
   // na tarefa do porco, quando o Bino chega no canto, quem aparece e a folha dele esperando (o seguidor some para nao ter dois)
   if((caca.on||(prepCena&&prepCena.tipo==='pega'))&&SEG.vaiPara)SEG.oculto=!!SEG.chegou;
@@ -991,7 +998,8 @@ const POSE_FALA={inicio:'surpreso',fogueira:'sentado',bacon:'rindo',tico:'rindo'
 function passa(id,acao){JOGO.passou=JOGO.passou||{};if(JOGO.passou[id]){acao();return;}abreFala(id,()=>{JOGO.passou[id]=true;acao();});}
 function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));return;}
   // vila em ataque: o portao nao abre; as lutas comecam depois da fala
-  if(emAtaque()&&!fim){if(id==='portao'||id==='entrada_trilha')id='atq_portao';else if(ATQ_LUTAS.some(l=>l.id===id)){const lid=id;fim=()=>atqLuta(lid);}}
+  if(emAtaque()&&!fim){if(id==='altar'){if(atqFeitas()>=3)altarIgnarok();else aviso('Primeiro, a vila. As Sombras ainda estão lá embaixo.','#c8d8f0');return;}
+    if((id==='portao'||id==='entrada_trilha')&&!(atqFeitas()>=3&&cap1Trava()))id='atq_portao';else if(ATQ_LUTAS.some(l=>l.id===id)){const lid=id;fim=()=>atqLuta(lid);}}
   if(!fim&&prepAbre(id))return;   // preparativos do festival (FICHA_PREPARATIVOS.md)
   if(id.startsWith('chefe_')&&!fim){const c=MINICHEFES.find(q=>'chefe_'+q.id===id);if(c&&!chefeFeito(c.id)){fala={linhas:c.pre,i:0,letras:0,fim:()=>{UI.escolha={id:'prova',prova:id,ops:['Lutar','Ainda não'],sel:0};som(SOM.ui_vez,.5);}};}return;}
   if(id==='saida_garganta'&&!fim){if((JOGO.provas||{}).acolito!=='feita'&&!JOGO.gargantaVista){abreFala('garganta_fechada');return;}   // trava: a Garganta abre depois do Acolito
@@ -1025,6 +1033,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
+  if(!fim&&id==='vovo'&&JOGO.cap2&&['volta','preparo','noite'].includes(JOGO.cap2.fase)&&cap1Trava()){falaPendencias('vovo');return;}   // trava: a historia so anda com o Capitulo 1 completo
   if(!fim&&emFestival()&&FEST_EFEITO[id])fim=FEST_EFEITO[id];
   if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Nova tarefa: Preparativos do festival (veja no canto da tela)','#ffe27a');};
   fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
@@ -1079,6 +1088,8 @@ function passoEncontro(){if(ENC.semLutas)return;
 const PROVAS={fenrir:{tipos:['fenrir_prova'],nv:12},skoll:{tipos:['skoll'],nv:9},acolito:{tipos:['acolito'],nv:8},
   // Cap. 2, Parte B (FICHA_CAP2_ATAQUE.md): as 3 lutas da vila em ataque (nivel fixo, como as outras provas). Calibrado 2026-11-20 com
   // luta automatica (Jux nv 13 + Bino nv 12, equipamento da forja): menor HP na luta entre ~33% e 60%
+  // Ignarok calibrado 2026-11-20 (luta automatica, Jux nv14 + Bino nv13 com equipamento de aco): vence com o Jux a 19% e o Bino caido (padrao do Fenrir: 16%)
+  ignarok:{tipos:['ignarok_chefe'],nv:15,chefe:{nome:'Ignarok',hp:4.5,forca:1.3,exp:6}},
   atq_1:{tipos:['sombra_oskar','acolito','acolito'],nv:13,chefe:{nome:'Sombra do Oskar',hp:4.5,forca:1.65,exp:2}},
   atq_2:{tipos:['sombra_borin','acolito'],nv:13,chefe:{nome:'Sombra do Borin',hp:4,forca:1.7,exp:2}},
   atq_3:{tipos:['sombra_ingrid','acolito','acolito'],nv:14,chefe:{nome:'Sombra da Ingrid',hp:4.5,forca:1.7,exp:2.2}}};
@@ -1090,7 +1101,7 @@ function atqLuta(id){if(id==='atq_2'&&!BORIN_FOLHA){aviso('Esta luta chega quand
   try{sessionStorage.setItem('jux_atq_luta',id);}catch(e){}iniciaProva(id);}
 function iniciaProva(nome){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
-  try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+(window.__semSalvar&&location.hash.split('?')[0]==='#ataque'?'#ataque':''),prova:nome,chefe:PROVAS[nome].chefe||null}));}catch(e){}
+  try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+(window.__semSalvar&&['#ataque','#altar'].includes(location.hash.split('?')[0])?location.hash.split('?')[0]:''),prova:nome,chefe:PROVAS[nome].chefe||null}));}catch(e){}
   salvaVila();setTimeout(()=>{paraAudio();location.href=jp('batalha.html');},1100);}
 function iniciaEncontro(){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;UI.menu=false;UI.loja=null;UI.escolha=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
@@ -1217,10 +1228,32 @@ const CENAS_ATAQUE=[
 for(const [k,f] of [['at1v','1_vovo'],['at1j','1_jux'],['at2t','2_tico'],['at2a','2_aurora'],['at3b','3_bino'],['at3j','3_jux'],['at4i','4_ingrid'],['at4v','4_vovo'],['at5a','5_arauto_1'],['at5b','5_arauto_2'],['at5j','5_jux']])VOZES[k]=arq('assets/cine_ataque/voz_ataque_'+f);
 const IMG_ATAQUE=imgsFilme(CENAS_ATAQUE.map(c=>'assets/cine_ataque/'+c.img+'.jpg'));
 // TESTE (sem salvar): vila.html#ataque abre a vila ja em ataque; vila.html#brinde abre a festa com a Vovo pronta para o brinde
+if(REGIAO==='vila'&&location.hash.split('?')[0]==='#altar'){window.__semSalvar=true;JOGO.cap2={fase:'ataque',lutas:{atq_1:true,atq_2:true,atq_3:true},binoCalor:false};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=790;hero.y=420;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  if(JOGO.provas&&!localStorage.getItem('jux_volta_luta'))delete JOGO.provas.ignarok;setTimeout(()=>aviso('Modo teste do altar: nada é salvo','#ffe27a'),1800);}
 if(REGIAO==='vila'&&(location.hash.split('?')[0]==='#ataque'||location.hash.split('?')[0]==='#brinde')){window.__semSalvar=true;JOGO.cap2={fase:location.hash.split('?')[0]==='#ataque'?'ataque':'noite',lutas:{}};if(JOGO.provas&&!localStorage.getItem('jux_volta_luta')){for(const k of ['atq_1','atq_2','atq_3'])delete JOGO.provas[k];try{sessionStorage.removeItem('jux_atq_teste');}catch(e){}}JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
   JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
   setTimeout(()=>aviso('Modo teste: nada é salvo','#ffe27a'),1800);}
 if(REGIAO==='vila'&&location.hash==='#cine_ataque')setTimeout(()=>tocaFilme(CENAS_ATAQUE,IMG_ATAQUE,()=>{}),1500);   // lab: so a cutscene
+// CUTSCENE "O IGNAROK" (FICHA_CAP2_IGNAROK.md, aprovada 2026-11-20): no altar, depois das 3 lutas. O Ignarok nao tem voz (legenda laranja, tipo 4).
+// Musica 'Dramatic Boss Encounter' (cynicmusic, CC0). A cena 1 (os acolitos em circulo) ainda nao chegou como arquivo: por enquanto o filme
+// comeca na fenda (cena_2b) com as falas da cena 1; quando ela chegar, entra na frente.
+const CENAS_IGNAROK=[
+  {img:'cena_2b',mus:'ignarok',cam:[.5,.55,1.0, .5,.5,1.12],dur:9.5,fx:'neve',vozes:[[.8,'ig1j'],[4.6,'ig1a']],falas:[[.8,'Jux','Escavação sem autorização. Isso dá multa.'],[4.6,'Arauto','Tarde demais, sem-sombra.',2]],sons:[[.2,'impacto']]},
+  {img:'cena_2',mus:'ignarok',cam:[.55,.6,1.12, .5,.5,1.0],dur:6.2,fx:'neve',vozes:[[1,'ig2a']],falas:[[1,'Aurora','Portador, eles estão abrindo a montanha!',1]],sons:[[.1,'ig_erupcao']],treme:[.1,1.8],flash:.05},
+  {img:'cena_3',mus:'ignarok',cam:[.5,.7,1.0, .5,.35,1.14],dur:8,fx:'neve',vozes:[[1.2,'ig3b'],[2.8,'ig3j']],falas:[[1.2,'Bino','…Grande.'],[2.8,'Jux','Grande é elogio. Isso é um prédio.']],sons:[[.1,'ig_rugido']],treme:[.1,1.4]},
+  {img:'cena_3b',mus:'ignarok',cam:[.5,.4,1.14, .5,.5,1.0],dur:4.2,fx:'neve',vozes:[],falas:[],sons:[[.1,'ig_rosna'],[1.2,'ig_queda']],treme:[1.2,2.6]},
+  {img:'cena_4',mus:'ignarok',cam:[.6,.55,1.0, .45,.5,1.12],dur:12.5,fx:'neve',vozes:[[2.6,'ig4a'],[8.8,'ig4j']],falas:[[.4,'Ignarok','GELO… QUEBRA.',4],[2.6,'Aurora','O Cristal do Gelo está embaixo do altar! Se ele derreter o altar, leva o Cristal!',1],[8.8,'Jux','Então hoje ninguém derrete nada.']],sons:[[.2,'ig_punho'],[8.6,'gelo']],treme:[.2,1.4],flash:.1},
+];
+for(const [k,f] of [['ig1j','1_jux'],['ig1a','1_arauto'],['ig2a','2_aurora'],['ig3b','3_bino'],['ig3j','3_jux'],['ig4a','4_aurora'],['ig4j','4_jux']])VOZES[k]=arq('assets/cine_ignarok/voz_ignarok_'+f);
+const IMG_IGNAROK=imgsFilme(CENAS_IGNAROK.map(c=>'assets/cine_ignarok/'+c.img.replace('cena','cena_').replace('cena__','cena_')+'.jpg'));
+if(REGIAO==='vila'&&location.hash.split('?')[0]==='#cine_ignarok')setTimeout(()=>tocaFilme(CENAS_IGNAROK,IMG_IGNAROK,()=>{}),1500);   // lab: so o filme
+// o altar na vila em ataque: com as 3 lutas feitas (e o Capitulo 1 completo), a cutscene e a luta; depois de perder, so a luta
+function altarIgnarok(){const C=JOGO.cap2;if(cap1Trava()){falaPendencias('aurora');return;}
+  if((JOGO.provas||{}).ignarok==='vencida')return;
+  if(!C.ignVisto){tocaFilme(CENAS_IGNAROK,IMG_IGNAROK,()=>{C.ignVisto=true;salvaJogo();iniciaProva('ignarok');});return;}
+  fala={linhas:[['✦','O Ignarok espera no altar, o coração de fogo pulsando.'],['Aurora','O gelo é a sua arma, Portador. Ele derrete as defesas: não confie só nelas.',1]],i:0,letras:0,
+    fim:()=>{UI.escolha={id:'prova',prova:'ignarok',ops:['Lutar','Ainda não'],sel:0};som(SOM.ui_vez,.5);}};som(SOM.ui_vez,.5);}
 // o brinde: a Vovo pergunta e, com 'Fazer o brinde', toca a cutscene e a vila entra em ataque
 function brindeVovo(){UI.escolha={id:'brinde',ops:['Fazer o brinde','Ainda não'],sel:0};som(SOM.ui_vez,.5);}
 function comecaAtaque(){tocaFilme(CENAS_ATAQUE,IMG_ATAQUE,()=>{JOGO.cap2.fase='ataque';JOGO.cap2.lutas={};if(JOGO.provas)for(const k of ['atq_1','atq_2','atq_3'])delete JOGO.provas[k];salvaJogo();aplicaAtaque();hero.x=722;hero.y=716;hero.olha='cima';setTimeout(()=>abreFala('atq_comeca',()=>aviso('Nova missão: O ataque (veja no canto da tela)','#ff9ae8')),500);});}
@@ -1291,6 +1324,7 @@ const FILMES=[
   {id:'skoll',nome:'O Skoll acorrentado',c:()=>CENAS_SKOLL,i:()=>IMG_SKOLL,visto:()=>typeof estProvas==='function'&&['vencida','feita'].includes(estProvas().skoll)},
   {id:'fenrir',nome:'O Fenrir aparece',c:()=>CENAS_FENRIR,i:()=>IMG_FENRIR,visto:()=>typeof estProvas==='function'&&(['vencida','feita'].includes(estProvas().fenrir)||estadoEcos().tem.includes('lamina'))},
   {id:'fenrir_v',nome:'O Fenrir se junta ao Jux',c:()=>CENAS_FENRIR_V,i:()=>IMG_FENRIR_V,visto:()=>typeof estProvas==='function'&&(estProvas().fenrir==='feita'||estadoEcos().tem.includes('lamina'))},
+  {id:'ignarok',nome:'O Ignarok',c:()=>CENAS_IGNAROK,i:()=>IMG_IGNAROK,visto:()=>!!(JOGO.cap2&&JOGO.cap2.ignVisto)},
   {id:'ataque',nome:'A aurora preta',c:()=>CENAS_ATAQUE,i:()=>IMG_ATAQUE,visto:()=>!!(JOGO.cap2&&JOGO.cap2.fase&&!['volta','preparo','noite'].includes(JOGO.cap2.fase))},
 ];
 const filmeVisto=f=>!!((JOGO.cines||{})[f.id])||(()=>{try{return f.visto();}catch(e){return false;}})();
@@ -1298,7 +1332,7 @@ function reverFilme(id){const f=FILMES.find(x=>x.id===id);if(!f||!filmeVisto(f))
 function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
-const MUS_CINE={festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
+const MUS_CINE={ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
 let musAtual=null,musNome=null,drone=null;
 function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone grave sintetizado; 'vila' = musica da vila (continua no jogo)
   if(nome===musNome||window.__morta)return;musNome=nome;
@@ -1312,7 +1346,7 @@ function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone
   try{if(nome!=='vila')a.currentTime=0;a.volume=0;a.play().catch(()=>{});}catch(e){}
   musAtual=a;let v=0;const alvo=nome==='vila'?.42:.55;const f=setInterval(()=>{v+=.05;if(v>=alvo){clearInterval(f);a.volume=alvo;}else a.volume=v;},60);
 }
-const SOM_CINE={gelo:arq('assets/sfx/novos/magia_gelo'),quebra:arq('assets/sfx/novos/gelo_quebra'),brilho:arq('assets/sfx/novos/magia_brilho'),
+const SOM_CINE={ig_rugido:arq('assets/sfx/novos/ignarok_rugido'),ig_rosna:arq('assets/sfx/novos/ignarok_rosna'),ig_punho:arq('assets/sfx/novos/ignarok_punho'),ig_erupcao:arq('assets/sfx/novos/ignarok_erupcao'),ig_queda:arq('assets/sfx/novos/ignarok_queda'),gelo:arq('assets/sfx/novos/magia_gelo'),quebra:arq('assets/sfx/novos/gelo_quebra'),brilho:arq('assets/sfx/novos/magia_brilho'),
   carga:arq('assets/sfx/novos/carga_gelo'),whoosh:arq('assets/sfx/novos/whoosh'),whoosh2:arq('assets/sfx/novos/whoosh2'),impacto:arq('assets/sfx/novos/pedras'),rosna:arq('assets/sfx/novos/lobo_rosna'),uivo:arq('assets/sfx/novos/lobo_uivo'),correntes:arq('assets/sfx/novos/skoll_correntes')};
 const ab={on:false,esperando:false,i:0,t:0,fim:0,neve:[]};
 let abVista=false;try{abVista=localStorage.getItem('jux_abertura_vista')==='1';}catch(e){}
@@ -1379,7 +1413,7 @@ function abDesenha(){
     ctx.font=(quem==='Narrador'?'italic ':'')+'bold 21px "Trebuchet MS"';
     const lin=[];{let cur='';for(const w of txt.split(' ')){const t2=cur?cur+' '+w:w;if(ctx.measureText(t2).width>W-90&&cur){lin.push(cur);cur=w;}else cur=t2;}if(cur)lin.push(cur);}   // fala longa quebra em linhas (antes saia da tela)
     const y=H-62-(lin.length-1)*27;
-    ctx.font='bold 15px "Trebuchet MS"';ctx.fillStyle=tipo===3?'#d6f6ff':tipo===2?'#ff8a8a':tipo===1?'#9fe8ff':quem==='Narrador'?'#d8d8e8':'#ffe27a';
+    ctx.font='bold 15px "Trebuchet MS"';ctx.fillStyle=tipo===4?'#ffa040':tipo===3?'#d6f6ff':tipo===2?'#ff8a8a':tipo===1?'#9fe8ff':quem==='Narrador'?'#d8d8e8':'#ffe27a';
     ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.85)';
     if(quem!=='Narrador'){ctx.strokeText(quem,W/2,y-24);ctx.fillText(quem,W/2,y-24);}
     ctx.font=(quem==='Narrador'?'italic ':'')+'bold 21px "Trebuchet MS"';ctx.fillStyle='#ffffff';let resta=n;lin.forEach((l,k)=>{const sl=l.slice(0,Math.max(0,resta));resta-=l.length+1;ctx.strokeText(sl,W/2,y+k*27);ctx.fillText(sl,W/2,y+k*27);});}
@@ -1841,13 +1875,16 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
   if(!uiCarregado&&TER){uiCarregado=true;uiCarrega();
     // CAPITULO 2: voltando para a vila com o Fenrir, comeca a noite do festival
     if(NA_VILA&&festivalPronto()){JOGO.cap2={fase:'volta'};salvaJogo();setTimeout(()=>abreFala('fest_volta'),900);}
+    else if(NA_VILA&&!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita'&&cap1Trava()&&!JOGO.avisoCap1){JOGO.avisoCap1=true;salvaJogo();setTimeout(()=>falaPendencias('aurora'),900);}
     if(emFestival())aplicaFestival();
     if(emAtaque())aplicaAtaque();
     if(emAtaque()){const pv=JOGO.provas||{};JOGO.cap2.lutas=JOGO.cap2.lutas||{};
       if(window.__semSalvar){try{Object.assign(JOGO.cap2.lutas,JSON.parse(sessionStorage.getItem('jux_atq_teste')||'{}'));}catch(e){}}
       for(const l of ATQ_LUTAS)if(pv[l.id]==='vencida'&&!JOGO.cap2.lutas[l.id]){JOGO.cap2.lutas[l.id]=true;salvaJogo();
         if(window.__semSalvar)try{sessionStorage.setItem('jux_atq_teste',JSON.stringify(JOGO.cap2.lutas));}catch(e){}
-        const ult=atqFeitas()>=3;setTimeout(()=>abreFala(l.id+'_fim',()=>aviso(ult?'O ataque: 3/3 · Suba ao altar (a Parte C chega na próxima parte)':'O ataque: '+atqFeitas()+'/3','#ff9ae8')),700);break;}}
+        const ult=atqFeitas()>=3;setTimeout(()=>abreFala(l.id+'_fim',()=>aviso(ult?'O ataque: 3/3 · Suba ao altar!':'O ataque: '+atqFeitas()+'/3','#ff9ae8')),700);break;}
+      // venceu o Ignarok: por enquanto termina aqui (a Parte D vem depois)
+      if(pv.ignarok==='vencida'&&!JOGO.cap2.ignVenceu){JOGO.cap2.ignVenceu=true;salvaJogo();setTimeout(()=>abreFala('ign_vence',()=>aviso('Continua na Parte D (em breve)','#ffe27a')),700);}}
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');if(v&&v.res==='lose_chefe'&&Date.now()-v.t<120000&&emAtaque()){localStorage.removeItem('jux_volta_luta');setTimeout(()=>abreFala('derrota_chefe'),600);}}catch(e){}
     try{const v=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');localStorage.removeItem('jux_volta_luta');if(v&&v.res==='lose'&&Date.now()-v.t<120000)setTimeout(()=>abreFala('derrota'),600);}catch(e){}
     if(JOGO.vila){abVista=true;comecou=true;

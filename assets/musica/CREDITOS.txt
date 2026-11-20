@@ -54,3 +54,12 @@ Musica da noite do festival (assets/vila/musica_festival): "Medieval: King's Fea
 cine_ataque.ogg/.mp3 — "The Confrontation", Umplix (OpenGameArt.org), CC0 — https://opengameart.org/content/the-confrontation. Cutscene "A aurora preta" (Cap. 2, Parte B), da cena 2 em diante (a cena 1 continua com a musica do festival).
 Musica da vila em ataque (assets/vila/musica_ataque): "Evil Awaits" - bosslevelaudio - CC-BY 3.0 - https://opengameart.org/content/evil-awaits (credito obrigatorio: bosslevelaudio).
 Vozes da cutscene "A aurora preta" (assets/cine_ataque/voz_ataque_*): geradas pelo usuario; a voz do Arauto recebeu eco e uma segunda voz grave (ffmpeg).
+
+cine_ignarok.ogg/.mp3 — "Dramatic Boss Encounter", cynicmusic (OpenGameArt.org), CC0 — https://opengameart.org/content/dramatic-boss-encounter. Cutscene "O Ignarok" (Cap. 2, Parte C).
+chefe_ignarok.ogg/.mp3 — "The Fire Dragon" (versão loop), Umplix (OpenGameArt.org), CC0 — https://opengameart.org/content/the-fire-dragon. Luta contra o Ignarok.
+Sons do Ignarok (assets/sfx/novos/ignarok_*), todos CC0 (OpenGameArt.org), cortados e misturados com ffmpeg:
+  ignarok_rugido: "CC0 Deep Monster Roar" — https://opengameart.org/content/cc0-deep-monster-roar
+  ignarok_rosna: "Big Scary Troll Sounds" — https://opengameart.org/content/big-scary-troll-sounds
+  ignarok_punho / ignarok_erupcao: "Chunky Explosion" — https://opengameart.org/content/chunky-explosion + "Moving Boulder" — https://opengameart.org/content/moving-boulder
+  ignarok_derreter: "Catching Fire" — https://opengameart.org/content/catching-fire
+  ignarok_erupcao / ignarok_queda: "Earthquake and Open Sesame" — https://opengameart.org/content/earthquake-and-open-sesame

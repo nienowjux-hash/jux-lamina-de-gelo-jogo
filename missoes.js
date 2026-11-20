@@ -131,6 +131,14 @@ MISSOES.carroca_tombada = {nome:'A carroça tombada', quem:'capitao', quemNome:'
     ['Capitão','Toma, toma: gil e Éter. Comércio Honesto sempre paga as dívidas!', 1],
     ['Jux','Quase sempre.'], ['Capitão','…Quase sempre.', 0]]};
 const ORDEM_MISSOES=Object.keys(MISSOES);
+// TRAVA DE CAPITULO (FICHA_TRAVA_CAPITULO.md, aprovada 2026-11-20): o capitulo seguinte so comeca com TODAS as missoes deste feitas.
+// Os mini-chefes estao dentro delas (Bolotao no amigo de neve, Capitao no machado, Presa-Antiga na carroca).
+const CAP1_MISSOES=['tico_cachecol','ingrid_frutas','amigo_floco','vovo_ervas','borin_cristais','oskar_forca','machado_halvard','carroca_tombada'];
+const cap1Feitas=()=>CAP1_MISSOES.filter(k=>estadoMissao(k)==='feita').length;
+const cap1Completo=()=>cap1Feitas()===CAP1_MISSOES.length;
+// a proxima pendencia: a primeira que ja pode ser feita (as outras dependem dela)
+const cap1Pendente=()=>CAP1_MISSOES.find(k=>estadoMissao(k)!=='feita'&&missaoLiberada(k))||CAP1_MISSOES.find(k=>estadoMissao(k)!=='feita')||null;
+const cap1Faltam=()=>CAP1_MISSOES.filter(k=>estadoMissao(k)!=='feita').map(k=>MISSOES[k].nome);
 // coisas para pegar no mapa (só aparecem com a missão ativa)
 const COLETAS=[
   {id:'m_cachecol',missao:'tico_cachecol',item:'cachecol',x:978,y:705},

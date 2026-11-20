@@ -69,6 +69,16 @@ const TIPOS_INIMIGO={
     golpes:[{nome:'Mordida Sombria',t:'f',poder:46,peso:4},{nome:'Investida Acorrentada',t:'f',poder:66,peso:2,est:['atordoado',1,.2]},{nome:'Uivo do Eclipse',t:'m',el:'trevas',poder:44,peso:2,est:['silencio',2,.35]}],
     drops:[['pelagem_alfa',1],['hipocao',.5],['cristal',.4,1]]},
   // Prova do Fenrir (trilha): o espirito do lobo testa o heroi. Forte, mas justo: mais HP que um lobo comum
+  // ---- Capitulo 2, Parte C (FICHA_CAP2_IGNAROK.md): o Ignarok chefe, todo desenhado. Fase 2 (abaixo de metade) troca o tipo para
+  // ignarok_f2: o coracao exposto (mais rapido e forte, mas leva mais dano). Erupcao (todos) e a troca de fase ficam no index.html.
+  ignarok_chefe:{nome:'Ignarok',el:'fogo',reacao:{gelo:1.5,agua:1.5,fogo:-1},fisico:1,magico:1,quebra:400,hp:2.2,exp:4,gil:2,vel:1.15,imuneEst:['sono','atordoado'],
+    atk:n=>30+2.1*(n-1),atkm:n=>28+2*(n-1),def:n=>18+1.5*(n-1),defm:n=>14+1.3*(n-1),
+    golpes:[{nome:'Punho de Magma',t:'f',el:'fogo',poder:48,peso:5},{nome:'Derreter',t:'m',el:'fogo',poder:30,peso:3}],
+    drops:[['brasa',1],['hipocao',.6],['fenix',.3,1]]},
+  ignarok_f2:{nome:'Ignarok',el:'fogo',reacao:{gelo:1.9,agua:1.8,fogo:-1},fisico:1.25,magico:1.25,quebra:300,hp:2.2,exp:4,gil:2,vel:1.4,imuneEst:['sono','atordoado'],
+    atk:n=>30+2.1*(n-1),atkm:n=>28+2*(n-1),def:n=>14+1.2*(n-1),defm:n=>11+1*(n-1),
+    golpes:[{nome:'Punho de Magma',t:'f',el:'fogo',poder:50,peso:5},{nome:'Derreter',t:'m',el:'fogo',poder:30,peso:3}],
+    drops:[['brasa',1],['hipocao',.6],['fenix',.3,1]]},
   fenrir_prova:{nome:'Espírito do Fenrir',el:'gelo',reacao:{gelo:.4,fogo:1.5,raio:1.2},fisico:1,magico:1,quebra:160,hp:2.4,exp:4,gil:2,vel:1.2,
     atk:n=>40+2.4*(n-1),atkm:n=>34+2.1*(n-1),def:n=>18+1.6*(n-1),defm:n=>18+1.6*(n-1),
     // os MESMOS golpes do Eco da Lamina (ecos.js): Mordida Glacial, Garra Perfurante, Uivo da Lua, Matilha Fantasma e, no fim, Ragnarok

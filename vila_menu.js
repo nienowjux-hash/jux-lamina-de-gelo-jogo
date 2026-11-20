@@ -346,6 +346,10 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
   const x2=cx+330,ww=w-370;let yy=cy+24;
   const quebra=(s,tam,cor)=>{ctx.font=`bold ${tam}px "Trebuchet MS"`;let lin='';for(const p of s.split(' ')){if(ctx.measureText(lin+p).width>ww){texto(lin,x2,yy,tam,cor);yy+=tam+7;lin='';}lin+=p+' ';}if(lin)texto(lin,x2,yy,tam,cor);yy+=tam+12;};
   if(sel==='_historia'){texto('Objetivo da história',x2,yy,20,'#ffe27a');yy+=30;
+    // trava de capitulo: o quanto do Capitulo 1 ja foi feito e o que falta
+    if(typeof cap1Completo==='function'&&hero.espada&&estadoMissao('olhos_roxos')==='feita'){const f=cap1Feitas(),n=CAP1_MISSOES.length;
+      texto('Capítulo 1: '+f+'/'+n+' missões feitas',x2,yy,15,f===n?'#7dffa8':'#ffd84a');yy+=22;
+      if(f<n){quebra('Falta: '+cap1Faltam().join(', ')+'. O Capítulo 2 só começa com tudo feito.',13,'#c8d8f0');yy+=4;}}
     {const lp=typeof listaPreparo==='function'?listaPreparo():null;if(lp){quebra('O festival da Rainha do Inverno é hoje à noite. A Vovó Hilda pediu ajuda com os preparativos:',15,'#e8f6ff');
       for(const [s0,ok] of lp){texto((ok?'✔ ':'☐ ')+s0,x2,yy,15,ok?'#7dffa8':'#fff');yy+=22;}yy+=6;quebra(lp.every(x=>x[1])?'➤ Tudo pronto! Volte à Vovó Hilda.':'➤ O "!" amarelo mostra quem precisa de ajuda.',15,'#7dffa8');return;}}
     if(!hero.espada){quebra('Mil anos de gelo prendem uma espada no altar, no alto da vila. Todos tentaram na força. Talvez não seja um teste de força.',15,'#e8f6ff');quebra('➤ Suba até o altar (★ no mapa) e fale com ele.',15,'#7dffa8');}
@@ -375,8 +379,11 @@ const POS_NPC=()=>{if(!NA_VILA)return {};const r={tico,vovo,borin,bacon};for(con
 const NOME_NPC={halvard:'Halvard',tico:'Tico',vovo:'Vovó Hilda',borin:'Borin',bacon:'Sir Bacon',ingrid:'Ingrid',oskar:'Oskar'};
 // marca de missão em cima da cabeça dos moradores (no mapa do jogo)
 const ALT_NPC={tico:34,bacon:24,vovo:46,borin:52,ingrid:48,oskar:52};
-function marcasNoMundo(){if(!NA_VILA||(typeof emAtaque==='function'&&emAtaque()))return;const pos=POS_NPC();for(const id in pos){const n=pos[id];if(!n)continue;const mk=marcaMissao(id);if(!mk||mk==='…')continue;
-  const b=Math.sin(t*4)*3,x=W/2+(n.x-cam.x)*Z,y=H/2+(n.y-(ALT_NPC[id]||46)-cam.y)*Z+b;ctx.save();ctx.fillStyle=mk==='!'?'#ffd84a':'#7dffa8';ctx.strokeStyle='#3a2a00';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-6,9,11,0,0,6.283);ctx.fill();ctx.stroke();
+// quem da missao FORA da vila (2026-11-20: o Capitao na Garganta nao tinha o '!', e a missao da Presa-Antiga passava batido)
+const MARCAS_FORA={garganta:()=>typeof chefeFeito==='function'&&chefeFeito('capitao')?{capitao:{x:430,y:430}}:{}};
+const ALT_FORA={capitao:70};
+function marcasNoMundo(){if(typeof emAtaque==='function'&&emAtaque())return;const pos=NA_VILA?POS_NPC():(MARCAS_FORA[REGIAO]?MARCAS_FORA[REGIAO]():{});for(const id in pos){const n=pos[id];if(!n)continue;const mk=marcaMissao(id);if(!mk||mk==='…')continue;
+  const b=Math.sin(t*4)*3,x=W/2+(n.x-cam.x)*Z,y=H/2+(n.y-(ALT_FORA[id]||ALT_NPC[id]||46)-cam.y)*Z+b;ctx.save();ctx.fillStyle=mk==='!'?'#ffd84a':'#7dffa8';ctx.strokeStyle='#3a2a00';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-6,9,11,0,0,6.283);ctx.fill();ctx.stroke();
     ctx.beginPath();ctx.moveTo(x-4,y+3);ctx.lineTo(x,y+10);ctx.lineTo(x+4,y+3);ctx.fill();ctx.font='bold 15px "Trebuchet MS"';ctx.textAlign='center';ctx.fillStyle='#2a1a00';ctx.fillText(mk,x,y-1);ctx.restore();}}
 // ---------- entrada
 function listaAtual(){
