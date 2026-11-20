@@ -65,7 +65,10 @@ const MAIN_BINO = ['Atacar', 'Habilidades', 'Itens', 'Defender', 'Fugir'];
 const mainLista = () => (hero.quem === 'bino' ? MAIN_BINO : MAIN);
 function habBinoLista() {
   const lib = HAB_BINO.filter(h => h.nivel <= nvBino() && habLigada(h.id)), prox = HAB_BINO.find(h => h.nivel > nvBino());
-  return [...lib, ...(prox ? [prox] : []), {id: 'voltar', nome: 'Voltar'}];
+  // habilidades de Eco equipadas no Bino (FICHA_ECOS_GRUPO.md): o golpe e da criatura do Eco, igual no Jux
+  const eco = (typeof vagaEco === 'function') ? vagaEco('bino').equipadas.filter(h => HABS[h] && !HABS[h].passiva)
+    .map(h => ({id: 'hab_' + h, hab: h, nome: '✦ ' + HABS[h].nome, mp: HABS[h].mp || 0, nivel: 1, feito: true, eco: true, alvo: HABS[h].alvo === 'inim' ? 'um' : HABS[h].alvo})) : [];
+  return [...lib, ...eco, ...(prox ? [prox] : []), {id: 'voltar', nome: 'Voltar'}];
 }
 const binoMainEnabled = i => (i === 2 ? itemList().length > 1 : i === 4 ? podeFugir() : true);
 const binoHabEnabled = i => { const h = habBinoLista()[i]; return !!h && (h.id === 'voltar' || (h.nivel <= nvBino() && hero.mp >= h.mp)); };

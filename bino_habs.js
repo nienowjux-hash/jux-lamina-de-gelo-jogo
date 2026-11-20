@@ -44,6 +44,13 @@ function statusBino(n, semEquip) {   // semEquip: so a base do nivel (o equipame
     const e = bonusEquipDe('bino');
     for (const k of ['hp', 'mp', 'atk', 'def', 'atkm', 'defm', 'vel', 'sor', 'crit', 'esq']) if (e[k]) r[k] += e[k];
     r.eq = e;
+    // Eco do Bino (FICHA_ECOS_GRUPO.md): mesma conta do Jux (somado por nivel, depois a %, depois o que soma direto)
+    if (typeof bonusEcos === 'function') {
+      const B = bonusEcos('bino'), F = B.flat || {};
+      for (const k of ['hp', 'mp', 'atk', 'def', 'atkm', 'defm']) if (F[k] || B.pct[k]) r[k] = Math.round((r[k] + (F[k] || 0)) * (1 + (B.pct[k] || 0)));
+      for (const k of ['crit', 'esq', 'vel']) if (B.soma[k]) r[k] += B.soma[k];
+      r.esp_ = Object.assign({}, r.esp_, B.esp);
+    }
   }
   return r;
 }

@@ -43,7 +43,8 @@ function livre(x,y){if(naGelo(x,y)||naEntrada(x,y))return true;for(let dy=-4;dy<
 // cerca que da para pular: devolve o x de pouso do outro lado (ou null)
 // cercas que da para pular: [x0,y0,x1,y1,'h'|'v'] -> ponto de pouso do outro lado (ou null)
 function pouso(x,y,dx){const z=V.pulos.find(([a,b,c,d,t])=>t!=='v'&&x+dx*12>=a&&x+dx*12<=c&&y>=b&&y<=d);if(!z)return null;const px=dx>0?z[2]+9:z[0]-9;return livre(px,y)?{x:px,y}:null;}
-function pousoV(x,y,dy){const z=V.pulos.find(([a,b,c,d,t])=>t==='v'&&x>=a&&x<=c&&y+dy*12>=b&&y+dy*12<=d);if(!z)return null;const py=dy>0?z[3]+8:z[1]-8;return livre(x,py)?{x,y:py}:null;}
+// pouso do pulo/escalada vertical: o primeiro lugar livre depois da faixa (procura ate 30 px: a beirada desenhada e torta)
+function pousoV(x,y,dy){const z=V.pulos.find(([a,b,c,d,t])=>t==='v'&&x>=a&&x<=c&&(dy>0?y<b&&y+26>=b:y>d&&y-26<=d));if(!z)return null;const p0=dy>0?z[3]-4:z[1]+4;for(let k=0;k<=40;k+=2){const py=p0+dy*k;if((dy>0?py>z[3]-6:py<z[1]+6)&&livre(x,py))return {x,y:py};}return null;}
 
 // cada troca de pagina pede o arquivo "novo" (?t=hora): o navegador/artefato nunca mostra uma pagina velha guardada (era o que podia fazer a trilha tocar a musica da vila)
 const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();
@@ -1290,6 +1291,7 @@ function desenha(){
   // "!" em cima do heroi perto de algo
   if(perto&&!fala){const bx=hero.x,by=hero.y-58+Math.sin(t*5)*1.5;ctx.fillStyle='#fff';ctx.strokeStyle='#0a2a4a';ctx.lineWidth=1;
     ctx.beginPath();ctx.ellipse(bx,by,5,6,0,0,6.283);ctx.fill();ctx.stroke();ctx.fillStyle='#1a4a8a';ctx.font='bold 9px "Trebuchet MS"';ctx.textAlign='center';ctx.fillText('!',bx,by+3);}
+  desenhaDicaBorda();
   ctx.restore();
   desenhaBaloes();if(!ab.on&&typeof marcasNoMundo==='function')marcasNoMundo();
   // neve caindo em camadas (perto cai mais rapido e e maior)
@@ -1304,6 +1306,40 @@ function desenha(){
   uiDesenha();
   desenhaTransicao();
 }
+// AVISO DA BORDA (pedido 2026-11-20: 'senao o jogador acha que esta bugado'): perto de uma borda de subir/descer (pulos 'v'),
+// aparece 'Aperte ↑ para subir' / 'Aperte ↓ para descer' em cima do Jux e setas piscando na beirada
+function dicaBorda(){if(fala||hero.pulo>0||!V.pulos||(typeof uiAberto==='function'&&uiAberto()))return null;
+  for(const z of V.pulos){if(z[4]!=='v'||hero.x<z[0]||hero.x>z[2])continue;
+    if(hero.y>z[3]&&hero.y<=z[3]+26&&pousoV(hero.x,hero.y,-1))return {z,dir:-1};
+    if(hero.y<z[1]&&hero.y>=z[1]-26&&pousoV(hero.x,hero.y,1))return {z,dir:1};}
+  return null;}
+function desenhaDicaBorda(){const d=dicaBorda();if(!d)return;const {z,dir}=d,pisca=.6+.4*Math.sin(t*6);
+  const pular=REGIAO==='vila'||!ESCALAR||!hero.espada,txt='Aperte '+(dir<0?'↑':'↓')+' para '+(pular?'pular':dir<0?'subir':'descer');
+  // setas na beirada, na frente do Jux
+  const my=(z[1]+z[3])/2;ctx.save();ctx.globalAlpha=pisca;ctx.fillStyle='#ffe27a';ctx.strokeStyle='#2a1a00';ctx.lineWidth=1.2;
+  for(let k=0;k<2;k++){const yy=my+dir*(k*7-4)+dir*Math.sin(t*6)*1.5;ctx.beginPath();ctx.moveTo(hero.x-6,yy);ctx.lineTo(hero.x+6,yy);ctx.lineTo(hero.x,yy+dir*6);ctx.closePath();ctx.fill();ctx.stroke();}
+  ctx.restore();
+  // balao com o texto em cima da cabeca
+  ctx.save();ctx.font='bold 10px "Trebuchet MS"';const w=ctx.measureText(txt).width+12,bx=hero.x-w/2,by=hero.y-(perto?84:70);
+  ctx.fillStyle='rgba(6,16,40,.88)';ctx.strokeStyle='#ffe27a';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(bx,by,w,15,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff6c8';ctx.textAlign='center';ctx.fillText(txt,hero.x,by+11);ctx.restore();}
+// TUTORIAL (tutorial.js, FICHA_TUTORIAL.md): confere a cada quadro se chegou a hora de alguma dica (cada uma aparece uma vez)
+function tutChecaMapa(){if(typeof tutMostra!=='function'||!tutLigado()||fala||ab.on||!comecou||transicao||hero.pulo>0||(typeof uiAberto==='function'&&uiAberto()))return;
+  const C=[
+    ['andar',()=>true],
+    ['habilidade',()=>hero.espada],
+    ['missao_npc',()=>NA_VILA&&hero.espada&&typeof POS_NPC==='function'&&typeof marcaMissao==='function'&&Object.entries(POS_NPC()).some(([id,p])=>p&&marcaMissao(id)==='!'&&Math.hypot(p.x-hero.x,p.y-hero.y)<170)],
+    ['missao',()=>typeof estMissoes==='function'&&Object.values(estMissoes()).some(m=>m&&m.st)],
+    ['grupo',()=>!!(JOGO.bino&&JOGO.bino.ativo)],
+    ['equip',()=>Object.keys(JOGO.inv||{}).some(k=>ITENS[k]&&EQUIPAVEL.includes(ITENS[k].tipo)&&qtd(k)>0)],
+    ['hab_nova',()=>JOGO.nivel>=5],
+    ['comida',()=>Object.keys(JOGO.inv||{}).some(k=>ITENS[k]&&ITENS[k].tipo==='comida'&&qtd(k)>0)],
+    ['eco',()=>typeof estadoEcos==='function'&&estadoEcos().tem.length>0],
+  ];
+  // save de antes do tutorial com o jogo ja andando: o que ele ja viveu conta como visto (sem chuva de dicas)
+  if(!JOGO.tut){JOGO.tut={};if(hero.espada){for(const [id,f] of C){try{if(f())JOGO.tut[id]=true;}catch(e){}}JOGO.tut.andar=true;if((JOGO.vitorias||0)>0)JOGO.tut.luta=true;if(JOGO.nivel>=9)JOGO.tut.ressonancia=true;}}
+  const abre=aba=>{if(aba==null)return;UI.menu=true;UI.home=false;UI.aba=aba;UI.sel=0;UI.confirmaNovo=false;UI.pisca=performance.now()+3500;};
+  for(const [id,f] of C)if(!tutVisto(id)){let ok=false;try{ok=f();}catch(e){}if(ok){tutMostra(id,abre);return;}}}
 function texto(s,x,y,size,cor,al){ctx.font=`bold ${size}px "Trebuchet MS"`;ctx.textAlign=al||'left';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,20,.85)';ctx.strokeText(s,x,y);ctx.fillStyle=cor;ctx.fillText(s,x,y);}
 /* ---------- retratos na caixa de fala (tools/cut_retratos.py -> vila_retratos.js): 4 expressoes por personagem
    0 normal, 1 feliz, 2 bravo/determinado, 3 surpreso. A linha pode trazer a expressao no 3o campo; senao vem do texto */
@@ -1362,7 +1398,9 @@ setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){sem
 // um erro num quadro nao congela mais o jogo: mostra o erro (jogo.js mostraErro) e segue
 function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.filter='none';c.globalCompositeOperation='source-over';}catch(_){}}
 function quadro(now){try{quadro0(now);}catch(e){zeraCtx(ctx);if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(quadro);}}
-function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}const dt=Math.max(0,Math.min(.05,(now-ult)/1000));ult=now;
+function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}
+  if(window.__tut){ult=now;for(const k in teclas)teclas[k]=false;requestAnimationFrame(quadro);return;}   // cartao do tutorial aberto: jogo pausado
+  tutChecaMapa();const dt=Math.max(0,Math.min(.05,(now-ult)/1000));ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);

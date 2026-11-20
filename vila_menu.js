@@ -54,7 +54,7 @@ const ABA_HABS=3,ABA_ECOS=4,ABA_MISSOES=5,ABA_MAPA=6,ABA_SALVAR=7,ABA_BESTA=8;
 const NOME_GRUPO={jux:'Jux',bino:'Bino'},COR_GRUPO={jux:'#8fe9ff',bino:'#ffb27a'};
 function grupoMenu(){const g=['jux'];if(typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo&&typeof statusBino==='function')g.push('bino');return g;}
 function trocaQuem(dir){const g=grupoMenu();if(g.length<2)return;UI.quem=g[(g.indexOf(UI.quem)+dir+g.length)%g.length];UI.sel=0;som(SOM.ui_mover,.4);}
-const ABA_COM_GRUPO=a=>a===0||a===2||a===3;
+const ABA_COM_GRUPO=a=>a===0||a===2||a===3||a===4;   // Status, Equipar, Habilidades e Ecos trocam de personagem com Q
 function seletorGrupo(cx,cy){const g=grupoMenu();if(!g.includes(UI.quem))UI.quem='jux';
   texto('Personagem:',cx,cy+20,14,'#9fb3d9');
   g.forEach((q,i)=>{const bx=cx+100+i*120,on=q===UI.quem;ctx.fillStyle=on?COR_GRUPO[q]:'rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(bx,cy,110,28,7);ctx.fill();
@@ -198,7 +198,7 @@ function usaItem(id){const it=ITENS[id];
 function opcoesSlot(s){const E=equipDe(UI.quem);return [...new Set([null,E[s],...itensBolsa().filter(k=>ITENS[k].tipo===tipoDoSlot(s)&&serveEm(ITENS[k],UI.quem))].filter(x=>x!==undefined))];}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
   if(nx===cur)return;if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_mover,.5);salvaJogo();}
-const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Controles do teclado','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
+const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Dicas do tutorial','Controles do teclado','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
 // SAVE EM ARQUIVO (2026-11-19): leva o progresso para outro navegador/computador (o save fica no navegador, separado por site)
 function exportaSave(){salvaVila();const d={jogo:'jux-lamina-de-gelo',v:1,quando:new Date().toISOString(),dados:{}};
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('jux_')&&k!=='jux_pag_viva'&&k!=='jux_encontro')d.dados[k]=localStorage.getItem(k);}
@@ -218,8 +218,9 @@ const VOL_OPS=['mus','sfx','voz'];
 function acaoSalvar(i,dir){
   if(i===3){const k=VEL_TEXTO.findIndex(v=>v[0]===OPC.texto),n=(Math.max(0,k)+(dir===-1?VEL_TEXTO.length-1:1))%VEL_TEXTO.length;OPC.texto=VEL_TEXTO[n][0];salvaOpc();som(SOM.ui_mover,.6);return;}
   if(i===4){OPC.tremor=!OPC.tremor;salvaOpc();som(SOM.ui_mover,.6);return;}
-  if(i===5){UI.controles=!UI.controles;som(SOM.ui_vez,.5);return;}
-  if(i>5)i-=3;
+  if(i===5){OPC.dicas=OPC.dicas===false;salvaOpc();som(SOM.ui_mover,.6);aviso(OPC.dicas===false?'Dicas do tutorial desligadas':'Dicas do tutorial ligadas',OPC.dicas===false?'#ffb0b0':'#7dffa8');return;}
+  if(i===6){UI.controles=!UI.controles;som(SOM.ui_vez,.5);return;}
+  if(i>6)i-=4;
   if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}
   else if(i===1)exportaSave();else if(i===2)importaSave();
   else if(UI.confirmaNovo){novoJogo();location.reload();}else{UI.confirmaNovo=true;aviso('Toque de novo para confirmar','#ff9a9a');som(SOM.ui_mover,.5);}}
@@ -227,12 +228,17 @@ function acaoSalvar(i,dir){
 // ---------- Ecos
 const ECO_ORDEM=['lamina','arcano','guardiao','sabio','sombra','quebrador'];
 const ecoLista=()=>ECO_ORDEM;
-function ecoVisto(){return UI.ecoVer||estadoEcos().equip||'lamina';}
-function acaoEco(i){const E=estadoEcos();
+// de quem e a aba Ecos agora (Q troca): Jux ou Bino
+const quemEco=()=>grupoMenu().includes(UI.quem)?UI.quem:'jux';
+function ecoVisto(){return UI.ecoVer||vagaEco(quemEco()).equip||estadoEcos().equip||'lamina';}
+function acaoEco(i){const E=estadoEcos(),q=quemEco(),S=vagaEco(q);
   if(!UI.ecoCol){const id=ECO_ORDEM[i];UI.ecoVer=id;if(!E.tem.includes(id)){som(SOM.ui_mover,.5);aviso('Eco ainda não encontrado','#ff9a9a');return;}
-    if(E.equip!==id){E.equip=id;som(SOM.ui_vez,.6);aviso(ECOS[id].nome+' equipado!',ECOS[id].cor);salvaJogo();}else{UI.ecoCol=1;UI.sel=0;}return;}
-  const h=ECOS[ecoVisto()].habs[i],r=trocaHab(h);
+    if(S.equip!==id){const de=equipaEco(id,q);som(SOM.ui_vez,.6);
+      aviso(de?ECOS[id].nome+' passou de '+NOME_QUEM[de]+' para '+NOME_QUEM[q]+' ('+NOME_QUEM[de]+' ficou sem Eco)':ECOS[id].nome+' equipado em '+NOME_QUEM[q]+'!',ECOS[id].cor);salvaJogo();}
+    else{UI.ecoCol=1;UI.sel=0;}return;}
+  const h=ECOS[ecoVisto()].habs[i],r=trocaHab(h,q);
   if(r==='auto'){som(SOM.ui_mover,.4);aviso('Passiva do Eco equipado: já está sempre ligada','#ffe27a');return;}
+  if(r==='moveu'){som(SOM.ui_vez,.5);aviso(HABS[h].nome+' passou de '+NOME_QUEM[trocaHab.de]+' para '+NOME_QUEM[q],'#ffe27a');salvaJogo();return;}
   if(r==='pos'){som(SOM.ui_vez,.5);salvaJogo();}else if(r==='tirou'){som(SOM.ui_mover,.4);salvaJogo();}
   else{som(SOM.ui_mover,.5);aviso(r==='sem_ap'?'AP insuficiente (tire outra habilidade)':'Suba o nível do Eco para aprender','#ff9a9a');}}
 // retratos dos Ecos (ecos_retratos.js, tools/cut_retratos.py); sem retrato fica a bolinha de cor
@@ -269,21 +275,22 @@ function desenhaHabs(cx,cy,w,h,y){const L=habsMenu(),linha=34,vis=Math.floor((y+
     yy+=6;ctx.fillStyle='rgba(40,70,120,.35)';ctx.fillRect(x2-8,yy-12,ww+16,1);yy+=8;}
   quebraTxt(q.desc,x2,14,'#c8d8f0',ww);
   if(F)texto('% = em relação ao ataque normal de '+(UI.quem==='bino'?'Bino':'Jux')+'; muda com ATQ, defesa, fraqueza e crítico.',x2,yy+4,11,'#7a8aa8'),yy+=18;
-  yy+=10;const eq=(typeof estadoEcos==='function')?estadoEcos().equipadas.filter(k=>HABS[k]&&!HABS[k].passiva):[];
-  if(UI.quem!=='bino')texto('Habilidades de Eco equipadas: '+(eq.length?eq.map(k=>HABS[k].nome).join(', '):'nenhuma'),x2,yy,12,'#b8a6e8');if(UI.quem!=='bino')texto('(gerencie na aba Ecos)',x2,yy+16,11,'#7a8aa8');
+  yy+=10;const eq=(typeof vagaEco==='function')?vagaEco(UI.quem==='bino'?'bino':'jux').equipadas.filter(k=>HABS[k]&&!HABS[k].passiva):[];
+  texto('Habilidades de Eco equipadas: '+(eq.length?eq.map(k=>HABS[k].nome).join(', '):'nenhuma'),x2,yy,12,'#b8a6e8');texto('(gerencie na aba Ecos)',x2,yy+16,11,'#7a8aa8');
   texto('▲ ▼ escolhe · ENTER: liga ou desliga · Q: personagem · desligada não aparece na batalha nem no AUTOMÁTICO',cx,y+h-20,12,'#c8d8f0');}
-function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),ap=apUsado(),lim=limiteAP(JOGO.nivel),ver=ecoVisto(),apr=aprendidas();
+function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),q=quemEco(),S=vagaEco(q),ap=apUsado(q),lim=limiteAP(nivelQuem(q)),ver=ecoVisto(),apr=aprendidas();
   // AP
-  texto('AP',cx+w-250,cy-6,15,'#9fe8ff');ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(cx+w-220,cy-16,150,10);ctx.fillStyle=ap>lim?'#ff9a9a':'#ffe27a';ctx.fillRect(cx+w-220,cy-16,150*Math.min(1,ap/lim),10);
+  texto('AP de '+NOME_QUEM[q],cx+w-228,cy-6,14,'#9fe8ff','right');ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(cx+w-220,cy-16,150,10);ctx.fillStyle=ap>lim?'#ff9a9a':'#ffe27a';ctx.fillRect(cx+w-220,cy-16,150*Math.min(1,ap/lim),10);
   texto(ap+' / '+lim,cx+w-60,cy-6,14,'#ffe27a','right');
   // coluna dos Ecos
   ECO_ORDEM.forEach((id,i)=>{const e=ECOS[id],tem=E.tem.includes(id),yy=cy+6+i*44,on=!UI.ecoCol&&UI.sel===i;
     linhaSel(cx,yy,250,40,on||(UI.ecoCol&&id===ver));
     if(tem&&retratoOk(id)){ctx.save();ctx.beginPath();ctx.arc(cx+28,yy+20,16,0,6.283);ctx.fillStyle='#0c1a3a';ctx.fill();ctx.clip();ctx.drawImage(RETRATO_ECO[id],cx+12,yy+4,32,32);ctx.restore();
-      ctx.beginPath();ctx.arc(cx+28,yy+20,16,0,6.283);ctx.strokeStyle=E.equip===id?'#fff':e.cor;ctx.lineWidth=2;ctx.stroke();}
+      ctx.beginPath();ctx.arc(cx+28,yy+20,16,0,6.283);ctx.strokeStyle=S.equip===id?'#fff':e.cor;ctx.lineWidth=2;ctx.stroke();}
     else{ctx.fillStyle=tem?e.cor:'#3a4466';ctx.beginPath();ctx.arc(cx+28,yy+20,11,0,6.283);ctx.fill();
-    if(E.equip===id){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}}
+    if(S.equip===id){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}}
     texto(tem?e.nome:'???',cx+46,yy+18,15,tem?'#fff':'#5a6688');
+    {const d=tem&&donoEco(id);if(d&&d!==q)texto('com o '+NOME_QUEM[d],cx+244,yy+18,11,COR_GRUPO[d]||'#ffb27a','right');}
     if(tem){const nv=nivelDoEco(id),a=PE_NIVEL[nv-1]||0,b=PE_NIVEL[nv]||PE_NIVEL[NIVEL_MAX_ECO-1];texto(e.papel+' · Nv '+nv,cx+46,yy+34,11,'#9fb3d9');
       ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(cx+160,yy+28,80,5);ctx.fillStyle=e.cor;ctx.fillRect(cx+160,yy+28,nv>=NIVEL_MAX_ECO?80:80*(peDe(id)-a)/(b-a),5);}
     ZONAS.push([cx,yy,cx+250,yy+40,()=>{UI.ecoCol=0;UI.sel=i;UI.ecoVer=id;acaoEco(i);}]);});
@@ -296,20 +303,20 @@ function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),ap=apUsado(),lim=limiteAP
   if(retratoOk(ver)){const rx=cx+w-102,ry=cy+2;ctx.fillStyle='#0c1a3a';ctx.beginPath();ctx.roundRect(rx,ry,74,74,8);ctx.fill();ctx.drawImage(RETRATO_ECO[ver],rx+1,ry+1,72,72);
     ctx.strokeStyle=e.cor;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(rx,ry,74,74,8);ctx.stroke();}
   texto(e.nome,x2,cy+22,19,e.cor);texto(e.desc,x2,cy+42,13,'#c8d8f0');
-  texto('Bônus: '+Object.entries(e.bonus).map(([k,v])=>(NOMES_ATRIB[k]||k)+' +'+(v<1?Math.round(v*100)+'%':v)).join(', ')+(E.equip===ver?'   (equipado)':'   (ENTER no Eco para equipar)'),x2,cy+60,13,'#7dffa8');
+  texto('Bônus: '+Object.entries(e.bonus).map(([k,v])=>(NOMES_ATRIB[k]||k)+' +'+(v<1?Math.round(v*100)+'%':v)).join(', ')+(S.equip===ver?'   (equipado em '+NOME_QUEM[q]+')':donoEco(ver)?'   (com o '+NOME_QUEM[donoEco(ver)]+': ENTER passa para '+NOME_QUEM[q]+')':'   (ENTER no Eco para equipar)'),x2,cy+60,13,'#7dffa8');
   texto('Nv '+nivelDoEco(ver)+' · por nível: '+textoPorNivel(ver),x2,cy+77,12,'#ffe27a');texto(TEXTO_MARCO,x2,cy+92,11,'#c8b27a');
   const top=cy+100,compacto=e.habs.length>7,passo=Math.min(42,Math.floor((y+h-34-top)/e.habs.length)),alt=Math.min(38,passo-2);   // com 7 habilidades as linhas apertam para nao bater no rodape
-  e.habs.forEach((hb,i)=>{const H=HABS[hb],sabe=apr.includes(hb),auto=passivaDoEco(hb),eq=auto||E.equipadas.includes(hb),yy=top+i*passo,on=UI.ecoCol&&UI.sel===i;
+  e.habs.forEach((hb,i)=>{const H=HABS[hb],sabe=apr.includes(hb),auto=passivaDoEco(hb,q),eq=auto||S.equipadas.includes(hb),outro=donoHab(hb),yy=top+i*passo,on=UI.ecoCol&&UI.sel===i;
     linhaSel(x2,yy,w-290,alt,on);
     const ce=auto?'#ffe27a':'#7dffa8';ctx.strokeStyle=eq?ce:'#5a6688';ctx.lineWidth=2;const qy=yy+(alt-16)/2;ctx.strokeRect(x2+18,qy,16,16);if(eq){ctx.fillStyle=ce;ctx.fillRect(x2+22,qy+4,8,8);}
     if(compacto){texto((H.passiva?'◆ ':'✦ ')+H.nome,x2+44,yy+alt*.68,14,sabe?'#fff':'#5a6688');
       texto(sabe?(H.passiva?'passiva':'ativa'):'Aprende no Nv '+H.nv,x2+w-420,yy+alt*.68,12,sabe?'#9fb3d9':'#5a6688','right');
-      texto(auto?'grátis (Eco equipado)':'AP '+H.ap,x2+w-306,yy+alt*.68,13,'#ffe27a','right');}
+      texto(auto?'grátis':outro&&outro!==q?'com o '+NOME_QUEM[outro]:'AP '+H.ap,x2+w-306,yy+alt*.68,13,outro&&outro!==q?(COR_GRUPO[outro]||'#ffb27a'):'#ffe27a','right');}
     else{texto((H.passiva?'◆ ':'✦ ')+H.nome,x2+44,yy+16,15,sabe?'#fff':'#5a6688');
     texto(sabe?H.desc+(H.mp?'  MP '+H.mp:''):'Aprende no Nv '+H.nv+' do Eco',x2+44,yy+alt-5,11,sabe?'#9fb3d9':'#5a6688');
-    texto(auto?'grátis (Eco equipado)':'AP '+H.ap,x2+w-306,yy+22,13,'#ffe27a','right');}
+    texto(auto?'grátis (Eco equipado)':outro&&outro!==q?'com o '+NOME_QUEM[outro]:'AP '+H.ap,x2+w-306,yy+22,13,outro&&outro!==q?(COR_GRUPO[outro]||'#ffb27a'):'#ffe27a','right');}
     ZONAS.push([x2,yy,x2+w-290,yy+alt,()=>{UI.ecoCol=1;UI.sel=i;acaoEco(i);}]);});
-  texto('◀ ▶ troca de coluna · ENTER: equipar Eco / ligar ou desligar · ✦ ativa (Magia) · ◆ passiva (as do Eco equipado ficam sempre ligadas)',cx,y+h-20,12,'#c8d8f0');
+  textoCabe('◀ ▶ troca de coluna · ENTER: equipar Eco / ligar ou desligar'+(grupoMenu().length>1?' · Q: personagem (cada um usa um Eco diferente)':'')+' · ✦ ativa · ◆ passiva',cx,y+h-20,12,'#c8d8f0',w-48);
 }
 // ---------- Diário de missões
 function listaDiario(){const at=[],fe=[];for(const k of ORDEM_MISSOES){const s=estadoMissao(k);if(s==='ativa')at.push(k);else if(s==='feita')fe.push(k);}return ['_historia',...(JOGO.ordemSabe?['_ordem']:[]),...at,...fe];}
@@ -410,7 +417,8 @@ function uiClique(x,y){
 // texto que diminui a letra ate caber na largura (2026-11-20: nada mais sai da janela)
 function textoCabe(s,x,y,size,cor,maxw,al){let t=size;for(;t>9;t--){ctx.font=`bold ${t}px "Trebuchet MS"`;if(ctx.measureText(s).width<=maxw)break;}texto(s,x,y,t,cor,al);}
 function painel(x,y,w,h){ctx.fillStyle='rgba(6,16,40,.94)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();}
-function linhaSel(x,y,w,h,on){if(on){ctx.fillStyle='rgba(127,214,245,.22)';ctx.beginPath();ctx.roundRect(x,y,w,h,6);ctx.fill();ctx.fillStyle='#7fd6f5';ctx.beginPath();ctx.moveTo(x+6,y+h/2-5);ctx.lineTo(x+12,y+h/2);ctx.lineTo(x+6,y+h/2+5);ctx.fill();}}
+function linhaSel(x,y,w,h,on){if(on&&UI.pisca&&performance.now()<UI.pisca){const k=.5+.5*Math.sin(performance.now()/120);ctx.save();ctx.strokeStyle=`rgba(255,226,122,${.4+.6*k})`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x-3,y-3,w+6,h+6,8);ctx.stroke();ctx.restore();}
+  if(on){ctx.fillStyle='rgba(127,214,245,.22)';ctx.beginPath();ctx.roundRect(x,y,w,h,6);ctx.fill();ctx.fillStyle='#7fd6f5';ctx.beginPath();ctx.moveTo(x+6,y+h/2-5);ctx.lineTo(x+12,y+h/2);ctx.lineTo(x+6,y+h/2+5);ctx.fill();}}
 function botaoMenu(){ctx.save();ctx.fillStyle='rgba(6,16,40,.8)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(W-118,46,108,30,7);ctx.fill();ctx.stroke();
   texto('☰ Menu  (M)',W-110,67,14,'#e8f6ff');texto(JOGO.gil+' gil',W-114,96,13,'#ffe27a');ctx.restore();}
 function uiDesenha(){
@@ -570,19 +578,20 @@ function desenhaMenu(){
       if(dep){const d=dep[k]-agora[k];texto(d?(d>0?'+':'')+d:'·',xx,by+56,d?14:12,d>0?'#7dffa8':d<0?'#ff9a9a':'#5a6a88','center');}});
     textoCabe('◀ ▶ ou toque: trocar (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-14,13,'#c8d8f0',w-48);
   }else{   // Salvar
-    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*36;linhaSel(cx,yy,560,32,i===UI.sel);texto(o,cx+30,yy+26,17,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
-      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+26,16,'#9fe8ff');
-      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+26,16,OPC.tremor?'#7dffa8':'#ff9a9a');
-      if(i===5)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+26,16,'#9fe8ff');
-      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+11,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+11,bw*v,10);
-        texto(Math.round(v*100)+'%',bx+bw+14,yy+22,16,'#e8f6ff');texto('◀',bx-24,yy+22,16,'#9fe8ff');texto('▶',bx+bw+62,yy+22,16,'#9fe8ff');
-        ZONAS.push([bx-30,yy,bx-4,yy+34,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+34,()=>{UI.sel=i;acaoSalvar(i,1);}]);
-        ZONAS.push([bx,yy,bx+bw,yy+34,(mx)=>{UI.sel=i;}]);}
-      else ZONAS.push([cx,yy,cx+460,yy+34,()=>{UI.sel=i;acaoSalvar(i);}]);});
-    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*36+8,13,'#c8d8f0');
-    if(UI.controles){const px=cx+275,py=cy+6*36-2,pw=300,ph=172;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+28,17,'#ffe27a');
-      [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+54+k*19,13,'#9fe8ff');texto(b,px+128,py+54+k*19,13,'#e8f6ff');});}
-    if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+178,18,'#7dffa8');
+    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*32;linhaSel(cx,yy,560,29,i===UI.sel);texto(o,cx+30,yy+21,16,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
+      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+21,15,'#9fe8ff');
+      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+21,15,OPC.tremor?'#7dffa8':'#ff9a9a');
+      if(i===5)texto(OPC.dicas===false?'Desligado':'Ligado',cx+330,yy+21,15,OPC.dicas===false?'#ff9a9a':'#7dffa8');
+      if(i===6)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+21,15,'#9fe8ff');
+      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+10,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+10,bw*v,10);
+        texto(Math.round(v*100)+'%',bx+bw+14,yy+20,15,'#e8f6ff');texto('◀',bx-24,yy+20,15,'#9fe8ff');texto('▶',bx+bw+62,yy+20,15,'#9fe8ff');
+        ZONAS.push([bx-30,yy,bx-4,yy+30,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+30,()=>{UI.sel=i;acaoSalvar(i,1);}]);
+        ZONAS.push([bx,yy,bx+bw,yy+30,(mx)=>{UI.sel=i;}]);}
+      else ZONAS.push([cx,yy,cx+460,yy+30,()=>{UI.sel=i;acaoSalvar(i);}]);});
+    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*32+6,13,'#c8d8f0');
+    if(UI.controles){const px=cx+275,py=cy+7*32-2,pw=300,ph=148;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+24,16,'#ffe27a');
+      [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+46+k*18,13,'#9fe8ff');texto(b,px+128,py+46+k*18,13,'#e8f6ff');});}
+    if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+7*32+21,17,'#7dffa8');
   }
   {const dica='M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar';ctx.font='bold 13px "Trebuchet MS"';const dw=ctx.measureText(dica).width+20;
     ctx.fillStyle='rgba(6,16,40,.8)';ctx.beginPath();ctx.roundRect(x+w-6-dw,y+h+8,dw,24,6);ctx.fill();texto(dica,x+w-16,y+h+24,13,'rgba(255,255,255,.75)','right');}

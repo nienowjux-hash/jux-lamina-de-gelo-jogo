@@ -77,17 +77,31 @@ const peDe=id=>estadoEcos().pe[id]||0;
 const nivelDoEco=id=>nivelEco(peDe(id));
 function aprendidas(){const E=estadoEcos(),r=[];for(const id of E.tem){const e=ECOS[id],nv=nivelDoEco(id);for(const h of e.habs)if(HABS[h].nv<=nv)r.push(h);}return r;}
 // as passivas aprendidas do Eco EQUIPADO ficam sempre ligadas, de graca (sem gastar AP); as dos outros Ecos custam AP
-const passivaDoEco=h=>{const E=estadoEcos(),e=ECOS[E.equip];return !!(e&&HABS[h]&&HABS[h].passiva&&e.habs.includes(h)&&HABS[h].nv<=nivelDoEco(E.equip));};
-const apUsado=()=>estadoEcos().equipadas.reduce((s,h)=>s+(HABS[h]&&!passivaDoEco(h)?HABS[h].ap:0),0);
-function trocaHab(h){const E=estadoEcos(),i=E.equipadas.indexOf(h);if(passivaDoEco(h))return 'auto';
-  if(i>=0){E.equipadas.splice(i,1);return 'tirou';}
-  if(!aprendidas().includes(h))return 'nao_aprendeu';if(apUsado()+HABS[h].ap>limiteAP(JOGO.nivel))return 'sem_ap';E.equipadas.push(h);return 'pos';}
+// ECOS EM QUALQUER PERSONAGEM (FICHA_ECOS_GRUPO.md, 2026-11-20): cada personagem tem a sua vaga {equip, equipadas}.
+// A do Jux continua sendo o proprio JOGO.ecos (equip/equipadas: saves antigos seguem iguais); a dos companheiros fica em JOGO.ecos.grupo[q].
+// O MESMO Eco (e a mesma habilidade de Eco) nao fica em dois personagens ao mesmo tempo.
+function vagaEco(q){const E=estadoEcos();if(!q||q==='jux')return E;E.grupo=E.grupo||{};return E.grupo[q]=E.grupo[q]||{equip:null,equipadas:[]};}
+const timeEco=()=>['jux',...((typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo)?['bino']:[])];
+const nivelQuem=q=>q==='bino'?((JOGO.bino||{}).nivel||1):JOGO.nivel;
+const NOME_QUEM={jux:'Jux',bino:'Bino'};
+const donoEco=id=>timeEco().find(q=>vagaEco(q).equip===id)||null;
+const donoHab=h=>timeEco().find(q=>vagaEco(q).equipadas.includes(h))||null;
+const ecoEmCampo=()=>{for(const q of timeEco()){const e=vagaEco(q).equip;if(e)return e;}return null;};
+// poe o Eco id no personagem q; se estava com outro, sai dele. Devolve quem perdeu (ou null)
+function equipaEco(id,q){q=q||'jux';const de=donoEco(id);if(de&&de!==q)vagaEco(de).equip=null;vagaEco(q).equip=id;return de&&de!==q?de:null;}
+const passivaDoEco=(h,q)=>{const S=vagaEco(q),e=ECOS[S.equip];return !!(e&&HABS[h]&&HABS[h].passiva&&e.habs.includes(h)&&HABS[h].nv<=nivelDoEco(S.equip));};
+const apUsado=q=>vagaEco(q).equipadas.reduce((s,h)=>s+(HABS[h]&&!passivaDoEco(h,q)?HABS[h].ap:0),0);
+function trocaHab(h,q){q=q||'jux';const S=vagaEco(q),i=S.equipadas.indexOf(h);if(passivaDoEco(h,q))return 'auto';
+  if(i>=0){S.equipadas.splice(i,1);return 'tirou';}
+  if(!aprendidas().includes(h))return 'nao_aprendeu';if(apUsado(q)+HABS[h].ap>limiteAP(nivelQuem(q)))return 'sem_ap';
+  const de=donoHab(h);if(de&&de!==q){const o=vagaEco(de).equipadas;o.splice(o.indexOf(h),1);S.equipadas.push(h);trocaHab.de=de;return 'moveu';}
+  S.equipadas.push(h);return 'pos';}
 // bônus (Eco equipado + passivas equipadas): % (atk, def...) ou somado (crit, esq, vel) ou especial (contra, vontade...)
-function bonusEcos(){const E=estadoEcos(),pct={},soma={},esp={},flat={};
+function bonusEcos(q){q=q||'jux';const E=vagaEco(q),pct={},soma={},esp={},flat={};
   const add=b=>{for(const k in b){if(['crit','esq','vel'].includes(k))soma[k]=(soma[k]||0)+b[k];else if(['contra','vontade','curaMais','quebra','sede'].includes(k))esp[k]=(esp[k]||0)+b[k];else pct[k]=(pct[k]||0)+b[k];}};
   if(E.equip&&ECOS[E.equip])add(ECOS[E.equip].bonus);
-  for(const h of E.equipadas)if(HABS[h]&&HABS[h].passiva&&!passivaDoEco(h))add(HABS[h].passiva);
-  if(E.equip&&ECOS[E.equip])for(const h of ECOS[E.equip].habs)if(passivaDoEco(h))add(HABS[h].passiva);
+  for(const h of E.equipadas)if(HABS[h]&&HABS[h].passiva&&!passivaDoEco(h,q))add(HABS[h].passiva);
+  if(E.equip&&ECOS[E.equip])for(const h of ECOS[E.equip].habs)if(passivaDoEco(h,q))add(HABS[h].passiva);
   // ganho por nivel do Eco equipado: HP/MP/ATQ/DEF... somados (antes da %), +1% de crit a cada 5 niveis; MARCO a cada 10 niveis
   if(E.equip&&ECOS[E.equip]){const L=nivelDoEco(E.equip),pn=ECOS[E.equip].porNivel||{};
     for(const k of ['hp','mp','atk','def','atkm','defm'])if(pn[k])flat[k]=(flat[k]||0)+pn[k]*(L-1);
@@ -104,5 +118,10 @@ function ganhoDeNiveis(id,a,b){const pn=(ECOS[id]||{}).porNivel||{},n=b-a,NM={hp
   const c=pn.crit5?Math.floor((b-1)/5)-Math.floor((a-1)/5):0;if(c>0)r.push('+'+c+'% crítico');
   const marcos=Math.floor(b/10)-Math.floor(a/10);
   return {txt:r.join(', '),marco:marcos>0?'MARCO '+Math.floor(b/10)*10+': HP +2%, DEF +2'+(Math.floor(b/30)>Math.floor(a/30)?', VEL +1':''):''};}
-function ganhaPE(n){const E=estadoEcos();if(!E.equip)return null;const antes=nivelDoEco(E.equip);E.pe[E.equip]=peDe(E.equip)+n;const depois=nivelDoEco(E.equip);
-  const novas=depois>antes?ECOS[E.equip].habs.filter(h=>HABS[h].nv>antes&&HABS[h].nv<=depois):[];return {eco:E.equip,pe:n,antes,depois,novas,ganho:depois>antes?ganhoDeNiveis(E.equip,antes,depois):null};}
+// PE: cada Eco equipado no time ganha (o do Jux e o do Bino). Devolve o primeiro (tela de vitoria) com os outros em .outros
+function ganhaPE(n){const E=estadoEcos(),res=[];
+  for(const q of timeEco()){const id=vagaEco(q).equip;if(!id||res.some(r=>r.eco===id))continue;
+    const antes=nivelDoEco(id);E.pe[id]=peDe(id)+n;const depois=nivelDoEco(id);
+    const novas=depois>antes?ECOS[id].habs.filter(h=>HABS[h].nv>antes&&HABS[h].nv<=depois):[];
+    res.push({eco:id,quem:q,pe:n,antes,depois,novas,ganho:depois>antes?ganhoDeNiveis(id,antes,depois):null});}
+  if(!res.length)return null;res[0].outros=res.slice(1);return res[0];}

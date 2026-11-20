@@ -214,8 +214,8 @@ function pontosProva(){for(let i=V.pontos.length-1;i>=0;i--)if(V.pontos[i].id.st
   if(REGIAO==='pico'){const C=PROVA_PONTOS.circulo;V.pontos.push({id:(st==='pista'||st==='vencida')?'prova_fenrir':'circulo_pico',x:C.x,y:C.y,r:C.r});}}
 function aceitaProvaFenrir(){estProvas().fenrir='pista';estMissoes().prova_fenrir={st:'ativa',v0:0};som(SOM.ui_vez,.7);
   aviso('Nova missão: A prova do lobo (veja no menu → Missões)','#ffe27a');pontosColeta();salvaJogo();}
-function concluiProvaFenrir(){const E=estadoEcos();estProvas().fenrir='feita';if(!E.tem.includes('lamina'))E.tem.push('lamina');E.equip='lamina';
-  if(!E.equipadas.includes('golpe_duplo')&&apUsado()+HABS.golpe_duplo.ap<=limiteAP(JOGO.nivel))E.equipadas.push('golpe_duplo');
+function concluiProvaFenrir(){const E=estadoEcos();estProvas().fenrir='feita';if(!E.tem.includes('lamina'))E.tem.push('lamina');if(!donoEco('lamina'))equipaEco('lamina','jux');
+  if(!donoHab('golpe_duplo')&&apUsado('jux')+HABS.golpe_duplo.ap<=limiteAP(JOGO.nivel))E.equipadas.push('golpe_duplo');
   if(estMissoes().prova_fenrir)estMissoes().prova_fenrir.st='feita';pontosColeta();som(SOM.ui_vez,.9);clarao=1;salvaJogo();}
 // desenho no mapa: as pegadas desenhadas (direcao do passo) com o brilho pulsando por cima, uma depois da outra
 function provaMundo(){if(typeof REGIAO==='undefined'||!PEG||!PEGI.complete)return;const st=provaFenrirEstado();

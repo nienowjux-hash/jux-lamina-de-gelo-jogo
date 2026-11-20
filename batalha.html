@@ -24,11 +24,12 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
 <script src="carrega.js?v=1795120505"></script>
 <script src="itens_icones.js?v=1795117438"></script>
-<script src="jogo.js?v=1795120505"></script>
+<script src="jogo.js?v=1795225300"></script>
+<script src="tutorial.js?v=1795225300"></script>
 <script src="combate.js?v=1795138379"></script>
-<script src="bino_habs.js?v=1795117438"></script>
+<script src="bino_habs.js?v=1795225300"></script>
 <script src="jux_habs.js?v=1795117438"></script>
-<script src="ecos.js?v=1795120505"></script>
+<script src="ecos.js?v=1795225300"></script>
 <script src="sprites_anim.js?v=1795117438"></script>
 <script src="sprites_magias.js?v=1795117438"></script>
 <script src="sprites_ressonancia.js?v=1795117438"></script>
@@ -49,7 +50,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
-<script src="bino_batalha.js?v=1795117438"></script>
+<script src="bino_batalha.js?v=1795225500"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -139,7 +140,7 @@ const BINO_D=window.JUX_BINO||null,ATLAS_BINO=new Image();if(BINO_D)ATLAS_BINO.s
 /* ---------- Ecos em campo (PLANO_V2 Parte 3): a criatura do Eco equipado fica atras do Jux, como um espirito ---------- */
 const ECS=window.JUX_ECOS;const ATLAS_EC=new Image();if(ECS)ATLAS_EC.src=ECS.atlas;
 const CRIATURA_ECO={lamina:'fenrir'};   // Eco -> criatura (as outras entram uma por vez)
-function ecoCampo(){if(!ECS||typeof estadoEcos!=='function')return null;const c=CRIATURA_ECO[estadoEcos().equip];return c&&ECS.anims[c+'_campo']?c:null;}
+function ecoCampo(){if(!ECS||typeof estadoEcos!=='function')return null;const c=CRIATURA_ECO[typeof ecoEmCampo==='function'?ecoEmCampo():estadoEcos().equip];return c&&ECS.anims[c+'_campo']?c:null;}
 const posEco=()=>({x:JUX.x+190,y:JUX.y-58});   // atras do heroi (mais longe da camera) e um pouco acima
 function drawEco(c,t){const cr=ecoCampo();if(!cr)return;const an=ECO.anim||cr+'_campo',A=ECS.anims[an]||ECS.anims[cr+'_campo'];
   let i=ECO.q!=null?ECO.q:Math.floor((ECO.anim?t-ECO.t0:t)*A.fps);i=A.loop?i%A.quadros.length:Math.min(i,A.quadros.length-1);const j=A.quadros[i];
@@ -1842,7 +1843,7 @@ function cineFx(c,s,i,p,dt,ox,oy,dw,dh,im,info){
 let BARRA=56;   // faixas pretas de cinema (em cima e embaixo)
 // PENSAMENTO do Eco: o Fenrir nao fala com voz (e um lobo): a criatura "pensa" em legenda, como um espirito, so nos momentos importantes
 const PENS={txt:'',nome:'',cor:'#bff6ff',t:0,dur:0};
-function ecoPensa(txt,ms,nome,cor){PENS.txt=txt;PENS.nome=nome||(ECOS&&ECOS[estadoEcos().equip]?{lamina:'Fenrir'}[estadoEcos().equip]||'Eco':'Eco');PENS.cor=cor||'#bff6ff';PENS.t=0;PENS.dur=(ms||2200)/1000;}
+function ecoPensa(txt,ms,nome,cor){PENS.txt=txt;PENS.nome=nome||(()=>{const q=typeof ecoEmCampo==='function'?ecoEmCampo():estadoEcos().equip;return ECOS&&ECOS[q]?{lamina:'Fenrir'}[q]||'Eco':'Eco';})();PENS.cor=cor||'#bff6ff';PENS.t=0;PENS.dur=(ms||2200)/1000;}
 function drawPensamento(c,dt){if(!PENS.txt)return;PENS.t+=dt;if(PENS.t>PENS.dur){PENS.txt='';return;}
   const a=Math.min(1,PENS.t/.35,(PENS.dur-PENS.t)/.45),bw=570,bx=28,by=104,ls=26;   // fica a esquerda do menu de comandos
   c.save();c.font='italic bold 20px "Trebuchet MS"';
@@ -2027,8 +2028,13 @@ let ultRAF=0,semRAF=false,tocavamRAF=[];
 setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){semRAF=true;tocavamRAF=[MUSICA,MUS_CINE,...Object.values(MUS_PROPRIA)].filter(a=>a&&!a.paused);for(const x of tocavamRAF)x.pause();}},300);
 // um erro num quadro nao congela a luta: mostra (jogo.js mostraErro) e segue
 function frame(now){try{frame0(now);}catch(e){try{for(let i=0;i<40;i++)ctx.restore();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.filter='none';ctx.globalCompositeOperation='source-over';}catch(_){}if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(frame);}}
-function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return;}ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden)for(const x of tocavamRAF)x.play().catch(()=>{});tocavamRAF=[];}
-  const dt=Math.min(.05,(now-last)/1000)*(G.vel||1);last=now;G.t+=dt;const t=G.t;
+function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return;}
+  if(window.__tut){last=now;requestAnimationFrame(frame);return;}   // cartao do tutorial aberto: luta pausada
+  // TUTORIAL (tutorial.js): a primeira luta e a primeira Ressonancia cheia
+  if(!TESTE&&typeof tutMostra==='function'&&typeof JOGO==='object'&&G.scene==='battle'&&menu.open&&!G.busy&&!cine){
+    if(!JOGO.tut&&(JOGO.vitorias||0)>3)JOGO.tut={luta:true,ressonancia:JOGO.nivel>=9};
+    if(!tutVisto('luta'))tutMostra('luta');else if(JUX&&JUX.res>=100&&liberada('res'))tutMostra('ressonancia');}ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden)for(const x of tocavamRAF)x.play().catch(()=>{});tocavamRAF=[];}
+  const dt=Math.max(0,Math.min(.05,(now-last)/1000))*(G.vel||1);last=now;G.t+=dt;const t=G.t;
   stepTweens(dt);stepParts(dt);for(const a of aliados())if(!a.hold)a.at+=dt;
   if(G.scene==='battle')updateBattle(dt);
   ctx.save();ctx.clearRect(0,0,W,H);
