@@ -25,7 +25,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="carrega.js?v=1795225800"></script>
 <script src="itens_icones.js?v=1795117438"></script>
 <script src="jogo.js?v=1795225300"></script>
-<script src="tutorial.js?v=1795225300"></script>
+<script src="tutorial.js?v=1795226200"></script>
 <script src="combate.js?v=1795138379"></script>
 <script src="bino_habs.js?v=1795225300"></script>
 <script src="jux_habs.js?v=1795117438"></script>
@@ -2038,6 +2038,7 @@ setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){sem
 function frame(now){try{frame0(now);}catch(e){try{for(let i=0;i<40;i++)ctx.restore();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.filter='none';ctx.globalCompositeOperation='source-over';}catch(_){}if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(frame);}}
 function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return;}
   if(window.__tut){last=now;requestAnimationFrame(frame);return;}   // cartao do tutorial aberto: luta pausada
+  if(now-last<(document.hasFocus()?12:28)){requestAnimationFrame(frame);return;}   // no maximo 60 qps (30 sem foco): alivia a placa de video
   // TUTORIAL (tutorial.js): a primeira luta e a primeira Ressonancia cheia
   if(!TESTE&&typeof tutMostra==='function'&&typeof JOGO==='object'&&G.scene==='battle'&&menu.open&&!G.busy&&!cine){
     if(!JOGO.tut&&(JOGO.vitorias||0)>3)JOGO.tut={luta:true,ressonancia:JOGO.nivel>=9};

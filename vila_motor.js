@@ -1402,6 +1402,9 @@ function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(1,0,0,1,
 function quadro(now){try{quadro0(now);}catch(e){zeraCtx(ctx);if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(quadro);}}
 function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}
   if(window.__tut){ult=now;for(const k in teclas)teclas[k]=false;requestAnimationFrame(quadro);return;}   // cartao do tutorial aberto: jogo pausado
+  // LIMITE DE QUADROS (2026-11-20: 'a Twitch trava com o jogo aberto'): no maximo 60 por segundo (monitor de 144 Hz desenhava 144),
+  // e 30 quando a janela do jogo nao esta em foco (o jogador olhando outra coisa): sobra placa de video para o resto do PC
+  if(now-ult<(document.hasFocus()?12:28)){requestAnimationFrame(quadro);return;}
   tutChecaMapa();const dt=Math.max(0,Math.min(.05,(now-ult)/1000));ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
   if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;

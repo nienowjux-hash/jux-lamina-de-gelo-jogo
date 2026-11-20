@@ -53,7 +53,7 @@ const ABA_HABS=3,ABA_ECOS=4,ABA_MISSOES=5,ABA_MAPA=6,ABA_SALVAR=7,ABA_BESTA=8;
 // ---------- GRUPO (MENU_GRUPO.md): quem esta sendo visto em Status / Equipar / Habilidades. Companheiro novo: entra em grupoMenu()
 const NOME_GRUPO={jux:'Jux',bino:'Bino'},COR_GRUPO={jux:'#8fe9ff',bino:'#ffb27a'};
 function grupoMenu(){const g=['jux'];if(typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo&&typeof statusBino==='function')g.push('bino');return g;}
-function trocaQuem(dir){const g=grupoMenu();if(g.length<2)return;UI.quem=g[(g.indexOf(UI.quem)+dir+g.length)%g.length];UI.sel=0;som(SOM.ui_mover,.4);}
+function trocaQuem(dir){const g=grupoMenu();if(g.length<2)return;UI.eqLista=null;UI.quem=g[(g.indexOf(UI.quem)+dir+g.length)%g.length];UI.sel=0;som(SOM.ui_mover,.4);}
 const ABA_COM_GRUPO=a=>a===0||a===2||a===3||a===4;   // Status, Equipar, Habilidades e Ecos trocam de personagem com Q
 function seletorGrupo(cx,cy){const g=grupoMenu();if(!g.includes(UI.quem))UI.quem='jux';
   texto('Personagem:',cx,cy+20,14,'#9fb3d9');
@@ -196,6 +196,12 @@ function usaItem(id){const it=ITENS[id];
     guardaVida(q,hp,mp);tiraItem(id);som(SOM.ui_vez,.6);aviso(NOME_GRUPO[q]+': '+(hp>v.hp?'+'+(hp-v.hp)+' HP ':'')+(mp>v.mp?'+'+(mp-v.mp)+' MP':''),'#7dffa8');salvaJogo();return;}
   som(SOM.ui_mover,.5);aviso(it.tipo==='consumivel'?'Use na batalha.':'Não dá para usar agora.','#ff9a9a');}
 function opcoesSlot(s){const E=equipDe(UI.quem);return [...new Set([null,E[s],...itensBolsa().filter(k=>ITENS[k].tipo===tipoDoSlot(s)&&serveEm(ITENS[k],UI.quem))].filter(x=>x!==undefined))];}
+// lista de escolha do Equipar: o que esta equipado primeiro, depois o que serve da bolsa, por ultimo 'tirar'
+function listaEq(s){const cur=equipDe(UI.quem)[s]||null,ops=opcoesSlot(s).filter(x=>x&&x!==cur);return [...(cur?[cur]:[]),...ops,...(cur?[null]:[])];}
+function abreEqLista(){const s=(SLOTS_EQ[UI.sel]||SLOTS_EQ[0])[0],l=listaEq(s);if(!l.length){som(SOM.ui_mover,.4);aviso('Nada na bolsa para este espaço','#c8d8f0');return;}UI.eqLista={sel:0};som(SOM.ui_vez,.4);}
+function equipaEscolha(){const s=SLOTS_EQ[UI.sel][0],E=equipDe(UI.quem),cur=E[s]||null,nx=listaEq(s)[UI.eqLista.sel];UI.eqLista=null;
+  if(nx===undefined||nx===cur){som(SOM.ui_mover,.4);return;}if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_vez,.6);
+  aviso(nx?ITENS[nx].nome+' equipado'+(grupoMenu().length>1?' em '+NOME_GRUPO[UI.quem||'jux']:'')+'!':'Removido','#bff4ff');salvaJogo();}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
   if(nx===cur)return;if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_mover,.5);salvaJogo();}
 const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Dicas do tutorial','Controles do teclado','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
@@ -376,7 +382,7 @@ function ativa(i){
   if(UI.menu&&UI.home){abreSecao(i);return;}
   if(UI.loja){const l=itensLoja();if(l[i])compra(l[i]);return;}
   if(UI.aba===1){const l=itensBolsa();if(l[i])usaItem(l[i]);}
-  else if(UI.aba===2)trocaSlot(SLOTS_EQ[i][0],1);
+  else if(UI.aba===2)abreEqLista();
   else if(UI.aba===ABA_HABS)alternaHab(i);
   else if(UI.aba===ABA_ECOS)acaoEco(i);
   else if(UI.aba===ABA_MISSOES){const k=listaDiario()[i];if(k&&k!=='_historia')alternaRastreio(k);}
@@ -388,6 +394,11 @@ function uiTecla(k){
   if(!uiAberto()){if(k==='m'||k==='i'||k==='escape'||k==='tab'){abreMenu();return true;}return false;}
   if(UI.loja&&UI.loja.qtd){if(k==='arrowright'||k==='d')mudaQtd(1);else if(k==='arrowleft'||k==='a')mudaQtd(-1);else if(k==='arrowup'||k==='w')mudaQtd(10);else if(k==='arrowdown'||k==='s')mudaQtd(-10);
     else if(k==='enter'||k===' '||k==='e')confirmaQtd();else if(k==='escape'||k==='backspace'){UI.loja.qtd=null;som(SOM.ui_mover,.4);}return true;}
+  // lista de escolha do Equipar aberta: as teclas sao dela
+  if(UI.menu&&UI.aba===2&&UI.eqLista){const ops=listaEq(SLOTS_EQ[UI.sel][0]),L=UI.eqLista;
+    if(k==='arrowdown'||k==='s'){L.sel=(L.sel+1)%ops.length;som(SOM.ui_mover,.3);}else if(k==='arrowup'||k==='w'){L.sel=(L.sel-1+ops.length)%ops.length;som(SOM.ui_mover,.3);}
+    else if(k==='enter'||k===' '||k==='e')equipaEscolha();else if(k==='escape'||k==='backspace'||k==='arrowleft'||k==='a'){UI.eqLista=null;som(SOM.ui_mover,.4);}
+    else if(k==='m'||k==='i'){UI.eqLista=null;fecha();}return true;}
   const l=listaAtual(),n=Math.max(1,l.length),obj=UI.escolha||UI.loja||UI;
   if(UI.menu&&!UI.home&&!UI.escolha&&!UI.loja&&(k==='escape'||k==='backspace')){UI.home=true;UI.sel=Math.max(0,HOME.findIndex(h=>h[1]===UI.aba));som(SOM.ui_mover,.45);return true;}   // dentro de uma secao: volta ao menu principal
   if(k==='escape'||k==='backspace'||(UI.menu&&(k==='m'||k==='i'))){fecha();return true;}
@@ -505,6 +516,7 @@ function desenhaHome(){
 }
 function desenhaMenu(){
   if(UI.home){desenhaHome();return;}
+  if(UI.aba!==2||UI.home)UI.eqLista=null;   // lista de escolha do Equipar so vive na aba Equipar
   const x=90,y=40,w=W-180,h=H-90;painel(x,y,w,h);
   const PIT=ABAS.length>8?80:86;
   ABAS.forEach((a,i)=>{const bx=x+10+i*PIT,on=i===UI.aba,fs=a.length>8?12:15;ctx.fillStyle=on?'#7fd6f5':'rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(bx,y+14,PIT-4,30,7);ctx.fill();
@@ -562,21 +574,33 @@ function desenhaMenu(){
   }else if(UI.aba===ABA_BESTA){desenhaBestiario(cx,cy,w,h,y);
   }else if(UI.aba===ABA_MAPA){desenhaMapa(x,y,w,h);
   }else if(UI.aba===2){   // Equipar
-    const EQ=equipDe(UI.quem),LH=34;SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*LH,id=EQ[s];linhaSel(cx,yy,w-48,LH-4,i===UI.sel);texto(n,cx+24,yy+21,15,'#9fe8ff');
-      if(id){iconeItem(ctx,id,cx+150,yy+3,24);texto(ITENS[id].nome,cx+190,yy+22,16,'#fff');if(ITENS[id])texto(ITENS[id].desc,cx+w-90,yy+21,13,'#7dffa8','right');}
+    // EQUIPAR (refeito 2026-11-20, pedido: 'parecia que a arma equipada era mais fraca'): ENTER no espaco abre a LISTA do que
+    // serve nele; para cada opcao o painel de baixo mostra lado a lado 'agora' e 'com esta' (verde sobe, vermelho desce). ENTER equipa.
+    const EQ=equipDe(UI.quem),LH=34,LE=UI.eqLista;SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*LH,id=EQ[s];linhaSel(cx,yy,w-48,LH-4,i===UI.sel);texto(n,cx+24,yy+21,15,LE&&i===UI.sel?'#ffe27a':'#9fe8ff');
+      if(id){iconeItem(ctx,id,cx+150,yy+3,24);texto(ITENS[id].nome,cx+190,yy+22,16,'#fff');if(ITENS[id]&&!LE)texto(ITENS[id].desc,cx+w-90,yy+21,13,'#7dffa8','right');}
       else texto(s==='arma'?nomeArmaDe(UI.quem)+' (arma de base)':'— vazio —',cx+190,yy+22,15,'#7a8aa8');
-      texto('◀ ▶',cx+w-56,yy+21,11,'rgba(255,255,255,.4)','right');
-      ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;trocaSlot(s,1);}]);});
-    // STATUS NA TROCA (pedido 2026-11-20): os atributos de agora e, embaixo, como ficam se apertar ▶ no espaço escolhido
-    const q=UI.quem||'jux',agora=statusDe(q),sl=(SLOTS_EQ[UI.sel]||SLOTS_EQ[0])[0],ops=opcoesSlot(sl),cur=EQ[sl]||null,nx=ops[(ops.indexOf(cur)+1)%ops.length];
-    let dep=null;if(nx!==cur){const sv=EQ[sl];EQ[sl]=nx;dep=statusDe(q);EQ[sl]=sv;}
+      if(!LE){texto('ENTER',cx+w-56,yy+21,11,'rgba(255,255,255,.4)','right');ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;abreEqLista();}]);}});
+    const q=UI.quem||'jux',agora=statusDe(q),sl=(SLOTS_EQ[UI.sel]||SLOTS_EQ[0])[0],cur=EQ[sl]||null;
+    let nx,dep=null;
+    if(LE){   // lista de opcoes por cima da coluna da direita
+      const ops=listaEq(sl),lx=cx+360,lw=w-48-360,lh=28,vis=Math.min(ops.length,7),top=Math.max(0,Math.min(LE.sel-3,ops.length-vis));
+      ctx.fillStyle='rgba(6,16,40,.97)';ctx.strokeStyle='#ffe27a';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(lx-8,cy-4,lw+8,vis*lh+30,8);ctx.fill();ctx.stroke();
+      texto('Escolha para '+(SLOTS_EQ[UI.sel]||[])[1]+':',lx+4,cy+14,13,'#ffe27a');
+      ops.slice(top,top+vis).forEach((id,j)=>{const k=top+j,yy=cy+22+j*lh;linhaSel(lx,yy,lw-8,lh-3,k===LE.sel);
+        if(id){iconeItem(ctx,id,lx+18,yy+2,20);textoCabe(ITENS[id].nome+(id===cur?'  (equipado)':''),lx+44,yy+18,14,id===cur?'#7dffa8':'#fff',lw-60);}
+        else textoCabe(sl==='arma'?'Tirar a arma (fica com a '+(ARMA_BASE[UI.quem||'jux']||'arma de base')+')':'— tirar (deixar vazio) —',lx+44,yy+18,13,'#c8d8f0',lw-60);
+        ZONAS.push([lx,yy,lx+lw,yy+lh-3,()=>{if(LE.sel===k)equipaEscolha();else LE.sel=k;}]);});
+      if(ops.length>vis)texto((top+1)+'–'+(top+vis)+' de '+ops.length,lx+lw-12,cy+14,11,'#9fb3d9','right');
+      nx=ops[LE.sel];if(nx!==cur){const sv=EQ[sl];EQ[sl]=nx;dep=statusDe(q);EQ[sl]=sv;}}
     const by=cy+7*LH+4,bw=w-48,bh=62;ctx.fillStyle='rgba(20,34,70,.7)';ctx.beginPath();ctx.roundRect(cx,by,bw,bh,8);ctx.fill();
     textoCabe('Status '+(NOME_GRUPO&&NOME_GRUPO[q]||'Jux'),cx+12,by+20,14,COR_GRUPO&&COR_GRUPO[q]||'#bff0ff',104);
     texto('agora',cx+12,by+39,12,'#9fb3d9');
-    if(dep)textoCabe('▶ '+(nx?ITENS[nx].nome:'tirar'),cx+12,by+56,12,'#ffe27a',104);else texto('nada para trocar',cx+12,by+56,11,'#7a8aa8');
+    if(LE&&nx!==undefined)textoCabe(nx===cur?'(é o que está)':'com '+(nx?ITENS[nx].nome:'nada'),cx+12,by+56,12,'#ffe27a',104);
+    else texto('ENTER: ver e comparar',cx+12,by+56,11,'#7a8aa8');
     const cw=(bw-120)/9;NOMES_ST.forEach(([k,n],j)=>{const xx=cx+120+cw*j+cw/2;texto(n,xx,by+20,12,'#9fe8ff','center');texto(String(agora[k]),xx,by+39,15,'#fff','center');
-      if(dep){const d=dep[k]-agora[k];texto(d?(d>0?'+':'')+d:'·',xx,by+56,d?14:12,d>0?'#7dffa8':d<0?'#ff9a9a':'#5a6a88','center');}});
-    textoCabe('◀ ▶ ou toque: trocar (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem · armas são de cada um, o resto serve em todos':''),cx,y+h-14,13,'#c8d8f0',w-48);
+      if(dep){const d=dep[k]-agora[k];texto(String(dep[k]),xx-(d?8:0),by+57,14,d>0?'#7dffa8':d<0?'#ff9a9a':'#c8d8f0','center');if(d)texto((d>0?'▲':'▼')+Math.abs(d),xx+12,by+57,10,d>0?'#7dffa8':'#ff9a9a','left');}
+      else if(LE)texto(String(agora[k]),xx,by+57,14,'#5a6a88','center');});
+    textoCabe(LE?'▲▼ escolhe · ENTER: equipar · Esc ou ◀: voltar · verde = fica melhor, vermelho = fica pior':'ENTER ou toque: escolher e comparar · ◀ ▶: troca rápida (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem':''),cx,y+h-14,13,'#c8d8f0',w-48);
   }else{   // Salvar
     SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*32;linhaSel(cx,yy,560,29,i===UI.sel);texto(o,cx+30,yy+21,16,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
       if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+21,15,'#9fe8ff');
