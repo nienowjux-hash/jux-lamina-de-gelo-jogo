@@ -16,6 +16,7 @@ function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg
   // 2026-11-20 (pedido): depois do Skoll a estrela ja aponta a TRILHA DO FENRIR (o circulo do Pico); as pegadas so mostram o caminho
   if (k === '_pegadas') return {reg: 'pico', x: 655, y: 280, txt: 'Siga as pegadas até o Pico do Uivo'};
   if (k === '_festival') return {reg: 'vila', x: 722, y: 600, txt: 'Volte para Invernália: o festival é esta noite'};
+  if (k === '_preparo' && typeof destinoPreparo === 'function' && JOGO.cap2.fase === 'preparo') {const dp = destinoPreparo(); if (dp) return {reg: 'vila', x: dp.x, y: dp.y, txt: dp.txt};}
   if (k === '_preparo') {const p = (typeof POS_NPC === 'function' && NA_VILA) ? POS_NPC().vovo : null; return {reg: 'vila', x: p ? p.x : 300, y: p ? p.y : 588, txt: JOGO.cap2.fase === 'preparo' ? 'Ajude nos preparativos e volte à Vovó Hilda' : 'Fale com a Vovó Hilda: o festival é hoje'};}
   if (k === '_cerimonia') {const p = (typeof POS_NPC === 'function' && NA_VILA) ? POS_NPC().vovo : null; return {reg: 'vila', x: p ? p.x : 722, y: p ? p.y : 600, txt: 'Aproveite a festa e fale com a Vovó Hilda (o brinde)'};}
   const M = MISSOES[k]; if (!M) return null;
@@ -92,6 +93,11 @@ function miniHud() {
     const o = s; while (s.length > 4 && ctx.measureText(s).width > mw - 24) s = s.slice(0, -2);
     if (s !== o) s += '…'; texto(s, mx + 17, ty, 11, '#e8f6ff'); ty += 16;
   }
+  // PREPARATIVOS DO FESTIVAL: a lista das 3 tarefas embaixo dos objetivos
+  {const lp = typeof listaPreparo === 'function' ? listaPreparo() : null;
+    if (lp) {texto('Preparativos', mx + 4, ty, 11, '#ffe27a'); ty += 14;
+      for (const [s0, ok] of lp) {let s = (ok ? '✔ ' : '☐ ') + s0; ctx.font = 'bold 10px "Trebuchet MS"'; while (s.length > 6 && ctx.measureText(s).width > mw - 6) s = s.slice(0, -2);
+        texto(s, mx + 4, ty, 10, ok ? '#7dffa8' : '#e8f6ff'); ty += 13;} ty += 4;}}
   if (typeof descRegiao === 'function' && descRegiao(REGIAO).length) {const f = descFeitas(REGIAO), t = descRegiao(REGIAO).length; texto('◈ Descobertas ' + f + '/' + t, mx + 4, ty, 11, f === t ? '#7dffa8' : '#9fe8ff');}
   // setas na borda para os alvos fora da tela
   for (const a of al) {

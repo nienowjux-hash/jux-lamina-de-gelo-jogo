@@ -345,6 +345,8 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
   const x2=cx+330,ww=w-370;let yy=cy+24;
   const quebra=(s,tam,cor)=>{ctx.font=`bold ${tam}px "Trebuchet MS"`;let lin='';for(const p of s.split(' ')){if(ctx.measureText(lin+p).width>ww){texto(lin,x2,yy,tam,cor);yy+=tam+7;lin='';}lin+=p+' ';}if(lin)texto(lin,x2,yy,tam,cor);yy+=tam+12;};
   if(sel==='_historia'){texto('Objetivo da história',x2,yy,20,'#ffe27a');yy+=30;
+    {const lp=typeof listaPreparo==='function'?listaPreparo():null;if(lp){quebra('O festival da Rainha do Inverno é hoje à noite. A Vovó Hilda pediu ajuda com os preparativos:',15,'#e8f6ff');
+      for(const [s0,ok] of lp){texto((ok?'✔ ':'☐ ')+s0,x2,yy,15,ok?'#7dffa8':'#fff');yy+=22;}yy+=6;quebra(lp.every(x=>x[1])?'➤ Tudo pronto! Volte à Vovó Hilda.':'➤ O "!" amarelo mostra quem precisa de ajuda.',15,'#7dffa8');return;}}
     if(!hero.espada){quebra('Mil anos de gelo prendem uma espada no altar, no alto da vila. Todos tentaram na força. Talvez não seja um teste de força.',15,'#e8f6ff');quebra('➤ Suba até o altar (★ no mapa) e fale com ele.',15,'#7dffa8');}
     else{const om=estadoMissao('olhos_roxos');
       if(om==='feita'){quebra('O Halvard voltou para casa. Mas a Ordem do Eclipse continua lá fora, e os cristais de Elyria correm perigo.',15,'#e8f6ff');quebra('➤ Fique mais forte, siga as pegadas enormes e descubra o que a Ordem quer no norte.',15,'#7dffa8');}

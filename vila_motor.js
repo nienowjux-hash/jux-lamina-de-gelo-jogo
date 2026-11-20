@@ -120,14 +120,11 @@ const FALAS={
   dia_vovo:[['Vovó Hilda','Hmpf. Voltaram inteiros. Ótimo.'],['Vovó Hilda','Hoje à noite é o festival da Rainha do Inverno. E eu preciso de braço forte.'],
     ['Jux','Eu tenho um braço forte e um Bino. Os dois vêm no pacote.'],
     ['Vovó Hilda','O Borin está pendurando as bandeirinhas e já caiu duas vezes. O porco roubou um pão da Ingrid. E alguém precisa carregar a lenha da fogueira.'],
-    ['Bino','…Eu carrego.'],['Vovó Hilda','Hmpf. Gostei desse.'],['Vovó Hilda','Ajudem o povo e, quando estiverem prontos, venham falar comigo. A noite cai rápido no inverno.']],
+    ['Bino','…Eu carrego.'],['Vovó Hilda','Hmpf. Gostei desse.'],['Vovó Hilda','Ajudem com essas três coisas e depois venham falar comigo. A noite cai rápido no inverno.']],
   dia2_vovo:[['Vovó Hilda','Prontos? Então vão se arrumar. Quando o sol cair, a praça acende.'],['Jux','Arrumar? Eu tenho um casaco. Ele É a roupa de festa.'],
     ['Vovó Hilda','Hmpf. Pelo menos tire a neve dele.']],
-  dia_borin:[['Borin','FORASTEIRO! Segura essa escada! Não, a outra ponta!'],['✦','Você segura a escada. O Borin pendura a última fileira de bandeirinhas azuis… e cai de costas num monte de neve.'],
-    ['Borin','…EU ESTOU BEM! As bandeirinhas também! É isso que importa!'],['Jux','Dez de dez na aterrissagem.']],
-  dia_bacon:[['Sir Bacon','(mastigando)'],['Jux','Sir Bacon. Isso na sua boca é o pão da Ingrid?'],['Sir Bacon','…Oinc.'],
-    ['✦','O Sir Bacon dispara com o pão. Você corre atrás. O Bino só estica um braço e pega o porco no ar.'],['Bino','…Pão.'],
-    ['Jux','Devolve o pão, Sir. Hoje à noite você ganha um laço azul. É uma negociação justa.']],
+  dia_borin:[['Borin','FORASTEIRO! Já de volta? A Vovó tá me fazendo pendurar bandeirinha. Eu! O maior ferreiro de Invernália!'],['Jux','O maior ferreiro e o maior pendurador de bandeirinha. Dois títulos.']],
+  dia_bacon:[['Sir Bacon','(mastigando alguma coisa)'],['Jux','…O que você tem aí, Sir?'],['Sir Bacon','…Oinc.']],
   dia_tico:[['Tico','Hoje à noite vai ter dança, música e fogos de gelo! O Oskar cortou lenha pra uma fogueira GIGANTE!'],['Tico','Jux, você dança?'],
     ['Jux','Eu sou um estrategista. Eu calculo a dança.'],['Tico','…Isso é um não.']],
   dia_ingrid:[['Ingrid','Aquele porco levou meu melhor pão de mel! Se você achar, devolve? Eu guardo um pedaço pra você.']],
@@ -343,7 +340,7 @@ function baconQuadro(){
   const a=bacon.acao||'respira',c=Q[a]||Q.respira,fps={respira:1.4,fuca:4,dorme:.9,senta:1,coca:5}[a]||1.5;
   return c[Math.floor(bacon.at*fps)%c.length];
 }
-function desenhaBacon(){if(desenhaFesta(bacon))return;
+function desenhaBacon(){if(desenhaFesta(bacon))return;if(desenhaBaconCaca())return;
   if(!BAC||!BACI.complete)return;
   const q=baconQuadro(),s=BAC.escala,pulo=bacon.p>=0?-Math.sin(Math.PI*bacon.p)*11:0;
   const quique=bacon.anda&&bacon.p<0?-Math.abs(Math.sin(bacon.animT*Math.PI))*.8:0;
@@ -507,7 +504,7 @@ function borinPasso(dt){
   for(let i=faiscas.length-1;i>=0;i--)if(faiscas[i].v>faiscas[i].d)faiscas.splice(i,1);
   BORIN_PONTO.x=borin.x;BORIN_PONTO.y=borin.y-4;BORIN_PONTO.r=borin.anda?40:48;
 }
-function desenhaBorin(){if(desenhaFesta(borin))return;
+function desenhaBorin(){if(desenhaFesta(borin))return;if(emPreparo()&&prepCena&&prepCena.tipo==='borin')return;
   if(!BOR||!BORI.complete)return;const Q=BOR.quadros;let q,oy=0,esp=false;
   if(borin.anda){const c=Q[borin.olha];q=c[Math.floor(borin.dist/5)%c.length];oy=-Math.abs(Math.sin(borin.dist/5*Math.PI))*.6;}
   else{const a=borin.acao,c=Q[a]||Q.ombro;q=c[0];
@@ -624,6 +621,99 @@ function desenhaFestaCeu(){if(!emFestival())return;ctx.save();
   ctx.globalCompositeOperation='lighter';
   for(const f of FOGOS){ctx.globalAlpha=Math.max(0,1-f.v/1.4);ctx.fillStyle=f.c;ctx.fillRect(f.x-1.2,f.y-1.2,2.4,2.4);}
   ctx.restore();}
+// ===================== PREPARATIVOS DO FESTIVAL (FICHA_PREPARATIVOS.md, aprovada 2026-11-20) =====================
+// Na fase 'preparo' (de dia, depois da Vovo pedir ajuda): 3 tarefas calmas, cada uma com '!' em cima e na lista do canto.
+// borin: segurar a escada (cena animada) · pao: encostar 3 vezes no Sir Bacon fujao (o Bino pega no ar) · lenha: acompanhar o Bino ate a fogueira
+const PREP_D=window.JUX_PREPARO||{},PREP_I={};for(const k in PREP_D){const i=new Image();i.src=PREP_D[k].atlas;PREP_I[k]=i;}
+const PREP_ESCADA=[600,654],PREP_PILHA=[968,690],PREP_FOGO=[742,694],PREP_PRACA=[572,620,916,688];
+const PREP_NOMES={borin:'Ajudar o Borin com as bandeirinhas',pao:'Recuperar o pão que o Sir Bacon roubou',lenha:'Levar a lenha para a fogueira'};
+const emPreparo=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='preparo');
+const prepT=()=>{JOGO.cap2.tarefas=JOGO.cap2.tarefas||{};return JOGO.cap2.tarefas;};
+const prepFeita=k=>!!prepT()[k];
+const prepFaltam=()=>['borin','pao','lenha'].filter(k=>!prepFeita(k));
+function prepConclui(k){prepT()[k]=true;salvaJogo();som(SOM.ui_vez,.7);const f=prepFaltam().length;
+  aviso('✔ '+PREP_NOMES[k]+(f?'  ·  faltam '+f:'  ·  tudo pronto! Volte à Vovó Hilda'),'#7dffa8');}
+// lista para o canto da tela e o diario: [[texto, feita], ...]
+function listaPreparo(){if(!emPreparo())return null;return ['borin','pao','lenha'].map(k=>[PREP_NOMES[k],prepFeita(k)]);}
+// destino da estrela: a proxima tarefa que falta (ou a Vovo)
+function destinoPreparo(){const f=prepFaltam();if(!f.length)return null;const k=f[0];
+  if(k==='borin')return {x:PREP_ESCADA[0],y:PREP_ESCADA[1],txt:'Preparativos: ajude o Borin na escada'};
+  if(k==='pao')return {x:bacon.x,y:bacon.y,txt:'Preparativos: pegue o Sir Bacon (o pão!)'};
+  return {x:PREP_PILHA[0],y:PREP_PILHA[1],txt:'Preparativos: a lenha da fogueira'};}
+let prepCena=null;   // cena animada tocando (o Jux fica parado): {tipo, t, ...}
+const PONTO_LENHA={id:'prep_lenha',x:PREP_PILHA[0],y:PREP_PILHA[1]-6,r:0};if(NA_VILA)V.pontos.push(PONTO_LENHA);
+const caca={on:false,toques:0,susto:0,provoca:0,vx:0,vy:0,dir:1,pega:null};
+const binoLenha={on:false,x:0,y:0,dist:0,falou:0,olha:'direita'};
+// abre a tarefa ao falar (antes da loja e das missoes)
+function prepAbre(id){if(!emPreparo()||prepCena)return false;
+  if(id==='vovo'){const f=prepFaltam();if(!f.length)return false;
+    fala={linhas:[['Vovó Hilda','Ainda '+(f.length===1?'falta uma coisa':'faltam '+f.length+' coisas')+', forasteiro: '+f.map(k=>PREP_NOMES[k].toLowerCase()).join('; ')+'.'],['Vovó Hilda','Hmpf. O festival não se arruma sozinho.']],i:0,letras:0,fim:null};som(SOM.ui_vez,.5);return true;}
+  if(id==='borin'&&!prepFeita('borin')){fala={linhas:[['Borin','FORASTEIRO! Segura essa escada pra mim? Não, a outra ponta!'],['Jux','Seguro. Mas eu não me responsabilizo pela gravidade.']],i:0,letras:0,
+    fim:()=>{prepCena={tipo:'borin',t:0};}};som(SOM.ui_vez,.5);return true;}
+  if(id==='bacon'&&!prepFeita('pao')&&!caca.on){fala={linhas:[['Jux','Sir Bacon. Isso na sua boca é o pão da Ingrid?'],['Sir Bacon','…Oinc.'],['✦','Ele dispara pela praça! Corra (Shift) e encoste no Sir Bacon 3 vezes.']],i:0,letras:0,
+    fim:()=>{caca.on=true;caca.toques=0;caca.provoca=1;bacon.x=640;bacon.y=684;}};som(SOM.ui_vez,.5);return true;}
+  if(id==='prep_lenha'&&!prepFeita('lenha')&&!binoLenha.on){fala={linhas:[['Oskar','Hm. A lenha da fogueira. Pesada.'],['Bino','…Eu levo.'],['✦','Acompanhe o Bino até a fogueira.']],i:0,letras:0,
+    fim:()=>{binoLenha.on=true;binoLenha.x=PREP_PILHA[0]-26;binoLenha.y=PREP_PILHA[1]+8;binoLenha.dist=0;binoLenha.falou=0;}};som(SOM.ui_vez,.5);return true;}
+  return false;}
+// passo de cada quadro (so de dia, na fase preparo)
+function prepPasso(dt){if(!emPreparo())return;
+  if(!prepFeita('borin')&&!(prepCena&&prepCena.tipo==='borin')){borin.x=PREP_ESCADA[0]+14;borin.y=PREP_ESCADA[1]+2;borin.olha='baixo';borin.anda=false;borin.alvo=null;}
+  BORIN_PONTO.x=borin.x;BORIN_PONTO.y=borin.y-4;BORIN_PONTO.r=48;
+  PONTO_LENHA.r=(!prepFeita('lenha')&&!binoLenha.on)?44:0;
+  if(prepCena){const C=prepCena;C.t+=dt;for(const k in teclas)teclas[k]=false;hero.alvo=null;
+    if(C.tipo==='borin'){if(!C.puf&&C.t>=2.6){C.puf=true;poeiraNeve(PREP_ESCADA[0],PREP_ESCADA[1],24);abSom('impacto');}
+      if(C.t>=4.6){prepCena=null;fala={linhas:[['Borin','…EU ESTOU BEM! As bandeirinhas também! É isso que importa!'],['Jux','Dez de dez na aterrissagem.']],i:0,letras:0,fim:()=>prepConclui('borin')};}}
+    else if(C.tipo==='pega'){if(C.t>=4.4){prepCena=null;caca.on=false;
+      fala={linhas:[['Bino','…Pão.'],['Jux','Devolve o pão, Sir. Hoje à noite você ganha um laço azul. É uma negociação justa.'],['Ingrid','MEU PÃO! Obrigada! Hoje à noite tem um pedaço guardado pra vocês!']],i:0,letras:0,fim:()=>prepConclui('pao')};}}
+    return;}
+  // o Sir Bacon foge do Jux pela praca
+  if(caca.on){const dx=bacon.x-hero.x,dy=bacon.y-hero.y,d=Math.hypot(dx,dy)||1;caca.susto=Math.max(0,caca.susto-dt);caca.provoca=Math.max(0,caca.provoca-dt);
+    if(d<15&&caca.susto<=0){caca.toques++;caca.susto=1.1;caca.provoca=0;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
+      if(caca.toques>=3){prepCena={tipo:'pega',t:0,x:bacon.x,y:bacon.y};return;}
+      {let melhor=null,md=-1;for(let i=0;i<12;i++){const a=i/12*6.283,nx=clamp(bacon.x+Math.cos(a)*64,PREP_PRACA[0],PREP_PRACA[2]),ny=clamp(bacon.y+Math.sin(a)*36,PREP_PRACA[1],PREP_PRACA[3]);
+        if(!livre(nx,ny))continue;const dd=Math.hypot(nx-hero.x,ny-hero.y);if(dd>md){md=dd;melhor=[nx,ny];}}if(melhor){bacon.x=melhor[0];bacon.y=melhor[1];}}}   // da um pulo para o lugar livre mais longe do Jux
+    let vx=0,vy=0;if(d<90&&caca.provoca<=0){vx=dx/d;vy=dy/d;
+      const [x0,y0,x1,y1]=PREP_PRACA,cx=(x0+x1)/2,cy=(y0+y1)/2,borda=bacon.x<x0+40||bacon.x>x1-40||bacon.y<y0+24||bacon.y>y1-24;
+      if(borda){const ex=cx-bacon.x,ey=cy-bacon.y,ed=Math.hypot(ex,ey)||1,px=-vy,py=vx;vx=ex/ed*.7+px*.7;vy=ey/ed*.7+py*.7;const n2=Math.hypot(vx,vy)||1;vx/=n2;vy/=n2;}}   // na borda: corre pelo lado em direcao ao meio
+    else if(caca.provoca<=0&&Math.random()<dt*.6){caca.provoca=rnd(.8,1.6);}
+    const v=caca.provoca>0?0:112;   // so anda onde o Jux tambem anda (o anel em volta da fogueira); se bater, tenta de lado
+    for(const [ux,uy] of [[vx,vy],[-vy,vx],[vy,-vx]]){const nx=clamp(bacon.x+ux*v*dt,PREP_PRACA[0],PREP_PRACA[2]),ny=clamp(bacon.y+uy*v*dt,PREP_PRACA[1],PREP_PRACA[3]);if(livre(nx,ny)){bacon.x=nx;bacon.y=ny;vx=ux;vy=uy;break;}}
+    caca.vx=vx;caca.vy=vy;if(Math.abs(vx)>.3)caca.dir=vx<0?-1:1;if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}}
+  // o Bino leva a lenha (so anda com o Jux perto)
+  if(binoLenha.on){const B=binoLenha,ax=PREP_FOGO[0]-B.x,ay=PREP_FOGO[1]-B.y,d=Math.hypot(ax,ay),perto=Math.hypot(hero.x-B.x,hero.y-B.y)<70;
+    if(d<6){B.on=false;for(let i=0;i<30;i++)poeira.push({x:PREP_FOGO[0]+rnd(-10,10),y:PREP_FOGO[1]-rnd(0,20),vx:rnd(-40,40),vy:rnd(-90,-20),v:0});abSom('impacto');clarao=Math.max(clarao,.25);
+      fala={linhas:[['✦','O Bino joga a lenha na fogueira. As chamas sobem alto.'],['Bino','…Pronto.'],['Jux','Você carregou uma floresta e nem suou.'],['Bino','…Suei por dentro.']],i:0,letras:0,fim:()=>prepConclui('lenha')};}
+    else if(perto){const v=Math.min(d,26*dt);B.x+=ax/d*v;B.y+=ay/d*v;B.dist+=v;B.olha=Math.abs(ax)>Math.abs(ay)?'lado':'frente';B.dir=ax<0?-1:1;
+      if(B.falou===0&&d<170){B.falou=1;balao(hero,'Quer ajuda?');setTimeout(()=>balao(B,'…Não.'),1300);}
+      if(B.falou===1&&d<90){B.falou=2;balao(hero,'Você carrega isso e eu carrego a conversa.');setTimeout(()=>balao(B,'…Hm.'),1800);}}
+    else if(Math.random()<dt*.25)balao(B,'…');}}
+// desenho de um quadro de uma folha dos preparativos
+function prepQuadro(k,q,x,y,espelho){const D=PREP_D[k],I=PREP_I[k];if(!D||!I||!I.complete)return false;desenhaNpc(D,I,x,y,q,!!espelho,12,46);return true;}
+// marca '!' em cima de quem tem tarefa
+function prepMarca(x,y){const by=y+Math.sin(t*5)*1.5;ctx.save();ctx.fillStyle='#ffe27a';ctx.strokeStyle='#2a1a00';ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(x,by,5,6,0,0,6.283);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#2a1a00';ctx.font='bold 9px "Trebuchet MS"';ctx.textAlign='center';ctx.fillText('!',x,by+3);ctx.restore();}
+// o que desenhar no mundo, ordenado pela altura do pe (entra na lista npcs)
+function prepDesenhos(){if(!emPreparo())return [];const L=[];
+  // a escada (antes da cena) ou o monte de neve (depois)
+  if(!prepFeita('borin')&&!(prepCena&&prepCena.tipo==='borin'))L.push([PREP_ESCADA[1]-1,()=>prepQuadro('obj_escada',0,PREP_ESCADA[0],PREP_ESCADA[1])]);
+  if(prepFeita('borin'))L.push([PREP_ESCADA[1]-30,()=>prepQuadro('obj_neve',0,PREP_ESCADA[0],PREP_ESCADA[1])]);
+  if(prepCena&&prepCena.tipo==='borin'){const q=Math.min(7,Math.floor(prepCena.t/4.6*8));L.push([PREP_ESCADA[1]+1,()=>prepQuadro('borin_escada',q,PREP_ESCADA[0],PREP_ESCADA[1])]);}
+  // a pilha de lenha (grande antes, pequena depois)
+  L.push([PREP_PILHA[1],()=>prepQuadro(prepFeita('lenha')||binoLenha.on?'obj_pilha_peq':'obj_pilha',0,PREP_PILHA[0],PREP_PILHA[1])]);
+  if(binoLenha.on){const B=binoLenha,n=Math.floor(B.dist/7)%4;L.push([B.y,()=>prepQuadro('bino_lenha',B.olha==='lado'?n:4+n,B.x,B.y,B.olha==='lado'&&B.dir<0)]);}
+  if(prepCena&&prepCena.tipo==='pega'){const C=prepCena,q=Math.min(7,Math.floor(C.t/4.4*8));L.push([C.y,()=>prepQuadro('bino_pega',q,C.x-14,C.y)]);}
+  // marcas '!'
+  L.push([2000,()=>{if(prepCena)return;
+    if(!prepFeita('borin'))prepMarca(borin.x,borin.y-70);
+    if(!prepFeita('pao')&&!caca.on)prepMarca(bacon.x,bacon.y-30);
+    if(!prepFeita('lenha')&&!binoLenha.on)prepMarca(PREP_PILHA[0],PREP_PILHA[1]-52);}]);
+  return L;}
+// o Sir Bacon fujao (com o pao) no lugar do desenho normal
+function desenhaBaconCaca(){if(!emPreparo()||!(caca.on||(prepCena&&prepCena.tipo==='pega')))return false;
+  if(prepCena&&prepCena.tipo==='pega')return true;   // na cena ele esta na folha do Bino
+  const anda=caca.provoca<=0&&(Math.abs(caca.vx)+Math.abs(caca.vy))>.2,n=Math.floor(t*10)%4;
+  let q,esp=false;if(caca.susto>0)q=7;else if(!anda)q=6,esp=hero.x>bacon.x;else if(Math.abs(caca.vx)>=Math.abs(caca.vy))q=n,esp=caca.dir<0;else q=4+(n%2);
+  if(!prepQuadro('bacon_pao',q,bacon.x,bacon.y,esp))return false;return true;}
 function halvardVila(){if(!NA_VILA||ANDARILHOS.some(n=>n.id==='halvard'))return;if(typeof estadoMissao!=='function'||estadoMissao('olhos_roxos')!=='feita')return;
   criaAndarilho('halvard',{rota:[[520,690],[560,686]],paradas:[0,1],poses:['alivio','respira'],inicio:0,vel:16,passo:7,larg:12,alt:46,
     oi:[['alivio',1.6]],ola:['Foi o Tico que me achou primeiro. Eu só deixei.','Obrigado, forasteiro.','Frio? Isso é verão perto da caverna.']});}
@@ -781,6 +871,7 @@ const POSE_FALA={inicio:'surpreso',fogueira:'sentado',bacon:'rindo',tico:'rindo'
 // passagem entre regioes: a fala so aparece na PRIMEIRA vez (pedido do usuario); depois o Jux ja passa direto
 function passa(id,acao){JOGO.passou=JOGO.passou||{};if(JOGO.passou[id]){acao();return;}abreFala(id,()=>{JOGO.passou[id]=true;acao();});}
 function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));return;}
+  if(!fim&&prepAbre(id))return;   // preparativos do festival (FICHA_PREPARATIVOS.md)
   if(id.startsWith('chefe_')&&!fim){const c=MINICHEFES.find(q=>'chefe_'+q.id===id);if(c&&!chefeFeito(c.id)){fala={linhas:c.pre,i:0,letras:0,fim:()=>{UI.escolha={id:'prova',prova:id,ops:['Lutar','Ainda não'],sel:0};som(SOM.ui_vez,.5);}};}return;}
   if(id==='saida_garganta'&&!fim){if((JOGO.provas||{}).acolito!=='feita'&&!JOGO.gargantaVista){abreFala('garganta_fechada');return;}   // trava: a Garganta abre depois do Acolito
     passa('saida_garganta',()=>{JOGO.garganta={x:150,y:650};vaiPara('garganta.html');});return;}
@@ -814,7 +905,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
   if(!fim&&emFestival()&&FEST_EFEITO[id])fim=FEST_EFEITO[id];
-  if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Ajude nos preparativos (Borin, Sir Bacon…) e depois volte à Vovó','#ffe27a');};
+  if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Nova tarefa: Preparativos do festival (veja no canto da tela)','#ffe27a');};
   fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // falas que mudam com a historia (pedido 2026-11-19): antes da espada / depois da espada / depois do resgate do Halvard
 function falaDaFase(id){if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
@@ -879,7 +970,7 @@ function iniciaEncontro(){if(transicao)return;transicao=.001;hero.alvo=null;hero
 // tela quebrando em cacos de gelo antes da luta
 // "NAQUELA NOITE..." (ligacao do Capitulo 2): a tela escurece, aparece o texto, o mapa vira o da festa e a tela clareia na praca
 let noiteFade=null;
-function anoitecer(){if(noiteFade)return;noiteFade={t:0,virou:false};hero.alvo=null;hero.pontoAlvo=null;}
+function anoitecer(){if(noiteFade)return;noiteFade={t:0,virou:false};if(JOGO.cap2&&!JOGO.cap2.premio){JOGO.cap2.premio=true;daItem('pao_mel',1);JOGO.gil=(JOGO.gil||0)+100;aviso('A Vovó agradece: Pão de Mel e 100 gil','#ffe27a');}hero.alvo=null;hero.pontoAlvo=null;}
 function noiteFadePasso(dt){const N=noiteFade;if(!N)return;N.t+=dt;for(const k in teclas)teclas[k]=false;hero.alvo=null;
   if(!N.virou&&N.t>=1.4){N.virou=true;JOGO.cap2.fase='noite';salvaJogo();aplicaFestival();festaPoe();hero.x=722;hero.y=716;hero.olha='cima';}
   if(N.t>=4.6){noiteFade=null;setTimeout(()=>abreFala('fest_chega'),300);}}
@@ -1260,7 +1351,7 @@ function passo(dt){
   for(const p of poeira){p.v+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;}while(poeira.length&&poeira[0].v>.6)poeira.shift();
   if(rioPx.length&&!(agTex&&agTex.complete))for(let i=0;i<3;i++)if(Math.random()<dt*20){const k=rioPx[(Math.random()*rioPx.length)|0];brilhoRio.push({x:k%V.w,y:(k/V.w)|0,v:0,l:rnd(3,9)});}
   if(NA_VILA&&emFestival()){festaPoe();festaCeu(dt);vivoPasso(dt);peixePasso(dt);}
-  else if(NA_VILA){vivoPasso(dt);peixePasso(dt);baconPasso(dt);ticoPasso(dt);vovoPasso(dt);borinPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
+  else if(NA_VILA){vivoPasso(dt);peixePasso(dt);if(!(emPreparo()&&caca.on))baconPasso(dt);ticoPasso(dt);vovoPasso(dt);if(!(emPreparo()&&!prepFeita('borin')))borinPasso(dt);prepPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
   seguidorPasso(dt);
   if(!NA_VILA&&typeof passoDescobertas==='function')passoDescobertas();
   if(typeof vidaPasso==='function')vidaPasso(dt);
@@ -1414,7 +1505,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
