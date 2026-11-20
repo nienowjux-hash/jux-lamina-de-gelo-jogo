@@ -538,9 +538,22 @@ function seguidorPasso(dt){
   const t=SEG.trilha,u=t[t.length-1];if(!u||Math.hypot(hero.x-u.x,hero.y-u.y)>3)t.push({x:hero.x,y:hero.y});if(t.length>260)t.shift();
   let acc=0,alvo=null;for(let i=t.length-1;i>0;i--){acc+=Math.hypot(t[i].x-t[i-1].x,t[i].y-t[i-1].y);if(acc>=34){alvo=t[i-1];break;}}
   // anda de forma continua: a velocidade acompanha a distancia ate o ponto que ele segue (sem acelerar e parar de novo), e o passo do desenho acompanha o chao
+  // PULO DA CERCA: se o proximo passo bate num obstaculo, salta em arco ate o primeiro chao livre do outro lado (como o Jux)
+  if(SEG.salto){const S=SEG.salto;S.t+=dt;const u=Math.min(1,S.t/.5);SEG.x=S.x0+(S.x1-S.x0)*u;SEG.y=S.y0+(S.y1-S.y0)*u;SEG.alt=Math.sin(u*Math.PI)*16;SEG.anda=true;SEG.dist+=1;
+    if(u>=1){SEG.salto=null;SEG.alt=0;poeiraNeve(SEG.x,SEG.y,6);}return;}
+  // o pulo usa a MESMA regra do Jux (faixa de pulo da cerca + pousoV): so pula se o Jux esta do outro lado da cerca,
+  // e cai sempre num chao livre (nunca em cima da madeira)
+  if(alvo&&NA_VILA&&V.pulos){const dyH=hero.y-SEG.y,dir=dyH>0?1:-1;
+    if(Math.abs(dyH)>24){const ax=alvo.x-SEG.x,ay=alvo.y-SEG.y,d=Math.hypot(ax,ay)||1;
+      const trava=!livre(SEG.x+ax/d*5,SEG.y+ay/d*5)||!livre(SEG.x,SEG.y+dir*6);
+      const p=trava?pousoV(SEG.x,SEG.y,dir):null;
+      if(p&&(p.y-SEG.y)*dir>8&&Math.hypot(p.x-SEG.x,p.y-SEG.y)<120){SEG.salto={t:0,x0:SEG.x,y0:SEG.y,x1:p.x,y1:p.y};SEG.olha=dir>0?'baixo':'cima';som(SOM.whoosh,.35);return;}}}
   let v=0,vx=0,vy=0;
   if(alvo){const ax=alvo.x-SEG.x,ay=alvo.y-SEG.y,d=Math.hypot(ax,ay);
-    if(d>.8){v=Math.min(d*5,hero.corre?VELC*1.12:VEL*1.15);const m=Math.min(d,v*dt);vx=ax/d*m;vy=ay/d*m;SEG.x+=vx;SEG.y+=vy;SEG.dist+=m;}}
+    if(d>.8){v=Math.min(d*5,hero.corre?VELC*1.12:VEL*1.15);const m=Math.min(d,v*dt);vx=ax/d*m;vy=ay/d*m;
+      // na vila nao atravessa obstaculo: escorrega pelo lado livre ou espera (o pulo acima resolve a cerca)
+      if(NA_VILA&&livre(SEG.x,SEG.y)&&!livre(SEG.x+vx,SEG.y+vy)){if(livre(SEG.x+vx,SEG.y))vy=0;else if(livre(SEG.x,SEG.y+vy))vx=0;else{vx=0;vy=0;}}
+      SEG.x+=vx;SEG.y+=vy;SEG.dist+=Math.hypot(vx,vy);}}
   SEG.vel=SEG.vel==null?v:SEG.vel+(v-SEG.vel)*Math.min(1,dt*9);   // velocidade suavizada: evita piscar entre andar e parado
   SEG.anda=SEG.vel>(SEG.anda?7:14);
   if(SEG.anda&&(vx||vy)){const ax=Math.abs(vx),ay=Math.abs(vy),h=ax>ay*1.35,vv=ay>ax*1.35;   // so troca de lado quando um eixo domina bem (sem tremer nas diagonais)
@@ -552,7 +565,7 @@ function seguidorPasso(dt){
 function desenhaSeguidor(){if(!SEG.ativo||!BIN||!BINI.complete||SEG.oculto)return;
   const fb=fala&&fala.linhas&&fala.linhas[fala.i]&&fala.linhas[fala.i][0]==='Bino',pulo=(SEG.cena&&fb&&!SEG.anda)?-Math.abs(Math.sin(t*7))*3.2:0;   // gesto: quando e a fala dele, ele da um leve pulo/aceno de corpo
   const c=BIN.quadros[SEG.olha],q=SEG.anda?c[Math.floor(SEG.dist/(hero.corre?10:11))%c.length]:BIN.quadros.baixo[0],oy=pulo+(SEG.anda?-Math.abs(Math.sin(SEG.dist/(hero.corre?10:11)*Math.PI))*1.1:0);
-  desenhaNpc(BIN,BINI,SEG.x,SEG.y+oy,SEG.anda?q:(SEG.olha==='baixo'?q:c[0]),false,14,54);}
+  desenhaNpc(BIN,BINI,SEG.x,SEG.y+oy-(SEG.alt||0),SEG.anda?q:(SEG.olha==='baixo'?q:c[0]),false,14,54);}
 const ANDARILHOS=[];
 function criaAndarilho(id,o){const D=(window.JUX_NPC||{})[id];if(!D)return null;const img=new Image();img.src=D.atlas;
   const n={id,D,img,rota:o.rota,paradas:o.paradas,poses:o.poses,oi:o.oi,ola:o.ola,vel:o.vel||30,passo:o.passo||6,larg:o.larg||10,alt:o.alt||42,
@@ -663,6 +676,14 @@ const CENA_PEGA=[[1,.45,u=>({})],[2,.3,u=>({dx:1.5*u})],[3,.7,u=>({dx:Math.sin(u
 const cenaDur=C=>C.reduce((a,c)=>a+c[1],0);
 function cenaQuadro(C,t){let a=0;for(const c of C){if(t<a+c[1])return {q:c[0],u:(t-a)/c[1],o:c[2]((t-a)/c[1]),ini:a};a+=c[1];}const c=C[C.length-1];return {q:c[0],u:1,o:c[2](1),ini:a-c[1]};}   // cena animada tocando (o Jux fica parado): {tipo, t, ...}
 const PONTO_LENHA={id:'prep_lenha',x:PREP_PILHA[0],y:PREP_PILHA[1]-6,r:0};if(NA_VILA)V.pontos.push(PONTO_LENHA);
+// caminho do porco em volta da fogueira (cada trecho reto e livre, acima dos postes e fora das pedras do fogo)
+const CAMINHO_PORCO=[[596,632],[646,644],[662,682],[702,701],[742,704],[784,701],[824,682],[846,646],[888,640],[906,668]];
+// proximo ponto: o vizinho (antes/depois no caminho) mais longe do Jux; num susto corre mais rapido
+function porcoEscolhe(susto){const i=caca.i,c=[i-1,i+1].filter(k=>k>=0&&k<CAMINHO_PORCO.length);
+  let melhor=c[0],md=-1;for(const k of c){const [x,y]=CAMINHO_PORCO[k],dd=Math.hypot(x-hero.x,y-hero.y);if(dd>md){md=dd;melhor=k;}}
+  caca.alvo=melhor;caca.estado='corre';caca.rapido=!!susto;}
+function porcoAnda(ax,ay,dd,st){st=Math.min(st,dd);bacon.x+=ax/dd*st;bacon.y+=ay/dd*st;caca.dist+=st;caca.vx=ax/dd;caca.vy=ay/dd;
+  if(Math.abs(ax)>.5)caca.dir=ax<0?-1:1;caca.lado=Math.abs(ax)>=Math.abs(ay)*.6;}
 const caca={on:false,toques:0,susto:0,provoca:0,vx:0,vy:0,dir:1,pega:null,dist:0,lado:true,fuga:0,final:false};
 // onde o porco pode andar: a praca (acima dos postes do portao), a passagem por baixo da fogueira (entre os postes),
 // fora do circulo de pedras da fogueira (antes ele entrava nas pedras e ficava preso tremendo) e longe do Bino
@@ -679,7 +700,7 @@ function prepAbre(id){if(!emPreparo()||prepCena)return false;
   if(id==='bacon'&&!prepFeita('pao')&&!caca.on){fala={linhas:[['Jux','Sir Bacon. Isso na sua boca é o pão da Ingrid?'],['Sir Bacon','…Oinc.'],['✦','Ele dispara pela praça! Corra (Shift) e encoste no Sir Bacon 3 vezes.']],i:0,letras:0,
     fim:()=>{caca.on=true;caca.toques=0;caca.provoca=0;caca.final=false;caca.fuga=0;caca.cansa=0;caca.rota=null;
       // caminho de ida: se esta no chiqueiro, vai ate a cerca, PULA e atravessa a vila correndo ate a praca
-      caca.ida=(bacon.y>730&&bacon.x<420)?[[300,774],[300,706,'pulo'],[430,704],[560,694],[652,672]]:[[652,672]];caca.idaT=0;
+      caca.ida=(bacon.y>730&&bacon.x<420)?[[300,774],[300,706,'pulo'],[430,704],[560,690],[646,644]]:[[646,644]];caca.idaT=0;caca.i=1;caca.estado='parado';caca.corridas=0;
       SEG.vaiPara=[PREP_PEGA[0],PREP_PEGA[1]];SEG.chegou=false;}};som(SOM.ui_vez,.5);return true;}
   if(id==='prep_lenha'&&!prepFeita('lenha')&&!binoLenha.on){fala={linhas:[['Oskar','Hm. A lenha da fogueira. Pesada.'],['Bino','…Eu levo.'],['✦','Acompanhe o Bino até a fogueira.']],i:0,letras:0,
     fim:()=>{binoLenha.indo=true;binoLenha.dist=0;binoLenha.falou=0;SEG.vaiPara=[PREP_PILHA[0]-30,676];SEG.chegou=false;}};som(SOM.ui_vez,.5);return true;}
@@ -709,34 +730,27 @@ function prepPasso(dt){if(!emPreparo())return;
       if(u>=1){caca.pulo=null;caca.alto=0;caca.ida.shift();poeiraNeve(bacon.x,bacon.y,8);}}
     else{const ax=pt[0]-bacon.x,ay=pt[1]-bacon.y,dd=Math.hypot(ax,ay),st=Math.min(dd,110*dt);
       if(dd<2)caca.ida.shift();else{bacon.x+=ax/dd*st;bacon.y+=ay/dd*st;caca.dist+=st;caca.vx=ax/dd;caca.vy=ay/dd;caca.dir=ax<0?-1:1;caca.lado=Math.abs(ax)>=Math.abs(ay)*.6;}}
-    if(!caca.ida.length){caca.ida=null;caca.provoca=1;}
+    if(!caca.ida.length){caca.ida=null;caca.estado='parado';}
     if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}}
-  else if(caca.on){const dx=bacon.x-hero.x,dy=bacon.y-hero.y,d=Math.hypot(dx,dy)||1;caca.susto=Math.max(0,caca.susto-dt);caca.provoca=Math.max(0,caca.provoca-dt);
-    if(caca.final){   // corrida final ate o Bino por um caminho fixo que passa por BAIXO da fogueira (antes ele empacava em cima dela)
-      if(!caca.rota){caca.rota=[];if(bacon.x>742){if(bacon.y<674){if(bacon.x<840)caca.rota.push([840,bacon.y]);caca.rota.push([840,674]);}caca.rota.push([806,702],[680,702]);}
-        else if(bacon.x>676&&bacon.y>=672)caca.rota.push([bacon.x,Math.max(bacon.y,702)],[680,702]);caca.rota.push([PREP_PEGA[0]+22,PREP_PEGA[1]]);}   // embaixo da fogueira: desce e vai para a esquerda
-      const [tx,ty]=caca.rota[0],ax=tx-bacon.x,ay=ty-bacon.y,dd=Math.hypot(ax,ay),st=Math.min(dd,130*dt);
-      if(dd<3&&caca.rota.length===1&&!SEG.chegou){caca.provoca=.2;return;}
-      if(dd<3){caca.rota.shift();if(!caca.rota.length){caca.rota=null;prepCena={tipo:'pega',t:0,x:PREP_PEGA[0],y:PREP_PEGA[1],jx:hero.x,jy:hero.y};baloes.length=0;}return;}
-      bacon.x+=ax/dd*st;bacon.y+=ay/dd*st;caca.dist+=st;caca.vx=ax/dd;caca.vy=ay/dd;caca.dir=ax<0?-1:1;caca.lado=Math.abs(ax)>=Math.abs(ay)*.6;
-      if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}return;}
-    if(d<15&&caca.susto<=0){caca.toques++;caca.susto=.9;caca.provoca=0;caca.fuga=.55;caca.cansa=0;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
-      if(caca.toques>=3){caca.final=true;caca.fuga=0;return;}}
-    caca.fuga=Math.max(0,caca.fuga-dt);
-    let vx=0,vy=0;if((d<90||caca.fuga>0)&&caca.provoca<=0){vx=dx/d;vy=dy/d;
-      const [x0,y0,x1,y1]=[574,626,916,690],cx=hero.x<742?860:620,cy=668,borda=bacon.x<x0+30||bacon.x>x1-30;
-      if(borda){const ex=cx-bacon.x,ey=cy-bacon.y,ed=Math.hypot(ex,ey)||1,px=-vy,py=vx;vx=ex/ed*.7+px*.7;vy=ey/ed*.7+py*.7;const n2=Math.hypot(vx,vy)||1;vx/=n2;vy/=n2;}}   // na borda: corre pelo lado em direcao ao meio
-    else if(d>130&&caca.provoca<=0&&Math.random()<dt*.35){caca.provoca=rnd(.9,1.5);}
-    // CANSACO: correndo ele vai ficando mais lento e, cansado, para ofegante (e a hora de pegar); cada toque renova o folego
-    caca.cansa=(caca.cansa||0)+(caca.provoca>0?-dt*2:dt);if(caca.cansa>6&&caca.provoca<=0&&caca.fuga<=0){caca.provoca=rnd(1.1,1.6);caca.cansa=3;balao(bacon,'(ofegante)');}
-    const v=caca.provoca>0?0:(caca.fuga>0?150:96*clamp(1-caca.cansa/14,.6,1)),k=Math.min(1,dt*(caca.fuga>0?9:5));   // a direcao muda aos poucos (antes virava de uma vez e parecia rodopiar)
-    caca.vx+=(vx-caca.vx)*k;caca.vy+=(vy-caca.vy)*k;let ux=caca.vx,uy=caca.vy;const um=Math.hypot(ux,uy);
-    if(um>.15&&v>0){ux/=um;uy/=um;const a0=Math.atan2(uy,ux),passo=v*um*dt;let andou=false;
-      for(const da of [0,.44,-.44,.87,-.87,1.31,-1.31,1.75,-1.75,2.4,-2.4]){const a=a0+da,nx=bacon.x+Math.cos(a)*passo,ny=bacon.y+Math.sin(a)*passo;
-        if(porcoOk(nx,ny)){caca.dist+=passo;bacon.x=nx;bacon.y=ny;if(da){caca.vx=Math.cos(a)*um;caca.vy=Math.sin(a)*um;}andou=true;break;}}
-      if(!andou&&!porcoOk(bacon.x,bacon.y)){let ex,ey;if(!foraDoFogo(bacon.x,bacon.y)){ex=bacon.x-742;ey=bacon.y-648;}else{const alvo=bacon.x<742?[650,664]:[850,664];ex=alvo[0]-bacon.x;ey=alvo[1]-bacon.y;}
-        const ed=Math.hypot(ex,ey)||1;bacon.x+=ex/ed*Math.min(ed,passo);bacon.y+=ey/ed*Math.min(ed,passo);}}   // se caiu num lugar ruim, sai de dentro da fogueira
-    if(Math.abs(caca.vx)>.35)caca.dir=caca.vx<0?-1:1;if(caca.lado?Math.abs(caca.vy)>Math.abs(caca.vx)*1.8:Math.abs(caca.vx)>Math.abs(caca.vy)*1.1)caca.lado=!caca.lado;      // troca lado/frente com folga
+  else if(caca.on){   // PERSEGUICAO (refeita 2026-11-20): o porco corre por um CAMINHO FIXO em volta da fogueira, de ponto em ponto,
+    // em linha reta, para o lado mais longe do Jux. Estados: 'parado' (Jux longe), 'corre', 'cansado' (ofegando: hora de pegar)
+    const d=Math.hypot(bacon.x-hero.x,bacon.y-hero.y);caca.susto=Math.max(0,caca.susto-dt);
+    if(caca.final){   // corrida final: pelo caminho ate o ponto 1 e dali para o lado do Bino
+      if(!caca.rota){caca.rota=[];for(let k=caca.i-1;k>=1;k--)caca.rota.push(CAMINHO_PORCO[k]);caca.rota.push([PREP_PEGA[0]+24,PREP_PEGA[1]]);}
+      const [tx,ty]=caca.rota[0],ax=tx-bacon.x,ay=ty-bacon.y,dd=Math.hypot(ax,ay);
+      if(dd<2){if(caca.rota.length===1&&!SEG.chegou){caca.estado='parado';return;}caca.rota.shift();
+        if(!caca.rota.length){caca.rota=null;prepCena={tipo:'pega',t:0,x:PREP_PEGA[0],y:PREP_PEGA[1],jx:hero.x,jy:hero.y};baloes.length=0;}return;}
+      porcoAnda(ax,ay,dd,125*dt);return;}
+    if(d<16&&caca.susto<=0){caca.toques++;caca.susto=.5;caca.corridas=0;abSom('whoosh');balao(bacon,caca.toques<3?'OINC!':'OINC?!');
+      if(caca.toques>=3){caca.final=true;caca.estado='corre';return;}
+      porcoEscolhe(true);}   // susto: corre para o lado mais longe (mais rapido)
+    if(caca.estado==='cansado'){caca.tt-=dt;if(caca.tt<=0)caca.estado='parado';}
+    else if(caca.estado==='parado'){if(d<100)porcoEscolhe(false);}
+    else if(caca.estado==='corre'){const [tx,ty]=CAMINHO_PORCO[caca.alvo],ax=tx-bacon.x,ay=ty-bacon.y,dd=Math.hypot(ax,ay),v=caca.rapido?150:108;
+      if(dd<=v*dt){bacon.x=tx;bacon.y=ty;caca.dist+=dd;caca.i=caca.alvo;caca.rapido=false;caca.corridas++;
+        if(caca.corridas>=4){caca.estado='cansado';caca.tt=1.7;caca.corridas=0;balao(bacon,'(ofegante)');}
+        else if(d<100)porcoEscolhe(false);else caca.estado='parado';}
+      else porcoAnda(ax,ay,dd,v*dt);}
     if(PORCO_PONTO){PORCO_PONTO.x=bacon.x;PORCO_PONTO.y=bacon.y;}}
   // o Bino leva a lenha (so anda com o Jux perto)
   if(binoLenha.indo&&SEG.chegou){binoLenha.indo=false;binoLenha.on=true;binoLenha.x=SEG.x;binoLenha.y=SEG.y;SEG.oculto=true;abSom('impacto');}   // chegou na pilha: pega a lenha
@@ -776,11 +790,13 @@ function prepDesenhos(){if(!emPreparo())return [];const L=[];
 // o Sir Bacon fujao (com o pao) no lugar do desenho normal
 function desenhaBaconCaca(){if(!emPreparo()||!(caca.on||(prepCena&&prepCena.tipo==='pega')))return false;
   if(prepCena&&prepCena.tipo==='pega')return true;   // na cena ele esta na folha do Bino
-  const anda=caca.final||!!caca.ida||(caca.provoca<=0&&(Math.abs(caca.vx)+Math.abs(caca.vy))>.25),f=caca.dist/9,n=Math.floor(f)%4;
-  let q,esp=false,dy=0;if(caca.pulo)q=7,esp=caca.dir<0,dy=-(caca.alto||0);
-  else if(caca.susto>.6&&!caca.final)q=7,esp=caca.dir<0,dy=-4*Math.sin((.9-caca.susto)/.3*Math.PI);else if(!anda)q=6,esp=hero.x>bacon.x,dy=0;
-  else{dy=-Math.abs(Math.sin(f*Math.PI/2))*1.4;if(caca.lado)q=n,esp=caca.dir<0;else q=4+(Math.floor(f/2)%2);}
-  return prepQuadroT('bacon_pao',q,bacon.x,bacon.y,{esp,dy});}
+  const corre=!!caca.ida||caca.final||caca.estado==='corre',f=caca.dist/9,n=Math.floor(f)%4;
+  let q,esp=false,dy=0,sy=1;
+  if(caca.pulo){q=7;esp=caca.dir<0;dy=-(caca.alto||0);}
+  else if(caca.susto>.25){q=7;esp=caca.dir<0;dy=-4*Math.sin((.5-caca.susto)/.25*Math.PI);}
+  else if(corre){dy=-Math.abs(Math.sin(f*Math.PI/2))*1.3;if(caca.lado){q=n;esp=caca.dir<0;}else q=4+(Math.floor(f/2)%2);}
+  else{q=6;esp=hero.x>bacon.x;if(caca.estado==='cansado')sy=1+.06*Math.sin(t*9);}   // parado olhando o Jux (provocando); cansado: ofegando
+  return prepQuadroT('bacon_pao',q,bacon.x,bacon.y,{esp,dy,sy});}
 function halvardVila(){if(!NA_VILA||ANDARILHOS.some(n=>n.id==='halvard'))return;if(typeof estadoMissao!=='function'||estadoMissao('olhos_roxos')!=='feita')return;
   criaAndarilho('halvard',{rota:[[520,690],[560,686]],paradas:[0,1],poses:['alivio','respira'],inicio:0,vel:16,passo:7,larg:12,alt:46,
     oi:[['alivio',1.6]],ola:['Foi o Tico que me achou primeiro. Eu só deixei.','Obrigado, forasteiro.','Frio? Isso é verão perto da caverna.']});}
