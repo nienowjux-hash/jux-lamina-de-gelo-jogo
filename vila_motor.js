@@ -1140,6 +1140,11 @@ const CENAS_BINO=[
 ];
 for(const [k,f] of Object.entries({'b1v': '1_vovo', 'b1j': '1_jux', 'b2': '2_bino', 'b3a': '3_bino_a', 'b3ja': '3_jux_a', 'b3b': '3_bino_b', 'b3jb': '3_jux_b', 'b3c': '3_bino_c', 'b4a': '4_bino_a', 'b4h': '4_halvard', 'b4b': '4_bino_b', 'b5b': '5_bino', 'b5a': '5_aurora', 'b6ja': '6_jux_a', 'b6ba': '6_bino_a', 'b6jb': '6_jux_b', 'b6bb': '6_bino_b', 'b6v': '6_vovo', 'b7a': '7_aurora', 'b7j': '7_jux'}))VOZES[k]=arq('assets/cine_bino_entrada/voz_'+f);
 const IMG_BINO=imgsFilme(CENAS_BINO.map((c,i)=>'assets/cine_bino_entrada/cena_'+(i+1)+'.jpg'));
+// TESTE DOS PREPARATIVOS (pedido 2026-11-20: 'rever a animacao'): vila.html#preparativos abre de dia com as 3 tarefas zeradas.
+// NADA e salvo nesse modo (o save de verdade fica intacto); ao recarregar sem o #, volta tudo como estava.
+if(REGIAO==='vila'&&location.hash==='#preparativos'){window.__semSalvar=true;JOGO.cap2={fase:'preparo',tarefas:{}};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=700;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  setTimeout(()=>aviso('Modo teste dos preparativos: nada é salvo','#ffe27a'),1800);}
 if(REGIAO==='vila'&&location.hash==='#cine_bino')setTimeout(()=>tocaFilme(CENAS_BINO,IMG_BINO,()=>{}),1500);   // lab: abre a cutscene direto
 const ALTV=new Image();if(V.altar_vazio)ALTV.src=V.altar_vazio.img;let espadaSobe=99;
 function tocaFilme(cenas,imgs,onFim){const t0=Date.now();(function vai(){if(imgs.some(i=>!i.complete||!i.naturalWidth)&&Date.now()-t0<10000)return setTimeout(vai,100);tocaFilme0(cenas,imgs,onFim);})();}
