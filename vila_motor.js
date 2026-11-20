@@ -713,6 +713,8 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
     if((JOGO.provas||{}).acolito==='vencida')abreFala('acolito_vence',()=>{SEG.cena=false;concluiAcolito();});else abreFala('acolito_aparece',()=>{SEG.cena=false;iniciaProva('acolito');});return;}
   if(id==='acolito_vence'&&!fim)return;
   if(id==='prova_pegadas'&&!fim){abreFala('prova_pegadas',aceitaProvaFenrir);return;}
+  // chegou ao circulo seguindo as pegadas sem examinar as da Garganta: a prova comeca aqui mesmo (2026-11-20: antes mandava voltar)
+  if(id==='prova_fenrir'&&!fim&&provaFenrirEstado()==='pegadas'){aceitaProvaFenrir();abreFala('prova_fenrir',()=>{UI.escolha={id:'prova',ops:['Lutar agora','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
   if(id==='prova_fenrir'&&!fim){if(provaFenrirEstado()==='vencida')abreFala('prova_vence',concluiProvaFenrir);else abreFala('prova_fenrir',()=>{UI.escolha={id:'prova',ops:['Lutar agora','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;

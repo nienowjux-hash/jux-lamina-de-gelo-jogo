@@ -202,7 +202,8 @@ function missoesMundo(){provaMundo();for(const c of COLETAS){if(!coletaAtiva(c))
 // JOGO.provas.fenrir: undefined | 'pista' (viu as pegadas) | 'vencida' (ganhou a luta, falta a cena) | 'feita'
 const estProvas=()=>{if(!JOGO.provas)JOGO.provas={};return JOGO.provas;};
 function provaFenrirEstado(){if(estadoEcos().tem.includes('lamina'))return 'tem';const p=estProvas().fenrir;if(p)return p;
-  return (typeof hero!=='undefined'&&hero.espada&&estProvas().skoll==='feita')?'pegadas':'cedo';}   // as pegadas do Fenrir aparecem depois de libertar o Skoll
+  const temEsp=(typeof hero!=='undefined'&&hero.espada)||!!(JOGO.vila&&JOGO.vila.espada);   // ao carregar o mapa o hero.espada ainda nao veio do save
+  return (temEsp&&estProvas().skoll==='feita')?'pegadas':'cedo';}   // as pegadas do Fenrir aparecem depois de libertar o Skoll
 function concluiSkoll(){estProvas().skoll='feita';som(SOM.ui_vez,.9);clarao=1;pontosColeta();salvaJogo();aviso('A caverna está livre!','#7dffa8');}
 // PICO DO UIVO (PICO_DO_UIVO.md, 2026-11-19): depois de libertar o Skoll, as pegadas DESENHADAS do Fenrir (pegadas_fenrir.js)
 // saem da boca da caverna na Garganta, atravessam o Vale dos Lobos e sobem ate o Pico; a luta e no circulo de pedras do Pico.
@@ -211,7 +212,7 @@ const PROVA_PONTOS={circulo:{x:655,y:280,r:85}};
 function pontosProva(){for(let i=V.pontos.length-1;i>=0;i--)if(V.pontos[i].id.startsWith('prova_')||V.pontos[i].id==='circulo_pico')V.pontos.splice(i,1);
   if(typeof REGIAO==='undefined')return;const st=provaFenrirEstado();
   if(REGIAO==='garganta'&&st==='pegadas'&&PEG){const p=PEG.rotas.garganta[1];V.pontos.push({id:'prova_pegadas',x:p[0],y:p[1],r:50});}
-  if(REGIAO==='pico'){const C=PROVA_PONTOS.circulo;V.pontos.push({id:(st==='pista'||st==='vencida')?'prova_fenrir':'circulo_pico',x:C.x,y:C.y,r:C.r});}}
+  if(REGIAO==='pico'){const C=PROVA_PONTOS.circulo;V.pontos.push({id:(st==='pista'||st==='vencida'||st==='pegadas')?'prova_fenrir':'circulo_pico',x:C.x,y:C.y,r:C.r});}}
 function aceitaProvaFenrir(){estProvas().fenrir='pista';estMissoes().prova_fenrir={st:'ativa',v0:0};som(SOM.ui_vez,.7);
   aviso('Nova missão: A prova do lobo (veja no menu → Missões)','#ffe27a');pontosColeta();salvaJogo();}
 function concluiProvaFenrir(){const E=estadoEcos();estProvas().fenrir='feita';if(!E.tem.includes('lamina'))E.tem.push('lamina');if(!donoEco('lamina'))equipaEco('lamina','jux');

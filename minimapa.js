@@ -13,7 +13,8 @@ const COR_P = '#ffd84a', COR_S = '#5fe3ff';
 
 function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg,x,y,txt} ou null
   if (k === '_historia') return hero.espada ? null : {reg: 'vila', x: 790, y: 140, txt: 'Suba ao altar e pegue a lâmina'};
-  if (k === '_pegadas') {const p = window.JUX_PEGADAS ? JUX_PEGADAS.rotas.garganta[1] : [1330, 905]; return {reg: 'garganta', x: p[0], y: p[1], txt: 'Ache as pegadas enormes na Garganta'};}
+  // 2026-11-20 (pedido): depois do Skoll a estrela ja aponta a TRILHA DO FENRIR (o circulo do Pico); as pegadas so mostram o caminho
+  if (k === '_pegadas') return {reg: 'pico', x: 655, y: 280, txt: 'Siga as pegadas até o Pico do Uivo'};
   const M = MISSOES[k]; if (!M) return null;
   if (k === 'prova_fenrir' && estadoMissao(k) === 'ativa') return {reg: 'pico', x: 655, y: 280, txt: 'Suba ao Pico do Uivo (siga as pegadas)'};
   const st = estadoMissao(k), npc = () => {const p = (typeof POS_NPC === 'function' && NA_VILA) ? POS_NPC()[M.quem] : null; return p ? {reg: 'vila', x: p.x, y: p.y} : {reg: 'vila', x: 722, y: 560};};
