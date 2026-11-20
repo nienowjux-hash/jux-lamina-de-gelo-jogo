@@ -5,6 +5,11 @@
          itens do mapa já pegos, posição na vila, espada, abertura vista
    statusJux(): atributos do nível + equipamento + afiação + comida */
 'use strict';
+// IMAGEM QUEBRADA NAO TRAVA O JOGO (2026-11-20: erro 'HTMLImageElement ... broken state' quando o navegador usava uma pagina
+// guardada de uma versao anterior que pedia uma imagem que nao existia mais): desenhar uma imagem que falhou vira 'nao desenha nada'
+(function(){const P=CanvasRenderingContext2D.prototype,d=P.drawImage;
+  P.drawImage=function(img){if(img&&img.tagName==='IMG'&&img.complete&&img.naturalWidth===0)return;return d.apply(this,arguments);};})();
+
 const ITENS={
   // --- poções (Vovó Hilda)
   elixir:  {nome:'Elixir',          tipo:'consumivel',preco:0,venda:150,cor:'#ffd36a',desc:'Recupera todo o HP, todo o MP e cura os estados ruins.',cura:99999,mp:9999,curaEst:'todos'},

@@ -715,7 +715,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='prova_pegadas'&&!fim){abreFala('prova_pegadas',aceitaProvaFenrir);return;}
   // chegou ao circulo seguindo as pegadas sem examinar as da Garganta: a prova comeca aqui mesmo (2026-11-20: antes mandava voltar)
   if(id==='prova_fenrir'&&!fim&&provaFenrirEstado()==='pegadas'){aceitaProvaFenrir();abreFala('prova_fenrir',()=>{UI.escolha={id:'prova',ops:['Lutar agora','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
-  if(id==='prova_fenrir'&&!fim){if(provaFenrirEstado()==='vencida')abreFala('prova_vence',concluiProvaFenrir);else abreFala('prova_fenrir',()=>{UI.escolha={id:'prova',ops:['Lutar agora','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
+  if(id==='prova_fenrir'&&!fim){if(provaFenrirEstado()==='vencida'){tocaFilme(CENAS_FENRIR_V,IMG_FENRIR_V,()=>{concluiProvaFenrir();espiritoFenrir();});return;}else abreFala('prova_fenrir',()=>{UI.escolha={id:'prova',ops:['Lutar agora','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
   if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
@@ -861,6 +861,44 @@ for(const [k,f] of [['fe1','1_aurora'],['fe2','2_jux'],['fe3','3_bino'],['fe4a',
   if(PKF&&PKF.voz[f]){const a=new Audio();a.dataset.tipo='voz';a.src=PKF.voz[f][ogg==='.ogg'?'ogg':'mp3'];a.preload='auto';VOZES[k]=a;}else VOZES[k]=arq('assets/cine_fenrir/voz_fenrir_'+f);}
 const IMG_FENRIR=imgsFilme(CENAS_FENRIR.map(c=>(PKF&&PKF.img[c.img])||('assets/cine_fenrir/'+c.img+'.jpg')));
 if(REGIAO==='pico'&&location.hash==='#cine_fenrir')setTimeout(()=>tocaFilme(CENAS_FENRIR,IMG_FENRIR,()=>{}),1500);   // lab
+// CUTSCENE DE VITORIA DO FENRIR (CINE_FENRIR_VITORIA.md, aprovada 2026-11-20): ao voltar da prova vencida, no circulo do Pico.
+// Substitui a conversa prova_vence. Cena de historia: o Jux e o Bino aparecem. O Fenrir fala em legenda (pensamento).
+// Vozes: assets/cine_fenrir_vitoria/voz_fenrir_v_* (ROTEIRO_VOZ_FENRIR_VITORIA.md; silencio cortado e volume igualado a -17 LUFS).
+const CENAS_FENRIR_V=[
+  {img:'cena_1',mus:'fenrir',cam:[.5,.55,1.12, .52,.5,1.0],dur:7,fx:'neve',vozes:[[2,'fv1']],falas:[[2,'Jux','…Eu ganhei? De um lobo do tamanho de um cavalo?']],sons:[[.3,'rosna']]},
+  {img:'cena_2',mus:'fenrir',cam:[.6,.5,1.0, .55,.48,1.1],dur:12.5,fx:'neve',vozes:[[9,'fv2']],falas:[[.8,'Fenrir','Você luta como quem protege alguém.',3],[4.6,'Fenrir','Mil caçadas, e poucos me fizeram recuar.',3],[9,'Bino','…Ele lutou limpo.']],sons:[]},
+  {img:'cena_3',mus:'fenrir',cam:[.45,.55,1.0, .42,.6,1.12],dur:8.5,fx:'neve',vozes:[],falas:[[.9,'Fenrir','Sua lâmina é de gelo, como a minha. A minha lealdade é sua, Portador.',3]],sons:[[.3,'brilho']]},
+  {img:'cena_4',mus:'fenrir',cam:[.5,.6,1.0, .5,.4,1.14],dur:13,fx:'neve',vozes:[[2.8,'fv4']],falas:[[2.8,'Aurora','O Eco da Lâmina. O Fenrir caçava ao lado dos heróis antigos. Agora caça ao seu lado.',1]],sons:[[.1,'uivo'],[.6,'whoosh2'],[1.4,'gelo']],treme:[.4,1.6],flash:.16},
+  {img:'cena_5',mus:'fenrir',cam:[.55,.45,1.1, .6,.42,1.0],dur:9,fx:'neve',vozes:[[.8,'fv5j'],[5.6,'fv5b']],falas:[[.8,'Jux','Bem-vindo à equipe. O salário é em gil e elogios.'],[5.6,'Bino','…Hm.']],sons:[[.2,'brilho']]},
+];
+for(const [k,f] of [['fv1','1_jux'],['fv2','2_bino'],['fv4','4_aurora'],['fv5j','5_jux'],['fv5b','5_bino']])VOZES[k]=arq('assets/cine_fenrir_vitoria/voz_fenrir_v_'+f);
+const IMG_FENRIR_V=imgsFilme(CENAS_FENRIR_V.map(c=>'assets/cine_fenrir_vitoria/'+c.img+'.jpg'));
+if(REGIAO==='pico'&&location.hash==='#cine_fenrir_v')setTimeout(()=>tocaFilme(CENAS_FENRIR_V,IMG_FENRIR_V,()=>espiritoFenrir()),1500);   // lab
+// ESPIRITO DO FENRIR (depois da cutscene, no mapa, desenhado por codigo): a cabeca do lobo de luz aparece sobre a runa, uiva,
+// vira particulas que giram em espiral e entram no Jux; no fim o Jux brilha e aparece o aviso
+let espF=null;
+function espiritoFenrir(){espF={t:0,x:hero.x,y:hero.y-96,p:[],fim:false};abSom('uivo');clarao=Math.max(clarao,.7);}
+function desenhaEspiritoFenrir(){if(!espF)return;const E=espF,agora=performance.now()/1000,dt=E.u?Math.min(.05,agora-E.u):.016;E.u=agora;E.t+=dt;const t1=1.3,t2=2.9,T=3.6,img=(typeof RETRATO_ECO!=='undefined'&&retratoOk&&retratoOk('lamina'))?RETRATO_ECO.lamina:null;
+  const hx=hero.x,hy=hero.y-30;
+  // a cabeca de luz: aparece (0..t1), depois encolhe indo para o Jux (t1..t2)
+  if(E.t<t2){const a=E.t<t1?Math.min(1,E.t/.5):1-(E.t-t1)/(t2-t1),k=E.t<t1?.7+.3*Math.min(1,E.t/t1):1-(E.t-t1)/(t2-t1)*.7,
+      cx=E.t<t1?E.x:E.x+(hx-E.x)*(E.t-t1)/(t2-t1),cy=(E.t<t1?E.y-6*Math.sin(E.t*3):E.y+(hy-E.y)*(E.t-t1)/(t2-t1)),S=70*k;
+    ctx.save();ctx.globalCompositeOperation='lighter';
+    const g=ctx.createRadialGradient(cx,cy,2,cx,cy,S*1.1);g.addColorStop(0,`rgba(160,230,255,${.55*a})`);g.addColorStop(1,'rgba(40,120,255,0)');ctx.fillStyle=g;ctx.fillRect(cx-S*1.2,cy-S*1.2,S*2.4,S*2.4);
+    if(img){ctx.globalAlpha=.85*a;ctx.filter='brightness(1.6) saturate(1.4)';ctx.drawImage(img,cx-S/2,cy-S/2,S,S);ctx.filter='none';}
+    ctx.restore();
+    // particulas que saem da cabeca e entram no Jux em espiral
+    if(E.t>t1*.6&&Math.random()<.9)for(let i=0;i<3;i++)E.p.push({x:cx+rnd(-S/3,S/3),y:cy+rnd(-S/3,S/3),v:0,a0:rnd(0,6.28),r0:rnd(30,60)});}
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(let i=E.p.length-1;i>=0;i--){const q=E.p[i];q.v+=dt*1.4;if(q.v>=1){E.p.splice(i,1);continue;}
+    const ang=q.a0+q.v*7,r=q.r0*(1-q.v),px=q.x+(hx-q.x)*q.v+Math.cos(ang)*r,py=q.y+(hy-q.y)*q.v+Math.sin(ang)*r*.5;
+    ctx.fillStyle=`rgba(${190+Math.random()*60|0},240,255,${.9*(1-q.v*.5)})`;ctx.fillRect(px-1.5,py-1.5,3,3);}
+  // o Jux recebe: anel de luz e brilho
+  if(E.t>t2){const u=(E.t-t2)/(T-t2);ctx.strokeStyle=`rgba(170,235,255,${1-u})`;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(hx,hero.y-2,10+u*46,4+u*16,0,0,6.283);ctx.stroke();
+    const g2=ctx.createRadialGradient(hx,hy,2,hx,hy,40);g2.addColorStop(0,`rgba(200,245,255,${.6*(1-u)})`);g2.addColorStop(1,'rgba(60,150,255,0)');ctx.fillStyle=g2;ctx.fillRect(hx-44,hy-44,88,88);
+    if(!E.fim){E.fim=true;abSom('brilho');for(let i=0;i<26;i++)poeira.push({x:hx+rnd(-12,12),y:hero.y-rnd(0,20),vx:rnd(-50,50),vy:rnd(-70,-10),v:0});}}
+  ctx.restore();
+  if(E.t>=T&&!E.p.length){espF=null;aviso('O Fenrir agora é seu Eco! (menu → Ecos)','#9fe8ff');}}
 // CUTSCENE "A ORDEM DO ECLIPSE" (LORE_ORDEM_CENA.md, aprovada 2026-11-19): a Aurora mostra ao Jux, pela lamina, quem e o inimigo.
 // Toca depois da pista do acampamento goblin (Olhos Roxos); antes, a fala ordem_ve; depois, ordem_depois. Vozes: assets/cine_ordem/voz_ordem_*
 const CENAS_ORDEM=[
@@ -1286,6 +1324,7 @@ function desenha(){
   }else furo=Math.max(0,furo-.12);
   for(const [y,f] of npcs)if(y>hero.y)f();
   desenhaBolas();
+  desenhaEspiritoFenrir();   // o espirito do Fenrir entrando no Jux (depois da cutscene de vitoria)
   // neve levantando nos passos
   ctx.fillStyle='rgba(235,248,255,.9)';for(const p of poeira){ctx.globalAlpha=1-p.v/.6;ctx.fillRect(p.x,p.y,1.2,1.2);}ctx.globalAlpha=1;
   if(NA_VILA){if(hero.y<520)desenhaLanternas();desenhaFumacas();desenhaBrilhos();}
@@ -1326,7 +1365,7 @@ function desenhaDicaBorda(){const d=dicaBorda();if(!d)return;const {z,dir}=d,pis
   ctx.fillStyle='rgba(6,16,40,.88)';ctx.strokeStyle='#ffe27a';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(bx,by,w,15,4);ctx.fill();ctx.stroke();
   ctx.fillStyle='#fff6c8';ctx.textAlign='center';ctx.fillText(txt,hero.x,by+11);ctx.restore();}
 // TUTORIAL (tutorial.js, FICHA_TUTORIAL.md): confere a cada quadro se chegou a hora de alguma dica (cada uma aparece uma vez)
-function tutChecaMapa(){if(typeof tutMostra!=='function'||!tutLigado()||fala||ab.on||!comecou||transicao||hero.pulo>0||(typeof uiAberto==='function'&&uiAberto()))return;
+function tutChecaMapa(){if(typeof tutMostra!=='function'||!tutLigado()||fala||ab.on||espF||!comecou||transicao||hero.pulo>0||(typeof uiAberto==='function'&&uiAberto()))return;
   const C=[
     ['andar',()=>true],
     ['habilidade',()=>hero.espada],
