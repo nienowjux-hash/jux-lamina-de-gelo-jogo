@@ -25,7 +25,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="carrega.js?v=1795120505"></script>
 <script src="itens_icones.js?v=1795117438"></script>
 <script src="jogo.js?v=1795120505"></script>
-<script src="combate.js?v=1795117438"></script>
+<script src="combate.js?v=1795138379"></script>
 <script src="bino_habs.js?v=1795117438"></script>
 <script src="jux_habs.js?v=1795117438"></script>
 <script src="ecos.js?v=1795120505"></script>
@@ -2187,7 +2187,7 @@ function drawTitle(c,t,dt){
   txt(c,'Arma: Aurora Gélida',490,316,18,'#8fe9ff');
   txt(c,'Poder: Ressonância',490,342,18,'#ffe27a');
   txt(c,'Nível '+prog.nivel+(prog.nivel<NIVEL_MAX?'  ·  EXP '+prog.exp+' / '+expPara(prog.nivel):''),490,370,16,'#a9bdf5');
-  c.globalAlpha=.5+.5*Math.sin(t*4);txt(c,'Pressione ENTER ou toque para começar',640,460,22,'#fff','center');c.globalAlpha=1;
+  c.globalAlpha=.5+.5*Math.sin(t*4);txt(c,'Aperte ENTER ou toque para começar',640,460,22,'#fff','center');c.globalAlpha=1;
   txt(c,'Setas + ENTER (voltar: ESC) — ou clique nos comandos  ·  M: música',640,492,15,'#a9bdf5','center');
 }
 

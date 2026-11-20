@@ -83,7 +83,7 @@ function colheChefe() {
   const id = JOGO.chefePend; if (!id) return; const c = MINICHEFES.find(q => q.id === id); JOGO.chefePend = null; if (!c) return;
   const exp = Math.round(expProx(JOGO.nivel) * c.rec.exp), subiu = typeof ganhaExpMapa === 'function' ? ganhaExpMapa(exp) : false;
   JOGO.gil += c.rec.gil; if (c.rec.item) daItem(c.rec.item, c.rec.n || 1);
-  const linhas = c.pos.slice(); linhas.push(['✦', 'Recompensa: ' + c.rec.txt + '  (+' + exp + ' EXP)']);
+  const linhas = c.pos.slice(); linhas.push(['✦', 'Recompensa: ' + c.rec.txt + ' (+' + exp + ' EXP)']);
   fala = {linhas, i: 0, letras: 0, fim: () => {if (subiu) aviso('Subiu para o nível ' + JOGO.nivel + '!', '#7dffa8'); salvaJogo();}};
   salvaJogo();
 }

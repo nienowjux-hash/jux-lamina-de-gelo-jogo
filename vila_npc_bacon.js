@@ -1,2 +1,2 @@
 // gerado por tools/cut_npc.py - nao editar a mao
-window.JUX_NPC=window.JUX_NPC||{};window.JUX_NPC.bacon={"atlas": "m/1a29bb463d3142350d52.png", "w": 88, "h": 75, "ancora": [44, 73], "escala": 0.359375, "quadros": {"baixo": [0, 1, 2, 3], "esquerda": [4, 5, 6, 7], "direita": [8, 9, 10, 11], "cima": [12, 13, 14, 15], "respira": [16, 17], "fuca": [18, 19], "senta": [20], "coca": [21], "dorme": [22, 23]}};
+window.JUX_NPC=window.JUX_NPC||{};window.JUX_NPC.bacon={"atlas": "m/1a29bb463d3142350d52.webp", "w": 88, "h": 75, "ancora": [44, 73], "escala": 0.359375, "quadros": {"baixo": [0, 1, 2, 3], "esquerda": [4, 5, 6, 7], "direita": [8, 9, 10, 11], "cima": [12, 13, 14, 15], "respira": [16, 17], "fuca": [18, 19], "senta": [20], "coca": [21], "dorme": [22, 23]}};

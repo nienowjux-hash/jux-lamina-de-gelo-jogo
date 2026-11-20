@@ -40,7 +40,7 @@ const TIPOS_INIMIGO={
     golpes:[{nome:'Pancada Fofa',t:'f',poder:20,peso:4},{nome:'Espirro de Neve',t:'m',el:'gelo',poder:26,peso:3,est:['cego',2,.35]}],
     drops:[['pocao',.3],['geleia',.45],['eter',.05,1],['cristal',.08,1]]},
   // Mini-chefe da Trilha (CHEFE_BOLOTAO.md). Sem fraqueza elemental: o jogador ainda NAO tem Ecos (so o Fenrir, na Garganta); a luta se resolve com Quebra e dano bruto
-  bolotao:{nome:'Bolotão',el:'gelo',reacao:{gelo:.5},fisico:1,magico:1,quebra:260,hp:.36,exp:.32,gil:.2,vel:.8,
+  bolotao:{nome:'Bolotão, o Rei da Neve',el:'gelo',reacao:{gelo:.5},fisico:1,magico:1,quebra:260,hp:.36,exp:.32,gil:.2,vel:.8,
     atk:n=>20+1.5*(n-1),atkm:n=>20+1.5*(n-1),def:n=>12+1.1*(n-1),defm:n=>8+1*(n-1),
     golpes:[{nome:'Pancada Fofa',t:'f',poder:34,peso:4},{nome:'Espirro de Neve',t:'m',el:'gelo',poder:30,peso:3,est:['cego',2,.35]}],
     drops:[['pocao',.6],['geleia',.8],['eter',.3],['cristal',.4]]},

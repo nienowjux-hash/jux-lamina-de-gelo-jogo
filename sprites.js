@@ -1,2 +1,2 @@
 // gerado por tools/export.py - nao editar a mao
-window.JUX={"body": "m/068d4081b5ae19aae6bc.png", "hand": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABcCAYAAAA743ZSAAAAbElEQVR4nO3OsQ2CYACE0YMwBFM4BCM4gYNQOgiTUFlaE2NNQcUK2NsYKvzJe+Ull3wJAAAAAAAAAAAAAAAAAHA2VQqxDP32vbW3+8/+JoV4jM+85jXX7rLrV+fkmhRmes9HJwAAAAAA5J99APJzDFpXl+IhAAAAAElFTkSuQmCC", "w": 56, "h": 92, "hand_at": [44, 66], "feet": [28, 91]};
+window.JUX={"body": "m/068d4081b5ae19aae6bc.webp", "hand": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABcCAYAAAA743ZSAAAAbElEQVR4nO3OsQ2CYACE0YMwBFM4BCM4gYNQOgiTUFlaE2NNQcUK2NsYKvzJe+Ull3wJAAAAAAAAAAAAAAAAAHA2VQqxDP32vbW3+8/+JoV4jM+85jXX7rLrV+fkmhRmes9HJwAAAAAA5J99APJzDFpXl+IhAAAAAElFTkSuQmCC", "w": 56, "h": 92, "hand_at": [44, 66], "feet": [28, 91]};

@@ -120,7 +120,7 @@ const FALAS={
   vale_chega:[['Jux','Um vale aberto, uma toca enorme no meio e ossos para todo lado.'],['Aurora','Território dos lobos, Portador. Eles vêm em bando aqui, e vêm rápido.'],['Jux','Ótimo. Eu precisava mesmo de um lugar para treinar.'],['Bino','…Fica perto de mim.']],
   garganta_chega:[['Jux','A Garganta Gelada. Paredões de rocha, névoa baixa e marcas de garra na pedra.'],['Aurora','Um acampamento de caçador, um rio congelado e… o sol negro riscado no chão, Portador.'],['Jux','A Ordem passou por aqui. E o lobo ainda está atrás daqueles dentes de gelo, lá no fundo.']],
   saida_vila:[['Jux','De volta para Invernália. A Vovó deve estar com chá pronto.'],['Jux','Ou com uma bronca pronta. Geralmente as duas.']],
-  prova_pegadas:[['Jux','Pegadas. Do tamanho de uma panela. E a neve em volta ainda brilha.'],['Aurora','Não são do Skoll, Portador. São de alguém bem maior… que veio buscá-lo.'],['Aurora','Não são de um lobo comum, Portador. Há uma memória nelas.'],
+  prova_pegadas:[['Jux','Pegadas. Do tamanho de uma panela. E a neve em volta ainda brilha.'],['Aurora','Não são do Skoll, Portador. São de alguém bem maior… que veio buscá-lo. E há uma memória nelas.'],
     ['Jux','Uma memória de quê? Eu estava torcendo para ser de um coelho.'],['Aurora','De um caçador antigo. Um Eco. As pegadas atravessam o Vale dos Lobos e sobem até o Pico do Uivo.'],
     ['Aurora','Mas ele não se entrega a quem não prova valor. Sinto um poder enorme lá: abaixo do nível 12, você não tem chance.'],['✦','Nova missão: A prova do lobo.']],
   prova_fenrir:[['Jux','Um círculo de pedras com lobos gravados, um crânio do tamanho de uma casa e a sensação de estar sendo observado por algo que come estrategistas.'],['Aurora','Ele está aqui. Mostre que é digno, Portador.'],
@@ -945,7 +945,7 @@ function abDesenha(){
     if(Math.random()<.6)ab.neve.push({x:rnd(-20,W),y:-6,v:rnd(25,70),s:rnd(1,3),o:rnd(0,6)});for(const f of ab.neve){f.y+=f.v/60;f.x+=.3;}ab.neve=ab.neve.filter(f=>f.y<H+8);
     ctx.textAlign='center';ctx.fillStyle='#bff0ff';ctx.font='bold 34px "Trebuchet MS"';ctx.shadowColor='#2a8fd0';ctx.shadowBlur=18;
     ctx.fillText('JUX E A LÂMINA DE GELO',W/2,H/2-20);ctx.shadowBlur=0;
-    ctx.globalAlpha=.6+.4*Math.sin(t*3);ctx.font='bold 17px "Trebuchet MS"';ctx.fillStyle='#e8f6ff';ctx.fillText('toque ou aperte ENTER para começar',W/2,H/2+30);ctx.globalAlpha=1;
+    ctx.globalAlpha=.6+.4*Math.sin(t*3);ctx.font='bold 17px "Trebuchet MS"';ctx.fillStyle='#e8f6ff';ctx.fillText('Aperte ENTER ou toque para começar',W/2,H/2+30);ctx.globalAlpha=1;
     return;
   }
   const c=CENAS[ab.i],FUS=.7;

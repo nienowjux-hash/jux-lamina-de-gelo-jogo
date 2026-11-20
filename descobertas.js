@@ -77,7 +77,7 @@ function passoDescobertas() {
     if ((JOGO.desc || []).includes(d.id) || Math.hypot(hero.x - d.x, hero.y - d.y) > d.r) continue;
     (JOGO.desc = JOGO.desc || []).push(d.id);
     const exp = Math.round(expProx(JOGO.nivel) * .08), subiu = ganhaExpMapa(exp), feitas = descFeitas(REGIAO), tot = descRegiao(REGIAO).length;
-    const linhas = d.fala.slice(); linhas.push(['✦', 'Descoberta: ' + d.nome + '  (+' + exp + ' EXP)' + (d.extra ? '' : '  ·  ' + feitas + '/' + tot)]);
+    const linhas = d.fala.slice(); linhas.push(['✦', 'Descoberta: ' + d.nome + ' (+' + exp + ' EXP)' + (d.extra ? '' : ' · ' + feitas + '/' + tot)]);
     const completo = !d.extra && feitas === tot && PREMIO_DESC[REGIAO];
     fala = {linhas, i: 0, letras: 0, fim: () => {
       if (typeof pontosChefes === 'function') pontosChefes();
