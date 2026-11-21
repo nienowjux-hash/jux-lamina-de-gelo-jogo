@@ -23,7 +23,7 @@ const emFestival=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='noite');
 const diaFestival=()=>NA_VILA&&!!(JOGO.cap2&&(JOGO.cap2.fase==='volta'||JOGO.cap2.fase==='preparo'));
 const festivalPronto=()=>!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita'&&(typeof cap1Completo!=='function'||cap1Completo());
 // trava de capitulo: o que ainda falta do Capitulo 1 (aviso da Aurora ao voltar e a Vovo segurando a historia)
-const cap1Trava=()=>typeof cap1Completo==='function'&&!cap1Completo()&&!window.__semSalvar;   // nos modos de teste a trava nao atrapalha
+const cap1Trava=()=>typeof cap1Completo==='function'&&!cap1Completo()&&!window.__semSalvar&&!window.__modoTeste;   // nos modos de teste a trava nao atrapalha
 function falaPendencias(quem){const l=cap1Faltam();fala={linhas:quem==='vovo'?[['Vovó Hilda','Hmpf. O festival espera. Primeiro termine o que deixou pela metade, forasteiro.'],['✦','Falta do Capítulo 1: '+l.join(', ')+'. (A ★ mostra o caminho.)']]
   :[['Aurora','Antes do festival, Portador, ainda tem gente contando com você.',1],['✦','Falta do Capítulo 1: '+l.join(', ')+'.'],['Jux','Herói que se preza não deixa serviço pela metade.'],['✦','A ★ agora leva até cada pendência, uma por vez. Quando tudo estiver feito, a Vovó chama para o festival.']],i:0,letras:0,fim:null};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // mapa da noite de festa (ref/vila/mapa_festival.png: o MESMO desenho, so de noite e enfeitado) e as frentes recortadas dele
@@ -100,7 +100,7 @@ function partMarca(k){JOGO.cap2.e=JOGO.cap2.e||{};JOGO.cap2.e[k]=true;salvaJogo(
 const TICO_ALTAR={id:'tico_altar',x:760,y:175,r:0};
 // mapas da festa e do ataque tem as PROPRIAS lanternas e bandeiras desenhadas em outros lugares: as animadas do mapa de dia
 // (lanternas da arvore, bandeiras e cabecas de poste) nao vao por cima (2026-11-20: ficavam duas lanternas e duas bandeiras juntas)
-const mapaFesta=()=>NA_VILA&&(emFestival()||emAtaque());
+const mapaFesta=()=>NA_VILA&&(emFestival()||emAtaque()||emManha());
 const POSTES_FEST=[[572,280,598,298],[922,280,948,298]];   // postes de bandeira que so existem no mapa da festa (pe bloqueia)
 const FEST_EFEITO={
   ingrid:()=>{if(JOGO.cap2.ingrid)return;JOGO.cap2.ingrid=true;JOGO.buff={id:'ensopado',lutas:(ITENS.ensopado&&ITENS.ensopado.lutas)||5};som(SOM.ui_vez,.6);aviso('Ensopado do Festival: bônus de comida ativo!','#7dffa8');salvaJogo();},
@@ -1050,7 +1050,10 @@ const FEST_LANT=[[720,362,734,405],[665,415,681,460],[710,452,726,498],[760,452,
 // no mapa do ataque: as bandeiras rasgadas (postes, portao e as fitas da arvore) e as 4 lanternas apagadas da arvore
 const ATQ_BAND=[[568,196,602,262],[918,196,952,262],[538,662,576,755],[902,672,942,755],[608,458,656,545],[872,470,904,522],[466,470,498,520],[1068,470,1100,520]];
 const ATQ_LANT=[[570,460,601,521],[799,444,829,519],[839,438,869,503],[911,424,943,495]];
-function desenhaVentoFesta(){const BAND=emAtaque()?ATQ_BAND:FEST_BAND,LANT=emAtaque()?ATQ_LANT:FEST_LANT;
+// no mapa da manha (o memorial): as bandeiras dos postes e do portao, os varais de bandeirinhas das barracas e as 7 lanternas da arvore
+const MANHA_BAND=[[570,193,602,257],[918,193,952,257],[528,688,570,745],[912,688,952,748],[405,520,560,575],[930,520,1095,585]];
+const MANHA_LANT=[[589,455,613,512],[627,468,651,522],[659,432,683,485],[803,450,829,514],[844,440,871,504],[891,430,915,482],[921,440,947,497]];
+function desenhaVentoFesta(){const BAND=emAtaque()?ATQ_BAND:emManha()?MANHA_BAND:FEST_BAND,LANT=emAtaque()?ATQ_LANT:emManha()?MANHA_LANT:FEST_LANT;
   BAND.forEach((b,i)=>{const bw=b[2]-b[0];
     for(let y=b[1];y<b[3];y+=2){const f=(y-b[1])/(b[3]-b[1]),dx=(Math.sin(t*2.8+y*.12+i*1.9)*2.2+vento*3)*f;
       ctx.drawImage(MAPA,b[0]*K,y*K,bw*K,2*K,b[0]+dx,y,bw,2);}});
@@ -1172,7 +1175,8 @@ const PROVAS={fenrir:{tipos:['fenrir_prova'],nv:12},skoll:{tipos:['skoll'],nv:9}
   // Cap. 2, Parte B (FICHA_CAP2_ATAQUE.md): as 3 lutas da vila em ataque (nivel fixo, como as outras provas). Calibrado 2026-11-20 com
   // luta automatica (Jux nv 13 + Bino nv 12, equipamento da forja): menor HP na luta entre ~33% e 60%
   // Ignarok calibrado 2026-11-20 (luta automatica, Jux nv14 + Bino nv13 com equipamento de aco): vence com o Jux a 19% e o Bino caido (padrao do Fenrir: 16%)
-  ignarok:{tipos:['ignarok_chefe'],nv:15,chefe:{nome:'Ignarok',hp:4.5,forca:1.3,exp:6}},
+  // 2026-11-20 (usuario: 'muito facil'): mais vida e forca
+  ignarok:{tipos:['ignarok_chefe'],nv:16,chefe:{nome:'Ignarok',hp:6,forca:1.5,exp:6}},
   atq_1:{tipos:['sombra_oskar','acolito','acolito'],nv:13,chefe:{nome:'Sombra do Oskar',hp:4.5,forca:1.65,exp:2}},
   atq_2:{tipos:['sombra_borin','acolito'],nv:13,chefe:{nome:'Sombra do Borin',hp:4,forca:1.7,exp:2}},
   atq_3:{tipos:['sombra_ingrid','acolito','acolito'],nv:14,chefe:{nome:'Sombra da Ingrid',hp:4.5,forca:1.7,exp:2.2}}};
@@ -1184,7 +1188,7 @@ function atqLuta(id){if(id==='atq_2'&&!BORIN_FOLHA){aviso('Esta luta chega quand
   try{sessionStorage.setItem('jux_atq_luta',id);}catch(e){}iniciaProva(id);}
 function iniciaProva(nome){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
-  try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+(window.__semSalvar&&['#ataque','#altar'].includes(location.hash.split('?')[0])?location.hash.split('?')[0]:''),prova:nome,chefe:PROVAS[nome].chefe||null}));}catch(e){}
+  try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+((window.__semSalvar||window.__modoTeste)&&['#ataque','#altar','#invasao'].includes(location.hash.split('?')[0])?location.hash.split('?')[0]:''),prova:nome,chefe:PROVAS[nome].chefe||null}));}catch(e){}
   salvaVila();setTimeout(()=>{paraAudio();location.href=jp('batalha.html');},1100);}
 function iniciaEncontro(){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;UI.menu=false;UI.loja=null;UI.escolha=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
@@ -1313,6 +1317,11 @@ const CENAS_ATAQUE=[
 for(const [k,f] of [['at1v','1_vovo'],['at1j','1_jux'],['at2t','2_tico'],['at2a','2_aurora'],['at3b','3_bino'],['at3j','3_jux'],['at4i','4_ingrid'],['at4v','4_vovo'],['at5a','5_arauto_1'],['at5b','5_arauto_2'],['at5j','5_jux']])VOZES[k]=arq('assets/cine_ataque/voz_ataque_'+f);
 const IMG_ATAQUE=imgsFilme(CENAS_ATAQUE.map(c=>'assets/cine_ataque/'+c.img+'.jpg'));
 // TESTE (sem salvar): vila.html#ataque abre a vila ja em ataque; vila.html#brinde abre a festa com a Vovo pronta para o brinde
+if(REGIAO==='vila'&&location.hash.split('?')[0]==='#invasao'){window.__modoTeste=true;
+  if(localStorage.getItem('jux_teste_ativo')==='novo'){localStorage.setItem('jux_teste_ativo','1');JOGO.cap2={fase:'noite'};JOGO.provas=Object.assign(JOGO.provas||{},{fenrir:'feita'});for(const k of ['atq_1','atq_2','atq_3','ignarok'])delete JOGO.provas[k];
+    JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;
+    JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});salvaJogo();}
+  setTimeout(()=>aviso('TESTE DA INVASÃO: seu personagem, numa cópia. Para voltar ao save de verdade, abra o jogo sem #invasao.','#ffe27a'),1800);}
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#manha'){window.__semSalvar=true;JOGO.missoes=Object.assign(JOGO.missoes||{},{olhos_roxos:{st:'feita'}});JOGO.provas=Object.assign(JOGO.provas||{},{fenrir:'feita'});JOGO.cap2={fase:'manha',e:{},halvardMorreu:true,preco:true,lutas:{atq_1:true,atq_2:true,atq_3:true}};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
   JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
   setTimeout(()=>{aviso('Modo teste da manhã: nada é salvo','#ffe27a');abreFala('manha_chega');},1800);}
@@ -1810,7 +1819,7 @@ function desenha(){
       ctx.fillStyle=g;ctx.fillRect(784,-40,18,130);ctx.restore();}}
   // na vila em ataque o desenho ja tem a agua, a forja e as lanternas apagadas (as animacoes azuis/laranja ficariam erradas)
   if(NA_VILA&&!emAtaque()){desenhaAgua();desenhaCascatas();desenhaPeixes();desenhaForja();}
-  if(NA_VILA&&(emFestival()||emAtaque()))desenhaVentoFesta();   // bandeiras e lanternas do mapa da festa balancando
+  if(NA_VILA&&(emFestival()||emAtaque()||emManha()))desenhaVentoFesta();   // bandeiras e lanternas do mapa da festa balancando
   // agua do riacho: brilhos correndo
   ctx.save();ctx.globalCompositeOperation='lighter';
   for(const b of brilhoRio){ctx.globalAlpha=Math.sin(Math.PI*b.v/1.4)*.55;ctx.fillStyle='#d8f6ff';ctx.fillRect(b.x,b.y,b.l,.8);}

@@ -72,3 +72,6 @@ Sons das Sombras (assets/sfx/novos/som_oskar_*, som_borin_*, som_ingrid_*), todo
   "Hammer on anvil" — https://opengameart.org/content/hammer-on-anvil ; "Blacksmith's hammer" — https://opengameart.org/content/blacksmiths-hammer
   "Hungry ghoul" — https://opengameart.org/content/hungry-ghoul ; "Female hurt grunts/groans" — https://opengameart.org/content/female-hurt-grunts-groans
   "Bubble sound effects" — https://opengameart.org/content/bubble-sound-effects ; "40 CC0 water/splash/slime SFX" — https://opengameart.org/content/40-cc0-water-splash-slime-sfx
+Sons da Ingrid (refeitos 2026-11-20): som_ingrid_lamento = "Crying female low tone voice over" — JeanMyna_V — CC-BY 3.0 — https://opengameart.org/content/crying-female-low-tone-voice-over-vocal-sound-for-character (crédito: @JeanMyna_V);
+  som_ingrid_sopa = "Boiling water loops" (CC0) — https://opengameart.org/content/boiling-water-loops + "Acid burn sounds" — mikhog — CC-BY 3.0 — https://opengameart.org/content/acid-burn-sounds;
+  som_ingrid_lagrima = "Water drops" (CC0) — https://opengameart.org/content/water-drops

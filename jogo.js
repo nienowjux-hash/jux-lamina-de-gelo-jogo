@@ -132,6 +132,16 @@ const OPC=(()=>{const d={texto:1,tremor:true};try{return Object.assign(d,JSON.pa
 const VEL_TEXTO=[[.5,'Lento'],[1,'Normal'],[2,'Rápido'],[99,'Na hora']];
 function salvaOpc(){try{localStorage.setItem('jux_opc',JSON.stringify(OPC));}catch(e){}}
 const SAVE_J='jux_save';
+// TESTE DA INVASAO (vila.html#invasao, 2026-11-20): joga do brinde ate o fim do capitulo com o SEU personagem (nivel, equipamento),
+// mas numa copia: ao entrar o save de verdade vai para 'jux_save_antes_teste'; ao abrir o jogo sem #invasao ele volta como estava
+(function(){try{const h=location.hash.split('?')[0],batalha=/(batalha|index)\.html$|\/$/.test(location.pathname);
+  if(localStorage.getItem('jux_teste_ativo')&&h!=='#invasao'&&!batalha){
+    const a=localStorage.getItem('jux_save_antes_teste'),b=localStorage.getItem('jux_prog_antes_teste');
+    if(a)localStorage.setItem('jux_save',a);else localStorage.removeItem('jux_save');if(b)localStorage.setItem('jux_progresso',b);
+    ['jux_teste_ativo','jux_save_antes_teste','jux_prog_antes_teste'].forEach(k=>localStorage.removeItem(k));}
+  if(h==='#invasao'&&!localStorage.getItem('jux_teste_ativo')){
+    localStorage.setItem('jux_save_antes_teste',localStorage.getItem('jux_save')||'');localStorage.setItem('jux_prog_antes_teste',localStorage.getItem('jux_progresso')||'');
+    localStorage.setItem('jux_teste_ativo','novo');}}catch(e){}})();
 function carregaJogo(){
   try{const s=JSON.parse(localStorage.getItem(SAVE_J)||'null');
     if(s&&s.versao){Object.assign(JOGO,s);JOGO.inv=s.inv||{};JOGO.equip=Object.assign(EQ_VAZIO(),s.equip||{});if(JOGO.equip.arma==='aurora')JOGO.equip.arma=null;arrumaEquip();return true;}   // a Aurora Gelida NAO e item: e so o visual da espada do heroi (os status base dela ficam em AURORA)

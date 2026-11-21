@@ -24,7 +24,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
 <script src="carrega.js?v=1795225800"></script>
 <script src="itens_icones.js?v=1795245000"></script>
-<script src="jogo.js?v=1795245000"></script>
+<script src="jogo.js?v=1795247800"></script>
 <script src="tutorial.js?v=1795226200"></script>
 <script src="combate.js?v=1795243200"></script>
 <script src="bino_habs.js?v=1795225300"></script>
@@ -46,7 +46,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="efeitos_fx.js?v=1795117438"></script>
 <script src="fx_inimigos_sprites.js?v=1795243000"></script>
 <script src="fx_bino_sprites.js?v=1795117438"></script>
-<script src="efeitos_inimigos.js?v=1795247300"></script>
+<script src="efeitos_inimigos.js?v=1795247600"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
@@ -1471,7 +1471,7 @@ async function ignarokEspecial(){const e=enemy;
     for(let i=0;i<40;i++)spark(e.x+rnd(-90,90),e.y-rnd(40,300),1,'#ffb040',260,1.4,7);
     await tween(e,'glow',1,500);e.tipo='ignarok_f2';e.vel*=1.15;e.turn=0;
     ecoPensa('QUEIMA… TUDO.',2600,'Ignarok','#ffa040',true);await wait(700);tween(e,'glow',0,400);await tween(G,'dim',0,400);return true;}
-  if(e.turn%3===0){const g={nome:'Erupção',t:'m',el:'fogo',poder:e.tipo==='ignarok_f2'?36:32};banner(g.nome);
+  if(e.turn%(e.tipo==='ignarok_f2'?2:3)===0){const g={nome:'Erupção',t:'m',el:'fogo',poder:e.tipo==='ignarok_f2'?36:32};banner(g.nome);
     som('ignarok_rosna',.8);await tween(e,'glow',1,600);
     for(const a of aliados().filter(x=>x.hp>0)){fxiPlay('ignarok_erupcao',a.x-10,a.y-150,1300,{escala:2});}
     som('ignarok_erupcao',1);shake=Math.max(shake,18);await wait(520);fxFlash('255,110,20',.3,450);
@@ -2465,6 +2465,6 @@ requestAnimationFrame(frame);
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='ignarok'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_ignarok.ogg':'assets/musica/chefe_ignarok.mp3';}if(s.prova&&s.prova.startsWith('atq_')){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/vila/musica_ataque.ogg':'assets/vila/musica_ataque.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
-<script src="tela_cheia.js?v=1795225900"></script>
+<script src="tela_cheia.js?v=1795247600"></script>
 </body>
 </html>

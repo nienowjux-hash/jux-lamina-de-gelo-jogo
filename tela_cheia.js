@@ -1,4 +1,4 @@
-/* Tela cheia (botao embaixo no meio, tecla F): o jogo ocupa a tela toda do monitor; sai com F, Esc ou o botao. */
+/* Tela cheia (botao embaixo no meio, tecla F): o jogo ocupa a tela toda do monitor; sai com F, o botao ou segurando Esc. */
 (function () {
   const b = document.createElement('button');
   b.textContent = '⛶ Tela cheia (F)';
@@ -14,7 +14,10 @@
   };
   b.onclick = e => { e.stopPropagation(); alterna(); b.blur(); };
   addEventListener('keydown', e => { if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) alterna(); });
-  const mostra = () => { b.style.display = doc.fullscreenElement ? 'none' : 'block'; };
+  // ESC NAO SAI da tela cheia (2026-11-20, pedido: 'atrapalha muito', o jogo usa ESC nos menus): trava a tecla Esc para o jogo
+  // (Keyboard Lock do Chrome/Edge). Para sair: F, o botao, ou SEGURAR o Esc por 2 segundos.
+  const trava = () => { try { const nav = (topo || window).navigator; if (doc.fullscreenElement && nav.keyboard && nav.keyboard.lock) nav.keyboard.lock(['Escape']).catch(() => {}); } catch (e) {} };
+  const mostra = () => { b.style.display = doc.fullscreenElement ? 'none' : 'block'; trava(); };
   doc.addEventListener('fullscreenchange', mostra); mostra();
   document.body.appendChild(b);
 })();
