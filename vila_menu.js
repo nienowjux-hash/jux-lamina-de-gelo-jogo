@@ -261,7 +261,11 @@ const quemEco=()=>grupoMenu().includes(UI.quem)?UI.quem:'jux';
 function ecoVisto(){return UI.ecoVer||vagaEco(quemEco()).equip||estadoEcos().equip||'lamina';}
 function acaoEco(i){const E=estadoEcos(),q=quemEco(),S=vagaEco(q);
   if(!UI.ecoCol){const id=ECO_ORDEM[i];UI.ecoVer=id;if(!E.tem.includes(id)){som(SOM.ui_mover,.5);aviso('Eco ainda não encontrado','#ff9a9a');return;}
-    if(S.equip!==id){const de=equipaEco(id,q);som(SOM.ui_vez,.6);
+    if(S.equip!==id){const de0=donoEco(id),atual=S.equip,agora=performance.now();
+      if((atual||de0)&&!(UI.ecoConf===id+q&&agora-UI.ecoConfT<6000)){UI.ecoConf=id+q;UI.ecoConfT=agora;som(SOM.ui_vez,.4);
+        aviso(de0?ECOS[id].nome+' está com o '+NOME_QUEM[de0]+'. ENTER de novo: passar para o '+NOME_QUEM[q]+' (o '+NOME_QUEM[de0]+' fica sem Eco)'
+          :'Trocar '+ECOS[atual].nome+' por '+ECOS[id].nome+' no '+NOME_QUEM[q]+'? ENTER de novo para confirmar','#ffcf7a');return;}
+      UI.ecoConf=null;const de=equipaEco(id,q);som(SOM.ui_vez,.6);
       aviso(de?ECOS[id].nome+' passou de '+NOME_QUEM[de]+' para '+NOME_QUEM[q]+' ('+NOME_QUEM[de]+' ficou sem Eco)':ECOS[id].nome+' equipado em '+NOME_QUEM[q]+'!',ECOS[id].cor);salvaJogo();}
     else{UI.ecoCol=1;UI.sel=0;}return;}
   const h=ECOS[ecoVisto()].habs[i],r=trocaHab(h,q);
@@ -318,7 +322,7 @@ function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),q=quemEco(),S=vagaEco(q),
     else{ctx.fillStyle=tem?e.cor:'#3a4466';ctx.beginPath();ctx.arc(cx+28,yy+20,11,0,6.283);ctx.fill();
     if(S.equip===id){ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}}
     texto(tem?e.nome:'???',cx+46,yy+18,15,tem?'#fff':'#5a6688');
-    {const d=tem&&donoEco(id);if(d&&d!==q)texto('com o '+NOME_QUEM[d],cx+244,yy+18,11,COR_GRUPO[d]||'#ffb27a','right');}
+    {const d=tem&&donoEco(id);if(d)texto((d===q?'✔ no ':'no ')+NOME_QUEM[d],cx+244,yy+18,11,d===q?'#7dffa8':(COR_GRUPO[d]||'#ffb27a'),'right');}
     if(tem){const nv=nivelDoEco(id),a=PE_NIVEL[nv-1]||0,b=PE_NIVEL[nv]||PE_NIVEL[NIVEL_MAX_ECO-1];texto(e.papel+' · Nv '+nv,cx+46,yy+34,11,'#9fb3d9');
       ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(cx+160,yy+28,80,5);ctx.fillStyle=e.cor;ctx.fillRect(cx+160,yy+28,nv>=NIVEL_MAX_ECO?80:80*(peDe(id)-a)/(b-a),5);}
     ZONAS.push([cx,yy,cx+250,yy+40,()=>{UI.ecoCol=0;UI.sel=i;UI.ecoVer=id;acaoEco(i);}]);});
@@ -330,23 +334,27 @@ function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),q=quemEco(),S=vagaEco(q),
     return;}
   if(retratoOk(ver)){const rx=cx+w-102,ry=cy+2;ctx.fillStyle='#0c1a3a';ctx.beginPath();ctx.roundRect(rx,ry,74,74,8);ctx.fill();ctx.drawImage(RETRATO_ECO[ver],rx+1,ry+1,72,72);
     ctx.strokeStyle=e.cor;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(rx,ry,74,74,8);ctx.stroke();}
-  texto(e.nome,x2,cy+22,19,e.cor);texto(e.desc,x2,cy+42,13,'#c8d8f0');
+  texto(e.nome,x2,cy+22,19,e.cor);textoCabe(e.desc,x2,cy+42,13,'#c8d8f0',(cx+w-112)-x2);
   {const nv=nivelDoEco(ver),pe=peDe(ver),A=PE_NIVEL[nv-1]||0,B=PE_NIVEL[nv]||PE_NIVEL[NIVEL_MAX_ECO-1],xr=cx+w-114,bw=170,k=nv>=NIVEL_MAX_ECO?1:Math.max(0,Math.min(1,(pe-A)/(B-A)));   // 2026-11-21: 'como aparece se ele ta upando?' -> PE e quanto falta, bem visivel
     ctx.fillStyle='rgba(42,58,102,.95)';ctx.fillRect(xr-bw,cy+4,bw,7);ctx.fillStyle=e.cor;ctx.fillRect(xr-bw,cy+4,bw*k,7);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.strokeRect(xr-bw+.5,cy+4.5,bw-1,6);
     texto(nv>=NIVEL_MAX_ECO?'Nv máximo':'Nv '+nv+' · faltam '+(B-pe)+' PE p/ o Nv '+(nv+1),xr,cy+24,11,'#e8f6ff','right');}
-  texto('Bônus: '+Object.entries(e.bonus).map(([k,v])=>(NOMES_ATRIB[k]||k)+' +'+(v<1?Math.round(v*100)+'%':v)).join(', ')+(S.equip===ver?'   (equipado em '+NOME_QUEM[q]+')':donoEco(ver)?'   (com o '+NOME_QUEM[donoEco(ver)]+': ENTER passa para '+NOME_QUEM[q]+')':'   (ENTER no Eco para equipar)'),x2,cy+60,13,'#7dffa8');
+  texto('Bônus: '+Object.entries(e.bonus).map(([k,v])=>(NOMES_ATRIB[k]||k)+' +'+(v<1?Math.round(v*100)+'%':v)).join(', '),x2,cy+60,13,'#7dffa8');
+  {const dn=donoEco(ver),bx=cx+w-112,bw=190,by=cy+47,ok=S.equip===ver,txt=ok?'✔ Equipado no '+NOME_QUEM[q]:dn?'Passar para o '+NOME_QUEM[q]:'Equipar no '+NOME_QUEM[q];
+    ctx.fillStyle=ok?'rgba(60,140,90,.55)':'rgba(255,207,122,.22)';ctx.strokeStyle=ok?'#7dffa8':'#ffcf7a';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(bx-bw,by,bw,18,6);ctx.fill();ctx.stroke();
+    texto(txt,bx-bw/2,by+14,12,ok?'#d8ffe0':'#ffe9b8','center');if(!ok)ZONAS.push([bx-bw,by,bx,by+18,()=>{UI.ecoCol=0;UI.sel=ECO_ORDEM.indexOf(ver);acaoEco(UI.sel);}]);}
   texto('Nv '+nivelDoEco(ver)+' · por nível: '+textoPorNivel(ver),x2,cy+77,12,'#ffe27a');texto(TEXTO_MARCO,x2,cy+92,11,'#c8b27a');
-  const top=cy+100,compacto=e.habs.length>7,passo=Math.min(42,Math.floor((y+h-34-top)/e.habs.length)),alt=Math.min(38,passo-2);   // com 7 habilidades as linhas apertam para nao bater no rodape
+  const top=cy+100,compacto=e.habs.length>7,passo=Math.min(42,Math.floor((y+h-50-top)/e.habs.length)),alt=Math.min(38,passo-2);   // com 7 habilidades as linhas apertam para nao bater no rodape
   e.habs.forEach((hb,i)=>{const H=HABS[hb],sabe=apr.includes(hb),auto=passivaDoEco(hb,q),eq=auto||S.equipadas.includes(hb),outro=donoHab(hb),yy=top+i*passo,on=UI.ecoCol&&UI.sel===i;
     linhaSel(x2,yy,w-290,alt,on);
     const ce=auto?'#ffe27a':'#7dffa8';ctx.strokeStyle=eq?ce:'#5a6688';ctx.lineWidth=2;const qy=yy+(alt-16)/2;ctx.strokeRect(x2+18,qy,16,16);if(eq){ctx.fillStyle=ce;ctx.fillRect(x2+22,qy+4,8,8);}
-    if(compacto){texto((H.passiva?'◆ ':'✦ ')+H.nome,x2+44,yy+alt*.68,14,sabe?'#fff':'#5a6688');
-      texto(sabe?(H.passiva?'passiva':'ativa'):'Aprende no Nv '+H.nv,x2+w-420,yy+alt*.68,12,sabe?'#9fb3d9':'#5a6688','right');
+    if(compacto){textoCabe((H.passiva?'◆ ':'✦ ')+H.nome,x2+44,yy+alt*.68,14,sabe?'#fff':'#5a6688',170);
+      cortaTxt((sabe?'':'Nv '+H.nv+': ')+H.desc.replace(/^Passiva: /,'')+(H.mp&&sabe?'  MP '+H.mp:''),x2+214,yy+alt*.68,11,sabe?'#9fb3d9':'#6a7698',(x2+w-352)-(x2+214));
       texto(auto?'grátis':outro&&outro!==q?'com o '+NOME_QUEM[outro]:'AP '+H.ap,x2+w-306,yy+alt*.68,13,outro&&outro!==q?(COR_GRUPO[outro]||'#ffb27a'):'#ffe27a','right');}
     else{texto((H.passiva?'◆ ':'✦ ')+H.nome,x2+44,yy+16,15,sabe?'#fff':'#5a6688');
-    texto(sabe?H.desc+(H.mp?'  MP '+H.mp:''):'Aprende no Nv '+H.nv+' do Eco',x2+44,yy+alt-5,11,sabe?'#9fb3d9':'#5a6688');
+    cortaTxt(sabe?H.desc+(H.mp?'  MP '+H.mp:''):'Aprende no Nv '+H.nv+' do Eco: '+H.desc,x2+44,yy+alt-5,11,sabe?'#9fb3d9':'#6a7698',w-400);
     texto(auto?'grátis (Eco equipado)':outro&&outro!==q?'com o '+NOME_QUEM[outro]:'AP '+H.ap,x2+w-306,yy+22,13,outro&&outro!==q?(COR_GRUPO[outro]||'#ffb27a'):'#ffe27a','right');}
     ZONAS.push([x2,yy,x2+w-290,yy+alt,()=>{UI.ecoCol=1;UI.sel=i;acaoEco(i);}]);});
+  if(UI.ecoCol&&e.habs[UI.sel]){const H=HABS[e.habs[UI.sel]];textoCabe(H.nome+': '+H.desc+(H.mp?'  (MP '+H.mp+')':'')+(apr.includes(e.habs[UI.sel])?'':'  — aprende no Nv '+H.nv+' do Eco'),cx,y+h-38,13,'#ffe9b8',w-48);}
   textoCabe('◀ ▶ troca de coluna · ENTER: equipar Eco / ligar ou desligar'+(grupoMenu().length>1?' · Q: personagem (cada um usa um Eco diferente)':'')+' · ✦ ativa · ◆ passiva',cx,y+h-20,12,'#c8d8f0',w-48);
 }
 // ---------- Diário de missões
@@ -469,6 +477,7 @@ function uiClique(x,y){
 // texto que diminui a letra ate caber na largura (2026-11-20: nada mais sai da janela)
 // so os numeros do item na linha do Equipar (a descricao com historia nao cabe; 2026-11-20 ela passava por cima do nome)
 function resumoBonus(d){const p=String(d||'').split(/\.\s+/).map(x=>x.replace(/\.$/,'')).filter(x=>/[+-]\s?\d/.test(x));return p.length?p.join('. ')+'.':d;}
+function cortaTxt(s,x,y,size,cor,maxw,al){ctx.font=`bold ${size}px "Trebuchet MS"`;if(ctx.measureText(s).width>maxw){while(s.length>3&&ctx.measureText(s+'…').width>maxw)s=s.slice(0,-1);s=s.trimEnd()+'…';}texto(s,x,y,size,cor,al);}   // corta com … o que nao cabe
 function textoCabe(s,x,y,size,cor,maxw,al){let t=size;for(;t>9;t--){ctx.font=`bold ${t}px "Trebuchet MS"`;if(ctx.measureText(s).width<=maxw)break;}texto(s,x,y,t,cor,al);}
 function painel(x,y,w,h){ctx.fillStyle='rgba(6,16,40,.94)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();}
 function linhaSel(x,y,w,h,on){if(on&&UI.pisca&&performance.now()<UI.pisca){const k=.5+.5*Math.sin(performance.now()/120);ctx.save();ctx.strokeStyle=`rgba(255,226,122,${.4+.6*k})`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x-3,y-3,w+6,h+6,8);ctx.stroke();ctx.restore();}
@@ -478,13 +487,13 @@ function botaoMenu(){ctx.save();ctx.fillStyle='rgba(6,16,40,.8)';ctx.strokeStyle
 function uiDesenha(){
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ZONAS=[];
   if(!ab.on&&!uiAberto()){botaoMenu();if(typeof miniHud==='function')miniHud();}
-  // avisos
-  UI.avisos.forEach((a,i)=>{const al=a.v<.2?a.v/.2:a.v>2?(2.4-a.v)/.4:1;ctx.globalAlpha=al;ctx.font='bold 15px "Trebuchet MS"';const w=ctx.measureText(a.txt).width+28;
-    ctx.fillStyle='rgba(6,16,40,.9)';ctx.beginPath();ctx.roundRect(W/2-w/2,70+i*36-Math.min(a.v,.2)*20,w,28,8);ctx.fill();texto(a.txt,W/2,89+i*36-Math.min(a.v,.2)*20,15,a.cor,'center');ctx.globalAlpha=1;});
   if(UI.escolha)desenhaEscolha();
   if(UI.loja)desenhaLoja();
   if(UI.menu)desenhaMenu();
   if(UI.saves&&typeof desenhaSaves==='function')desenhaSaves();
+  // avisos (por cima do menu: as confirmacoes aparecem com o menu aberto)
+  UI.avisos.forEach((a,i)=>{const al=a.v<.2?a.v/.2:a.v>2?(2.4-a.v)/.4:1;ctx.globalAlpha=al;ctx.font='bold 15px "Trebuchet MS"';const w=ctx.measureText(a.txt).width+28;
+    ctx.fillStyle='rgba(6,16,40,.9)';ctx.beginPath();ctx.roundRect(W/2-w/2,70+i*36-Math.min(a.v,.2)*20,w,28,8);ctx.fill();texto(a.txt,W/2,89+i*36-Math.min(a.v,.2)*20,15,a.cor,'center');ctx.globalAlpha=1;});
   ctx.restore();
 }
 function desenhaEscolha(){const e=UI.escolha;

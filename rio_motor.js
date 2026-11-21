@@ -68,7 +68,7 @@ document.getElementById('voltar').onclick = () => { location.href = 'vila.html?t
 // ---------- o barco ----------
 const DIR = { baixo: 0, esquerda: 1, direita: 2, cima: 3 };
 const barco = { x: 640, y: 372, vx: 0, vy: 0, dir: 'baixo', rema: 0, remaQ: -1, balanco: 0 };
-const ACEL = 260, VMAX = 155, ATRITO = 1.6;
+const ACEL = 260, VMAX = 155, ATRITO = 1.6, ESC_BARCO = .82;
 const teclas = {};
 addEventListener('keydown', e => { const k = e.key.toLowerCase(); teclas[k] = true; liga(); if (k === 'enter' || k === 'e' || k === ' ') usa(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault(); });
 addEventListener('keyup', e => { teclas[e.key.toLowerCase()] = false; });
@@ -640,8 +640,9 @@ function desenha() {
   }]);
   L.push([barco.y, () => {
     const r = DIR[barco.dir], bob = Math.sin(t * 2.4) * 1.6;
-    // canal estreito: o barco 'se encolhe' um pouco (remos mais junto do casco) para o desenho nao invadir as pedras
-    { const v = vao(barco.x, barco.y), larg = v ? v[1] - v[0] : 999, alvo = larg < 200 ? cl(larg / 200, .8, 1) : 1; barco.esc = (barco.esc || 1) + (alvo - (barco.esc || 1)) * .08; }
+    // TAMANHO FIXO do barco (2026-11-21: 'mantenha esse tamanho fixo, sem ficar aumentando e diminuindo'): um pouco menor que a
+    // folha, para caber nos canais estreitos do rio (antes ele encolhia so nos estreitos)
+    barco.esc = ESC_BARCO;
     quadro(F.rema, r, barco.remaQ >= 0 ? barco.remaQ : 0, barco.x, barco.y - 48 * barco.esc + bob, barco.esc, false, null, Math.sin(t * 1.9) * .012);
   }]);
   L.push(...desenhosEnfeites());

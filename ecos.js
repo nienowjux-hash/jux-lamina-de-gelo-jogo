@@ -16,7 +16,7 @@ const ECOS={
              habs:['golpe_duplo','p_atk','perfurante','p_crit','furia','matilha','p_pelagem','p_sede','p_alfa','ragnarok']},
   arcano:   {nome:'Eco Arcano',      papel:'Mago',     cor:'#b49aff',desc:'Uma maga que conversava com os elementos.',bonus:{atkm:.08,mp:.10},porNivel:{mp:2,atkm:1},
              habs:['fogo','p_mag','raio','agua','p_mp']},
-  guardiao: {nome:'Eco do Guardião', papel:'Guardião', cor:'#7fb8ff',desc:'A Tartarok, tartaruga gigante de natureza que guarda o rio há mil anos (salva da Serpente do Degelo).',bonus:{hp:.10,def:.08},porNivel:{hp:8,def:1},
+  guardiao: {nome:'Eco do Guardião', papel:'Guardião', cor:'#7fb8ff',desc:'A Tartarok, tartaruga gigante que guarda o rio há mil anos.',bonus:{hp:.10,def:.08},porNivel:{hp:8,def:1},
              habs:['muralha','p_hp','contra','p_def','vontade']},
   sabio:    {nome:'Eco do Sábio',    papel:'Suporte',  cor:'#7dffa8',desc:'Um curandeiro errante de mãos quentes.',bonus:{defm:.08,mp:.15},porNivel:{mp:2,defm:1},
              habs:['cura','esuna','p_regen','pressa','regen']},
