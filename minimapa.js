@@ -8,8 +8,8 @@ const saidaPara = alvo => {   // a caverna fica DENTRO da Garganta: de fora, o c
   if (alvo === 'caverna' && REGIAO === 'garganta') return {x: 1330, y: 905, nome: 'Caverna'};
   if (alvo === 'caverna') alvo = 'garganta';
 const i = ORDEM_REG.indexOf(REGIAO), j = ORDEM_REG.indexOf(alvo), s = (SAIDAS[REGIAO] || {})[j > i ? 'fwd' : 'back']; return s ? {x: s[0], y: s[1], nome: s[2]} : null;};
-// carroca tombada: as pistas e a toca ficam no VALE (2026-11-20: faltava a regiao e a estrela apontava para a vila)
-const PASSOS_DEST = {carroca_tombada: [() => {const f = PISTAS_PRESA.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_PRESA_PT[id]); const b = f[0] || [727, 548]; return ['vale', b[0], b[1]];}, ['vale', 727, 548], null], amigo_floco: [() => {const f = PISTAS_FLOCO.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_FLOCO_PT[id]); let b = f[0] || [470, 655], bd = 1e9; for (const p of f) {const d = Math.hypot(p[0] - hero.x, p[1] - hero.y); if (d < bd) {bd = d; b = p;}} return ['trilha', b[0], b[1]];}, ['trilha', 470, 655]], machado_halvard: [['garganta', 420, 520], ['garganta', 430, 440]], olhos_roxos: [['trilha', 722, 330], ['trilha', 300, 470], ['trilha', 1232, 485], ['caverna', 720, 250]]};
+// carroca tombada: as pistas e a toca ficam no VALE; a estrela aponta a pista que falta mais perto (antes o passo das pistas ficava sem marca nenhuma) (2026-11-20: faltava a regiao e a estrela apontava para a vila)
+const PASSOS_DEST = {carroca_tombada: [() => {const f = PISTAS_PRESA.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_PRESA_PT[id]); let b = f[0] || [727, 548], bd = 1e9; if (REGIAO === 'vale') for (const p of f) {const dd = Math.hypot(p[0] - hero.x, p[1] - hero.y); if (dd < bd) {bd = dd; b = p;}} return ['vale', b[0], b[1]];}, ['vale', 727, 548], null], amigo_floco: [() => {const f = PISTAS_FLOCO.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_FLOCO_PT[id]); let b = f[0] || [470, 655], bd = 1e9; for (const p of f) {const d = Math.hypot(p[0] - hero.x, p[1] - hero.y); if (d < bd) {bd = d; b = p;}} return ['trilha', b[0], b[1]];}, ['trilha', 470, 655]], machado_halvard: [['garganta', 420, 520], ['garganta', 430, 440]], olhos_roxos: [['trilha', 722, 330], ['trilha', 300, 470], ['trilha', 1232, 485], ['caverna', 720, 250]]};
 const COR_P = '#ffd84a', COR_S = '#5fe3ff';
 
 function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg,x,y,txt} ou null
@@ -35,7 +35,7 @@ function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg
   if (missaoPronta(k)) return Object.assign(npc(), {txt: 'Volte a ' + M.quemNome});
   if (M.passos && PASSOS_DEST[k]) {
     const i = M.passos.findIndex(p => !p.ok()); let d = PASSOS_DEST[k][i]; if (typeof d === 'function') d = d();
-    if (d) return {reg: d[0], x: d[1], y: d[2], area: i === 0, txt: (i === 0 && k === 'olhos_roxos') ? 'Vasculhe a trilha: lobos ' + Math.min(3, (JOGO.cap1 || {}).lobos || 0) + '/3' : M.passos[i].txt};
+    if (d) return {reg: d[0], x: d[1], y: d[2], area: i === 0 && k === 'olhos_roxos', txt: (i === 0 && k === 'olhos_roxos') ? 'Vasculhe a trilha: lobos ' + Math.min(3, (JOGO.cap1 || {}).lobos || 0) + '/3' : M.passos[i].txt};
     return Object.assign(npc(), {txt: 'Volte a ' + M.quemNome});
   }
   const cs = COLETAS.filter(c => c.missao === k && !JOGO.pegos.includes(c.id));
