@@ -16,12 +16,51 @@ function halvardVila() { return false; } function listaPreparo() { return []; } 
 function filmeVisto() { return false; }
 function tocaFilme(c, i, fim) { if (fim) fim(); }
 function reverFilme() { aviso('As cinemáticas dá para rever no menu, lá na vila.', '#c8d8f0'); }
-// conversar com quem vende no rio
-const FALAS_RIO = {
-  marta: ['Pesco neste cais desde que o rio era só gelo. Agora até os peixes suam.', 'Lá embaixo a água ferve. Leva Remédio: queimadura não sara sozinha.', 'Viu uma serpente grande? Eu também não. Nunca. Não pergunta.'],
-};
-let falaRioI = 0;
-function abreFala(id) { const L = FALAS_RIO[id]; if (!L) return; aviso((LOJAS[id] ? LOJAS[id].quem + ': ' : '') + L[falaRioI++ % L.length], '#bff4ff'); }
+// CONVERSAR (2026-11-21: "so aparece uma mensagem azul em cima, achei feio, tem que fazer igual os outros"): a mesma caixa
+// de fala da vila, com o retrato de quem fala, o texto digitando e ENTER para seguir. A Marta usa a linha 3 da folha dela.
+const COR_FALA = { Jux: '#bff0ff', Bino: '#d8b48a', 'Sir Bacon': '#ffb6c8', Marta: '#ffd88a' };
+const RET_RIO = { Jux: 'jux', Bino: 'bino', 'Sir Bacon': 'bacon' };
+const CONVERSAS_MARTA = [
+  [['Marta', 'Ora, visita! Pesco neste cais desde que o rio era só gelo.'], ['Marta', 'Agora o gelo derrete e até os peixes andam suando.'],
+   ['Jux', 'Peixe suando… essa eu queria ver.'], ['Marta', 'Fica mais um pouco que você vê, menino. Ha!']],
+  [['Marta', 'Vão descer até as águas quentes?'], ['Marta', 'Lá embaixo a água ferve, e os bichos de lá queimam de verdade.'],
+   ['Marta', 'Leva Remédio. Queimadura não sara sozinha.'], ['Bino', '…Anotado.']],
+  [['Marta', 'Dizem que tem uma serpente enorme perto do Porto de Cinzas.'], ['Marta', 'Eu nunca vi. Nunca. Não pergunta.'],
+   ['Sir Bacon', 'Oinc…'], ['Marta', 'Até o porco ficou com medo. Esperto, ele.']],
+];
+const CONVERSA_DEPOIS = [['Marta', 'Vocês venceram a Serpente do Degelo?! O rio está livre de novo!'], ['Marta', 'E uma tartaruga do tamanho de uma ilha agora anda com vocês? Ha! Esse rio nunca mais vai ser o mesmo.'],
+  ['Jux', 'Ela que salvou a gente também, no fim das contas.'], ['Marta', 'Peixe de graça pra vocês, então. Brincadeira. Poção é que não sai de graça.']];
+let falaRioI = 0, falaUlt = performance.now();
+function abreFala(id) { if (id !== 'marta') return;
+  const L = serpVencida() && !C3().martaDepois ? (C3().martaDepois = true, CONVERSA_DEPOIS) : CONVERSAS_MARTA[falaRioI++ % CONVERSAS_MARTA.length];
+  fala = { linhas: L, i: 0, letras: 0 }; falaUlt = performance.now(); som(SOM.ui_vez, .5); }
+function avancaRio() { if (!fala) return; const L = fala.linhas[fala.i][1]; if (fala.letras < L.length) { fala.letras = L.length; return; }
+  fala.i++; fala.letras = 0; som(SOM.ui_mover, .45); if (fala.i >= fala.linhas.length) { const f = fala.fim; fala = null; if (f) f(); } }
+function expressaoRio(quem, L) { if (/^…|\?!|!\?/.test(L)) return 3; if (/!$/.test(L.trim()) && quem !== 'Jux') return /Ha!/.test(L) ? 1 : 2; if (/Ha|Oinc|Brincadeira/i.test(L)) return 1; return quem === 'Jux' ? 1 : 0; }
+function desenhaFalaRio() { if (!fala) return;
+  const agora = performance.now(), dt = Math.min(.1, (agora - falaUlt) / 1000); falaUlt = agora; fala.letras += dt * 42 * ((typeof OPC === 'object' && OPC.texto) || 1);
+  const [quem, L] = fala.linhas[fala.i], x = 110, y = H - 150, w = W - 220, h = 126;
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(6,16,40,.9)'; ctx.strokeStyle = '#8fdcff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
+  let tx = 0; const q = expressaoRio(quem, L);
+  if (fala.ret !== fala.i + quem) { fala.ret = fala.i + quem; fala.retT = agora; } const a = Math.min(1, (agora - fala.retT) / 180);
+  if (quem === 'Marta' && F.marta_ret && F.marta_ret.i.complete) {   // linha 3 da folha: 0 virando, 1 acenando, 2 maos na cintura, 3 apontando
+    const qm = [2, 1, 3, 0][q] || 2, f = F.marta_ret, rh = 160, rw = f.fw * rh / f.fh; ctx.save(); ctx.globalAlpha = a; ctx.beginPath(); ctx.roundRect(x, y - 40, rw + 14, h + 40, 10); ctx.clip();
+    ctx.imageSmoothingEnabled = false; ctx.drawImage(f.i, qm * f.fw, 0, f.fw, f.fh, x + 6 - (1 - a) * 14, y + h - rh - 2, rw, rh); ctx.restore(); tx = rw + 6; }
+  else { const rk = RET_RIO[quem], Rr = rk && RET[rk], RI = rk && RETI[rk];
+    if (Rr && RI && RI.complete) { const rh = 160, rw = Rr.w * rh / Rr.h; ctx.save(); ctx.globalAlpha = a; ctx.beginPath(); ctx.roundRect(x, y - 40, rw + 14, h + 40, 10); ctx.clip();
+      ctx.drawImage(RI, q * Rr.w, 0, Rr.w, Rr.h, x + 6 - (1 - a) * 14, y + h - rh - 2, rw, rh); ctx.restore(); tx = rw + 6; } }
+  ctx.font = 'bold 18px "Trebuchet MS"'; const nw = ctx.measureText(quem).width + 36; ctx.fillStyle = 'rgba(6,16,40,.95)'; ctx.beginPath(); ctx.roundRect(x + 18 + tx, y - 18, nw, 32, 8); ctx.fill(); ctx.stroke();
+  texto(quem, x + 36 + tx, y + 5, 18, COR_FALA[quem] || '#fff');
+  const larg = w - 60 - tx; let tam = 19, linhas;
+  for (;;) { ctx.font = tam + 'px "Trebuchet MS"'; linhas = []; let ln = ''; for (const p of L.split(' ')) { const tst = ln ? ln + ' ' + p : p; if (ln && ctx.measureText(tst).width > larg) { linhas.push(ln); ln = p; } else ln = tst; }
+    linhas.push(ln); if (linhas.length * tam * 1.47 <= h - 30 || tam <= 13) break; tam--; }
+  const passo = Math.round(tam * 1.47), ly0 = y + 30 + Math.round(tam * .95); ctx.fillStyle = '#f2f8ff'; ctx.textAlign = 'left'; let resta = Math.floor(fala.letras);
+  linhas.forEach((l, k) => { if (resta <= 0) return; ctx.fillText(l.slice(0, resta), x + 30 + tx, ly0 + k * passo); resta -= l.length + 1; });
+  if (fala.letras >= L.length) { ctx.fillStyle = '#8fdcff'; ctx.beginPath(); const ay = y + h - 18 + Math.sin(agora / 160) * 2; ctx.moveTo(x + w - 30, ay); ctx.lineTo(x + w - 18, ay); ctx.lineTo(x + w - 24, ay + 7); ctx.fill(); }
+  ctx.restore(); }
+addEventListener('keydown', e => { if (!fala || FILME.on) return; const k = e.key.toLowerCase();
+  if (k === 'enter' || k === ' ' || k === 'e' || k === 'escape') avancaRio(); e.preventDefault(); e.stopImmediatePropagation(); }, true);
+cv.addEventListener('pointerdown', e => { if (fala && !FILME.on) { avancaRio(); e.stopImmediatePropagation(); } }, true);
 // salvar pelo menu = salvar a posicao do barco (o salvaVila do menu gravaria a posicao do heroi da vila)
 salvaVila = function () { guardaRio(); };
 // sons do menu (o vila_menu toca som(SOM.ui_vez)): o som() do rio aceita o audio direto

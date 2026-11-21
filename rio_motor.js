@@ -133,7 +133,7 @@ let avisoR = null;   // {txt, t}
 const avisa = (txt, t) => { avisoR = { txt, t: t || 3 }; };
 let perto = null;   // o que da para usar agora
 function usa() {
-  if (!perto || FILME.on || escolha || evento) return;
+  if (!perto || FILME.on || escolha || evento || (typeof fala !== 'undefined' && fala)) return;
   if (perto.tipo === 'bau') { const b = perto.b; if (pego(b.id)) return; JOGO.pegos = JOGO.pegos || []; JOGO.pegos.push(b.id);
     for (const k in b.itens) daItem(k, b.itens[k]); if (b.gil) JOGO.gil = (JOGO.gil || 0) + b.gil; salvaJogo(); som('novos/ui_vez', .7); avisa('Baú da ilhota: ' + b.txt + '!'); }
   else if (perto.tipo === 'cais' && CAIS.tipo === 'vila') { guardaRio(); location.href = 'vila.html?t=' + Date.now(); }
@@ -265,7 +265,7 @@ function passo(dt) {
   t += dt;
   if (lutando) return;
   if (escolha) return;
-  if (typeof uiAberto === 'function' && uiAberto()) { barco.vx *= .9; barco.vy *= .9; return; }   // menu ou loja abertos: o barco para
+  if ((typeof uiAberto === 'function' && uiAberto()) || (typeof fala !== 'undefined' && fala)) { barco.vx *= .9; barco.vy *= .9; return; }   // menu ou loja abertos: o barco para
   if (tartAnim) tartAnim.t += dt;
   if (troca) { troca.t += dt;   // a nevoa do rio passa pela tela (0,35 s fechando, 0,45 s abrindo) e o barco continua andando
     if (!troca.feito) { barco.x += barco.vx * dt; barco.y += Math.sign(troca.entra === 'cima' ? 1 : -1) * Math.max(60, Math.abs(barco.vy)) * dt; }
@@ -597,7 +597,7 @@ function desenha() {
   for (const a of AVES) quadro(F.bichos, 3, Math.floor(a.f) % 6, a.x, a.y, .7, a.dir < 0);
   desenhaInsetos();
   // textos
-  if (perto && !(typeof uiAberto === 'function' && uiAberto())) { const txt = perto.tipo === 'bau' ? (pego(perto.b.id) ? 'Baú vazio' : 'ENTER: abrir o baú') : CAIS.tipo === 'vila' ? 'ENTER: descer do barco (voltar para a vila)' : CAIS.tipo === 'porto' ? 'ENTER: atracar no Porto de Cinzas' : 'ENTER: falar com a Marta (loja e salvar o jogo)';
+  if (perto && !(typeof uiAberto === 'function' && uiAberto()) && !(typeof fala !== 'undefined' && fala)) { const txt = perto.tipo === 'bau' ? (pego(perto.b.id) ? 'Baú vazio' : 'ENTER: abrir o baú') : CAIS.tipo === 'vila' ? 'ENTER: descer do barco (voltar para a vila)' : CAIS.tipo === 'porto' ? 'ENTER: atracar no Porto de Cinzas' : 'ENTER: falar com a Marta (loja e salvar o jogo)';
     const p = perto.tipo === 'bau' ? perto.b : CAIS, [sx, sy] = tela(p.x, p.y - 60); faixa(txt, sx, sy); }
   if (avisoR) faixa(avisoR.txt, W / 2, H - 46, '#ffe27a');
   if (lutando) { lutando.t += 1 / 60; const k = Math.min(1, lutando.t / .9); ctx.fillStyle = 'rgba(190,230,255,' + (k < .3 ? k / .3 * .7 : .7 * (1 - (k - .3) / .7)) + ')'; ctx.fillRect(0, 0, W, H);
@@ -608,6 +608,7 @@ function desenha() {
   if (nomeTrecho) { const k = t - nomeTrecho.t0, al = k < .6 ? k / .6 : k > 3 ? Math.max(0, (3.6 - k) / .6) : 1; if (k > 3.6) nomeTrecho = null;
     else faixa(['Trecho 1 — O rio de gelo', 'Trecho 2 — O degelo', 'Trecho 3 — As águas quentes'][nomeTrecho.n] || '', W / 2, 62, '#bff4ff', al); }
   desenhaEscolhaR();
+  if (typeof desenhaFalaRio === 'function' && !FILME.on) desenhaFalaRio();   // a caixa de conversa (igual a da vila)
   if (typeof uiDesenha === 'function' && !FILME.on) uiDesenha();   // o menu da vila (M) e a loja da Marta
   if (t < 7) faixa('Setas / WASD: remar · a correnteza leva rio abaixo · encoste nos troncos para abrir caminho', W / 2, 26, '#bff4ff', Math.min(1, (7 - t) / 1.5));
 }
