@@ -44,7 +44,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="ecos_sprites.js?v=1795117438"></script>
 <script src="inimigos_sprites.js?v=1795251700"></script>
 <script src="efeitos_fx.js?v=1795117438"></script>
-<script src="fx_inimigos_sprites.js?v=1795251700"></script>
+<script src="fx_inimigos_sprites.js?v=1795252100"></script>
 <script src="fx_bino_sprites.js?v=1795117438"></script>
 <script src="efeitos_inimigos.js?v=1795251700"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
@@ -831,6 +831,7 @@ function hitEnemy(n,weak,mudo){
   if(temEst(e,'sono'))delete e.est.sono;
   {const ge=GOLPE_EST[G.acao];if(ge&&!G.estFeito){G.estFeito=true;if(poeEstado(e,ge[0],ge[1],ge[2],e.tipo))setTimeout(()=>pop(e.x,e.y-235,ESTADOS[ge[0]].nome.toUpperCase(),ESTADOS[ge[0]].cor),250);}}
   if(r.absorve){e.hp=Math.min(e.max,e.hp+n);pop(e.x+rnd(-30,30),e.y-170,'+'+n,'#7dffa8','ABSORVE');if(!mudo)hitSfx();return;}
+  if(NO_BARCO()&&!G.fxVoou&&hero.lunge>20&&(hero.quem==='bino'||(GOLPES_JUX[G.acao]&&GOLPES_JUX[G.acao].t==='f'))){G.fxVoou=true;golpeNaAgua(e);}
   if(r.imune)n=0;
   e.hp=Math.max(0,e.hp-n);e.flash=1;tween(e,'flash',0,260);
   e.kx=-26;tween(e,'kx',0,260,easeOut);shake=Math.max(shake,r.crit?14:r.fraco?12:8);
@@ -879,11 +880,16 @@ function setAnim(n,back){n=furiaDe(n);hero.anim=n;hero.at=0;hero.back=!!back;her
 // quadro fixo de uma magia (a magia escolhe o quadro de cada etapa)
 function setFrame(n,i){n=furiaDe(n);hero.anim=n;hero.at=i;hero.back=false;hero.hold=true;}
 // alcance do golpe: o heroi para a 220 do alvo (no x) e vai para a fileira dele (ly); off ajusta um pouco
-const alc=off=>hero.x-enemy.x-220+(off||0);
-function vaiAte(x,ms,ease){tween(hero,'ly',x>0?enemy.y-hero.y:0,ms,ease);return tween(hero,'lunge',x,ms,ease);}
+// LUTA NO BARCO (fundo 'rio', FICHA_CAP3_RIO.md; SO no barco, em terra e tudo igual): o heroi para na BORDA do barco, nao anda na agua
+const NO_BARCO=()=>G.fundo==='rio',BORDA_RIO=()=>W*.53;
+const alc=off=>{const a=hero.x-enemy.x-220+(off||0);return NO_BARCO()?Math.min(a,Math.max(0,hero.x-BORDA_RIO())):a;};
+function vaiAte(x,ms,ease){tween(hero,'ly',x>0&&!NO_BARCO()?enemy.y-hero.y:0,ms,ease);return tween(hero,'lunge',x,ms,ease);}
 async function runTo(x,ms){setAnim('corrida',x<hero.lunge);await vaiAte(x,ms);}
 // ataque a 12 qps: quadros 0-1 preparam, quadro 2 e o corte (bate aqui), 3 continua o arco, 4 termina
 async function slashHit(onHit){setAnim('ataque');swordSfx();await wait(BAT&&BAT.anims.ataque?200:170);onHit();await wait(BAT&&BAT.anims.ataque?340:340);}   // folha nova: o corte acerta no quadro 3 (200 ms a 15 qps)
+function golpeNaAgua(e){const hx=hero.x-hero.lunge-40,hy=hero.y-60,ex=e.x,ey=e.y-50;
+  if(hero.quem==='bino'){const d=Math.max(120,hx-ex),s=d/(.55*256);fxiPlay('bino_onda',(hx+ex)/2,ey-10,1000,{escala:Math.max(1.2,s)});som('serpente_onda',.45);}
+  else{fxiPlay('corte_voador',hx-60,hy,620,{escala:1.5,x1:ex+40,y1:ey,fim:.5});som('aguaviva_clarao',.2);}}
 async function backHome(){await runTo(0,480);setAnim('parado');}
 
 async function actAttack(){
@@ -1332,6 +1338,7 @@ async function actPotion(){if(BAT&&BAT.anims.pocao){setAnim('pocao');await wait(
 async function actGuard(){hero.guard=true;setAnim('guarda');banner('Defender');addRes(5);som('defender',.8);await wait(350);hero.atb=.45;}
 
 async function heroTurn(kind){
+  G.fxVoou=false;
   if(hero.espelho>0&&kind!=='espelho'){hero.espelho--;if(!hero.espelho)espelhoSome(false);}
   G.busy=true;menu.open=false;hero.atb=0;G.acao=kind;G.estFeito=false;hero.tickFeito=false;G.magia=!!HABILIDADES.find(h=>h.id===kind&&(h.magia||h.id==='res'||h.id==='zero'||h.id==='res3'||h.id==='final'));
   hero.guard=false;setAnim('parado');
@@ -1606,6 +1613,11 @@ const FEN_ESP={
     golpeAplica(g,g.poder);await wait(500);FEN_Q(e,R,5);await wait(400);FEN_Q(e,R,7);frostSfx(.8,1000);await wait(600);
     tween(G,'dim',0,500);fxCinema(false);cineMusica(false);await FEN_VOLTA(e);},
 };
+const SALTAM=['piranha','lontra'];
+function lungeInim(x){return NO_BARCO()?Math.min(x,Math.max(0,BORDA_RIO()-110-enemy.x)):x;}
+function saltoSai(){if(!NO_BARCO()||!SALTAM.includes(enemy.tipo))return;fxiPlay('salto_agua',enemy.x,enemy.y+10,650,{escala:1.1});som('piranha_salto',.6);
+  const e=enemy;e.salto=e.salto||0;tween(e,'salto',-120,240,easeOut).then(()=>tween(e,'salto',-40,260,easeIn));}
+function saltoVolta(){if(!NO_BARCO()||!SALTAM.includes(enemy.tipo))return;const e=enemy;e.salto=e.salto||0;tween(e,'salto',0,260,easeIn).then(()=>{fxiPlay('salto_agua',e.x,e.y+10,650,{escala:1.1});som('rio_splash_peq',.5);});}
 async function golpeDoTipo(){const T=TIPOS_INIMIGO[enemy.tipo],gs=T.golpes;let r=Math.random()*gs.reduce((s,g)=>s+g.peso,0),g=gs[0];
   if(enemy.tipo==='fenrir_prova'&&!enemy.ragnarokUsado&&enemy.hp<enemy.max*.35&&!(TESTE&&!G.lutaReal)){enemy.ragnarokUsado=true;g=gs.find(x=>x.fen==='ragnarok');}
   else for(const x of gs){if(x.fen==='uivo'&&temEst(enemy,'bravura'))continue;r-=x.peso;if(r<=0){g=x;break;}}
@@ -1613,26 +1625,26 @@ async function golpeDoTipo(){const T=TIPOS_INIMIGO[enemy.tipo],gs=T.golpes;let r
   if(g.fen&&FEN_ESP[g.fen]){banner(g.nome);const esc=hero.escudo>0;if(esc)setFrame('escudo',3);await FEN_ESP[g.fen](g);if(esc){playFx('escudo_faiscas',hero.x-50,hero.y-40,450);golpeSfx(3,40,.6);}return esc;}
   banner(g.nome);const esc=hero.escudo>0&&!g.rouba;
   if(enemy.tipo==='fenrir_prova')som(g.t==='f'?'fenrir_ataque':'fenrir_uivo',.8);
-  if(g.rouba){tween(enemy,'ly',hero.y-enemy.y,240,easeIn);await tween(enemy,'lunge',hero.x-enemy.x-170,240,easeIn);som('whoosh',.7);
+  if(g.rouba){saltoSai();tween(enemy,'ly',hero.y-enemy.y,240,easeIn);await tween(enemy,'lunge',lungeInim(hero.x-enemy.x-170),240,easeIn);som('whoosh',.7);
     {const ef=EFX_INIM[g.nome];if(ef&&ef.hit)ef.hit(enemy,g);}
     if(g.rouba==='item'){const pode=['pocao','hipocao','eter','remedio','antidoto','colirio','fenix'].filter(k=>typeof qtd==='function'&&qtd(k)>0),id=pode[(Math.random()*pode.length)|0];
       if(id&&!TESTE){tiraItem(id);salvaJogo();enemy.roubado=id;pop(hero.x,hero.y-200,'−1 '+ITENS[id].nome,'#ffe27a');som('lontra_risada',.8);}else pop(hero.x,hero.y-200,'BOLSA VAZIA!','#ffe27a');
-      await wait(300);tween(enemy,'ly',0,300,easeOut);await tween(enemy,'lunge',0,300,easeOut);return false;}
+      await wait(300);saltoVolta();tween(enemy,'ly',0,300,easeOut);await tween(enemy,'lunge',0,300,easeOut);return false;}
     const q=TESTE||typeof JOGO!=='object'?0:Math.min(JOGO.gil,Math.round((10+Math.round(Math.random()*25))*(g.rouba===true?1:g.rouba)));if(q){JOGO.gil-=q;salvaJogo();}
     if(g.cura){const ch=Math.round(enemy.max*g.cura);enemy.hp=Math.min(enemy.max,enemy.hp+ch);pop(enemy.x,enemy.y-250,'+'+ch,'#7dffa8');}
     pop(hero.x,hero.y-200,q?'−'+q+' gil':(TESTE?'−20 gil (lab)':'BOLSO VAZIO!'),'#ffe27a');await wait(300);
-    tween(enemy,'ly',0,300,easeOut);await tween(enemy,'lunge',0,300,easeOut);return false;}
+    saltoVolta();tween(enemy,'ly',0,300,easeOut);await tween(enemy,'lunge',0,300,easeOut);return false;}
   if(esc)setFrame('escudo',3);
   const ef=EFX_INIM[g.nome];   // efeitos do golpe (efeitos_inimigos.js); sem entrada, usa os efeitos simples de antes
   if(ef&&ef.prep)ef.prep(enemy,g);
-  if(g.t==='f'){tween(enemy,'ly',hero.y-enemy.y,240,easeIn);await tween(enemy,'lunge',hero.x-enemy.x-190,240,easeIn);if(ef&&ef.hit)ef.hit(enemy,g);}
+  if(g.t==='f'){saltoSai();tween(enemy,'ly',hero.y-enemy.y,240,easeIn);await tween(enemy,'lunge',lungeInim(hero.x-enemy.x-190),240,easeIn);if(ef&&ef.hit)ef.hit(enemy,g);}
   else{await tween(enemy,'glow',1,(ef&&ef.glow)||500);
     if(ef&&ef.cast)await ef.cast(enemy,g);else{spark(enemy.x+60,enemy.y-70,18,COR_GOLPE[g.el]||'#fff',260,1);await wait(200);spark(hero.x-20,hero.y-90,24,COR_GOLPE[g.el]||'#fff',220,1);}}
   G.golpeInim={t:g.t,el:g.el||null};const hpAntes=hero.hp;hitHero(dmg(g.poder,.2));
   if(g.est&&hero.hp<hpAntes&&hero.hp>0&&!hero.guard){const [nm,tu,ch]=g.est;if(poeEstado(hero,nm,tu,ch))setTimeout(()=>pop(hero.x,hero.y-240,ESTADOS[nm].nome.toUpperCase(),ESTADOS[nm].cor),300);}
   spark(hero.x-40,hero.y-90,14,COR_GOLPE[g.el]||'#e8f4ff',240,1);
   if(esc){playFx('escudo_faiscas',hero.x-50,hero.y-40,450);golpeSfx(3,40,.6);}
-  await wait(240);tween(enemy,'ly',0,300,easeOut);tween(enemy,'glow',0,300);await tween(enemy,'lunge',0,300,easeOut);await wait(150);
+  await wait(240);if(g.t==='f')saltoVolta();tween(enemy,'ly',0,300,easeOut);tween(enemy,'glow',0,300);await tween(enemy,'lunge',0,300,easeOut);await wait(150);
   return esc;}
 // vitoria: todos cairam (cada um ja sumiu em mortes()); EXP e Gil somam os inimigos da luta
 async function win(){G.busy=true;hero=JUX;musicaSome(1600);climaFim();
@@ -2192,7 +2204,7 @@ function updateBattle(dt){
 }
 // um inimigo no campo (sombra, corpo, cristais de congelado)
 function drawInimigo(c,e,t){if(e.dead)return;
-  const x=e.x+e.lunge+e.kx,y=e.y+e.ly;
+  const x=e.x+e.lunge+e.kx,y=e.y+e.ly+(e.salto||0);
   const fa=G.t0?Math.max(.02,Math.min(1,(performance.now()-G.t0-250)/350)):1;   // entrada suave: 0,25 s quase invisivel e depois aparece em 0,35 s
   c.save();c.globalAlpha=e.alpha*fa;
   c.fillStyle='rgba(10,20,60,.35)';c.beginPath();c.ellipse(x,y+4,((DESENHO_INIM[e.tipo]||[])[2]||{}).sombra||100,16,0,0,7);c.fill();

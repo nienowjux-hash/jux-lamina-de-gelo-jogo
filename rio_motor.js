@@ -7,7 +7,7 @@
    Dados: rio_dados.js (mapa, mascara da agua, folhas recortadas). Sons: assets/sfx/rio_*.  */
 const W = 960, H = 540, cv = document.getElementById('c'), ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
-const R = window.JUX_RIO, Z = .85;   // camera mais longe (2026-11-21: 'da para afastar um pouco, nao da para ver o mapa')
+const R = window.JUX_RIO, Z = .72;   // camera mais longe (2026-11-21: 'da para afastar um pouco, nao da para ver o mapa')
 const rnd = (a, b) => a + Math.random() * (b - a);
 const cl = (v, a, b) => Math.max(a, Math.min(b, v));
 const img = s => { const i = new Image(); i.src = s; return i; };
@@ -23,7 +23,7 @@ const agua = (x, y) => { if (!AGUA) return false; x = Math.round(x); y = Math.ro
 // o casco: uma elipse de pontos que precisa estar toda na agua
 // o casco muda com a direcao: de lado o barco e comprido; de frente/de costas ele e estreito (passa nos canais apertados)
 const casco = (rx, ry) => { const c = []; for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2; c.push([Math.cos(a) * rx, Math.sin(a) * ry + 4]); } return c; };
-const CASCO = { lado: casco(52, 20), frente: casco(30, 26) };
+const CASCO = { lado: casco(44, 15), frente: casco(24, 18) };   // 2026-11-21 (parede invisivel entre o cais e a ilha do salgueiro): casco um pouco menor que o desenho
 const forma = d => (d === 'esquerda' || d === 'direita') ? 'lado' : 'frente';
 // o gelo GRANDE (que nao se mexe) conta como parede para o casco (assim o barco desliza nele como na margem)
 let FIXOS = [];
@@ -204,7 +204,7 @@ function passo(dt) {
     if (o.sub > 0) continue;
     const [px, py, r] = maisPerto(o, barco.x, barco.y + 4);
     let dx = barco.x - px, dy = (barco.y + 4 - py) / .62;   // a vista e achatada: distancia na "agua"
-    const d = Math.hypot(dx, dy), min = (forma(barco.dir) === 'lado' ? 46 : 32) + r;
+    const d = Math.hypot(dx, dy), min = (forma(barco.dir) === 'lado' ? 40 : 26) + r;
     if (d >= min || d < .01) { o.preso = 0; continue; }
     dx /= d; dy /= d; const pen = min - d, nyS = dy * .62;
     const rel = (barco.vx - o.vx) * -dx + (barco.vy - o.vy) * -nyS;   // velocidade de choque (barco indo contra o objeto)
@@ -285,7 +285,7 @@ function normalParede(o, x, y) {   // direcao (unitaria) de onde esta a parede e
   for (const [dx, dy] of pts) if (!agua(x + dx, y + dy)) { wx += dx; wy += dy; }
   const n = Math.hypot(wx, wy); return n ? [wx / n, wy / n] : null;
 }
-function encostaBarco(o) { const [px, py, r] = maisPerto(o, barco.x, barco.y + 4); return Math.hypot(barco.x - px, (barco.y + 4 - py) / .62) < (forma(barco.dir) === 'lado' ? 46 : 32) + r + 6; }
+function encostaBarco(o) { const [px, py, r] = maisPerto(o, barco.x, barco.y + 4); return Math.hypot(barco.x - px, (barco.y + 4 - py) / .62) < (forma(barco.dir) === 'lado' ? 40 : 26) + r + 6; }
 function mergulha(o) { if (o.sub > 0) return; o.sub = 1.6; o.preso = 0; fx(2, o.x, o.y, .5, .4); fx(3, o.x, o.y + 6, .9, .5); som('rio_splash_peq', .45, true); }
 function achaLugar(o) { for (let r = 4; r < 160; r += 4) for (let k = 0; k < 16; k++) { const x = o.x + Math.cos(k / 16 * 6.283) * r, y = o.y + Math.sin(k / 16 * 6.283) * r * .7; if (cabeObj(o, x, y)) { o.x = x; o.y = y; return; } } }
 const naTela = (x, y, m) => Math.abs(x - cam.x) < W / (2 * Z) + (m || 0) && Math.abs(y - cam.y) < H / (2 * Z) + (m || 0);
@@ -334,10 +334,10 @@ function passoEnfeites(dt) {
   { const P = ENF.patos; P.t += dt;
     if (P.est === 'nada') { P.a += dt * .32; const x = P.cx + Math.cos(P.a) * P.rx, y = P.cy + Math.sin(P.a) * P.ry; P.mae.vx = x - P.mae.x; P.mae.x = x; P.mae.y = y;
       P.filhos.forEach((f, i) => { const b = P.a - .42 * (i + 1), fx_ = P.cx + Math.cos(b) * P.rx, fy_ = P.cy + Math.sin(b) * P.ry; f.vx = fx_ - f.x; f.x = fx_; f.y = fy_; });
-      if (pertoB(P.mae.x, P.mae.y) < 240) { P.est = 'voa'; P.t = 0; som('novos/pato', .6); } }
+      if (pertoB(P.mae.x, P.mae.y) < 165) { P.est = 'voa'; P.t = 0; som('novos/pato', .6); } }
     else if (P.est === 'voa') { P.mae.x -= 150 * dt; P.mae.y -= 70 * dt; P.mae.vx = -1;
       P.filhos.forEach((f, i) => { const ang = Math.atan2(f.y - barco.y, f.x - barco.x); if (P.t < 2.5) { f.x += Math.cos(ang) * 70 * dt; f.y += Math.sin(ang) * 40 * dt; f.vx = Math.cos(ang); } });
-      if (P.t > 25 && pertoB(P.cx, P.cy) > 420) { P.est = 'nada'; P.t = 0; } } }
+      if (P.t > 15 && pertoB(P.cx, P.cy) > 380) { P.est = 'nada'; P.t = 0; } } }
   // cervo: bebe na beira; barco perto -> levanta a cabeca e olha; mais perto -> foge para o mato; volta depois
   { const C = ENF.cervo; C.t += dt; const d = pertoB(C.x, C.y);
     if (C.est === 'bebe' && d < 360) { C.est = 'alerta'; C.t = 0; }
