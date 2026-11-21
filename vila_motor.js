@@ -91,7 +91,7 @@ function aplicaManha(){if(manhaAplicada)return;manhaAplicada=true;festAplicado=f
   MAPA_MANHA.onload=()=>{MAPA.src=MAPA_MANHA.src;
     for(const f of FR){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;const g=c.getContext('2d');
       const faz=()=>{g.clearRect(0,0,f.w,f.h);g.drawImage(f.i0||f.i,0,0,f.w,f.h);g.globalCompositeOperation='source-in';g.drawImage(MAPA_MANHA,f.x,f.y,f.w,f.h,0,0,f.w,f.h);g.globalCompositeOperation='source-over';f.i0=f.i0||f.i;f.i=c;};
-      if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_MANHA.src='assets/vila/mapa_manha.jpg';}
+      if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_MANHA.src='assets/vila/mapa_manha.jpg?v=2';}
 // os passos da Parte E, na ordem: adeus -> lanterna -> cristais -> partida
 const PART_PASSOS=['adeus','lanterna','cristais','partida'];
 const partFeito=k=>!!((JOGO.cap2&&JOGO.cap2.e)||{})[k];
@@ -394,7 +394,8 @@ let oincT=rnd(2,5);
 function oinc(v){const dh=Math.hypot(hero.x-bacon.x,hero.y-bacon.y);som(OINC[(Math.random()*OINC.length)|0],clamp(1-dh/220,0,1)*(v||.7));}
 function baconPasso(dt){
   if(!BAC)return;
-  if(JOGO.cap2&&JOGO.cap2.baconTime&&!bacon.segue){bacon.segue=true;bacon.vaiSeguir=0;bacon.x=hero.x-40;bacon.y=hero.y+6;bacon.pts=[];}   // fim do Cap. 2: o Sir Bacon segue o time
+  // (2026-11-21, pedido: 'nao e para o porco ficar me seguindo'): depois do fim do Cap. 2 ele fica no chiqueiro, como antes
+  if(bacon.segue&&!bacon.vaiSeguir){bacon.segue=false;bacon.x=250;bacon.y=800;bacon.pts=[];}
   oincT-=dt;if(oincT<=0){oincT=bacon.acao==='dorme'?rnd(6,10):rnd(3,8);oinc(bacon.acao==='dorme'?.25:.6);}
   // trilha do Jux (a cada 3 px, e todo quadro durante o pulo)
   const u=trilha[trilha.length-1];
@@ -1156,7 +1157,7 @@ function nomePonto(id){if(NOMES[id])return NOMES[id];if(id.startsWith('tes_')){c
   if(id.startsWith('col_')){const c=COLETAS.find(q=>'col_'+q.id===id);return c?ITENS[c.item].nome:'Algo';}return '';}
 // quem tem corpo agora (so quem esta visivel no mapa): elipse nos pes; so bloqueia chegando MAIS perto (nunca prende o Jux)
 function corposNpc(){if(!NA_VILA)return [];if(emAtaque()){const L=(JOGO.cap2&&JOGO.cap2.lutas)||{},o=[vovo];if(L.atq_2)o.push(borin);for(const n of ANDARILHOS)if(ATQ_SALVO[n.id]&&L[ATQ_SALVO[n.id]])o.push(n);return o;}
-  const o=[tico,vovo,borin,...ANDARILHOS,...FIGURANTES];if(!(JOGO.cap2&&JOGO.cap2.baconTime))o.push(bacon);return o.filter(n=>n&&isFinite(n.x));}
+  const o=[tico,vovo,borin,...ANDARILHOS,...FIGURANTES];o.push(bacon);return o.filter(n=>n&&isFinite(n.x));}
 function npcBloqueia(x,y,x0,y0){for(const n of corposNpc()){const rx=n===bacon?11:8,ry=5,d=((x-n.x)/rx)**2+((y-n.y)/ry)**2;
   if(d<1&&d<((x0-n.x)/rx)**2+((y0-n.y)/ry)**2)return n;}return null;}
 function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!atqPode(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
@@ -1414,7 +1415,7 @@ const IMG_ADEUS=imgsFilme(CENAS_ADEUS.map(imgPart)),IMG_CRISTAIS=imgsFilme(CENAS
 function manhaSeguinte(){noiteFade={t:0,virou:false,txt:'Na manhã seguinte…',vira:()=>{JOGO.cap2.fase='manha';JOGO.cap2.e={};salvaJogo();aplicaManha();hero.x=722;hero.y=716;hero.olha='cima';},
   fim:()=>abreFala('manha_chega')};hero.alvo=null;hero.pontoAlvo=null;}
 function fimCapitulo2(){noiteFade={t:0,virou:false,k:1.8,txt:'Fim do Capítulo 2 — O festival da Rainha do Inverno',txt2:'Capítulo 3: em breve',vira:()=>{JOGO.cap2.fase='fim';JOGO.cap2.baconTime=true;salvaJogo();
-    bacon.segue=true;bacon.vaiSeguir=0;bacon.x=hero.x-40;bacon.y=hero.y+6;bacon.pts=[];hero.x=722;hero.y=700;hero.olha='baixo';},fim:()=>aviso('O Sir Bacon agora segue o time. Obrigado por jogar o Capítulo 2!','#ffe27a')};}
+    hero.x=722;hero.y=700;hero.olha='baixo';},fim:()=>aviso('Obrigado por jogar o Capítulo 2!','#ffe27a')};}
 // a lanterna do Tico: no alto do altar, depois do adeus
 function ticoAltar(){fala={linhas:FALAS.manha_tico_altar,i:0,letras:0,fim:()=>{daItem('lanterna_halvard',1);partMarca('lanterna');aviso('Você recebeu a Lanterna do Halvard! (acessório)','#9fe8ff');}};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // o altar na vila em ataque: com as 3 lutas feitas (e o Capitulo 1 completo), a cutscene e a luta; depois de perder, so a luta
