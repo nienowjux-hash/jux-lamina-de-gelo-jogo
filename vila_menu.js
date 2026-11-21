@@ -133,6 +133,9 @@ function uiFala(id){
   UI.escolha={id,ops:[...(mk?[mk==='!'?'❗ Missão':mk==='✔'?'✔ Entregar':'Missão']:[]),'Comprar','Conversar','Sair'],sel:0};som(SOM.ui_vez,.5);return true;
 }
 function escolhe(i){const e=UI.escolha;UI.escolha=null;
+  if(e.id==='cura_luta'){if(i===0){curaParaLuta();setTimeout(()=>iniciaProva(e.prova,true),900);}
+    else if(i===1){UI.menu=true;UI.home=false;UI.aba=1;UI.sel=0;UI.depoisBolsa=e.prova;som(SOM.ui_vez,.5);}
+    else iniciaProva(e.prova,true);return;}
   if(e.id==='brinde'){if(i===0&&typeof comecaAtaque==='function')comecaAtaque();else aviso('Aproveite a festa. A Vovó espera.','#c8d8f0');return;}
   if(e.id==='prova'){const q=e.prova||'fenrir';if(i===0&&q==='skoll'&&typeof tocaFilme==='function'&&typeof CENAS_SKOLL!=='undefined'){tocaFilme(CENAS_SKOLL,IMG_SKOLL,()=>iniciaProva('skoll'));return;}if(i===0&&q==='fenrir'&&typeof tocaFilme==='function'&&typeof CENAS_FENRIR!=='undefined'&&REGIAO==='pico'){tocaFilme(CENAS_FENRIR,IMG_FENRIR,()=>iniciaProva('fenrir'));return;}if(i===0)iniciaProva(q);else if(q.startsWith('chefe_'))aviso('Volte quando estiver pronto.','#c8d8f0');else abreFala(q==='skoll'?'caverna_depois':'prova_depois');return;}   // prova de um Eco: lutar agora ou voltar depois
   if(e.ops[i]==='Comprar'){UI.loja={id:e.id,sel:0,modo:'comprar'};som(SOM.ui_vez,.5);}
@@ -187,6 +190,18 @@ function desenhaPrevia(id,x,y,w){const it=ITENS[id],q=it?quemPrevia(it):'jux',p=
   return true;}
 // ---------- menu
 function itensBolsa(){return Object.keys(JOGO.inv).filter(k=>ITENS[k]);}
+// 'Curar com pocoes' antes da luta: Pena de Fenix em quem caiu, depois Pocao / Hi-Pocao ate encher (gasta o minimo)
+function curaParaLuta(){const gasto={};const usa=id=>{tiraItem(id);gasto[id]=(gasto[id]||0)+1;};
+  for(const q of grupoMenu()){let v=vidaAtual(q),hp=v.hp;
+    if(hp<=0){if(qtd('fenix')>0){usa('fenix');hp=Math.round(v.max*ITENS.fenix.revive);}else continue;}
+    for(let n=0;n<60&&hp<v.max;n++){const falta=v.max-hp,id=falta>ITENS.pocao.cura&&qtd('hipocao')>0?'hipocao':qtd('pocao')>0?'pocao':qtd('hipocao')>0?'hipocao':null;
+      if(!id)break;usa(id);hp=Math.min(v.max,hp+ITENS[id].cura);}
+    if(hp!==v.hp)guardaVida(q,hp,v.mp);}
+  const l=Object.keys(gasto).map(id=>gasto[id]+'x '+ITENS[id].nome);
+  if(l.length){salvaJogo();som(SOM.ui_vez,.6);aviso('Curados! Gastou: '+l.join(', ')+'.','#7dffa8');}
+  else aviso('Sem poções na bolsa: vão assim mesmo.','#ff9a9a');}
+// fechou a bolsa aberta pelo aviso de cura: a luta continua (pergunta de novo se ainda estiver ferido)
+setInterval(()=>{if(UI.depoisBolsa&&!uiAberto()){const n=UI.depoisBolsa;UI.depoisBolsa=null;if(typeof iniciaProva==='function')iniciaProva(n);}},250);
 function usaItem(id){const it=ITENS[id];
   if(it.repele){JOGO.repelente=it.repele;tiraItem(id);som(SOM.ui_vez,.6);aviso('Repelente ativo: '+it.repele+' passos sem lutas fora da vila.','#c8b0ff');salvaJogo();return;}
   if(it.tipo==='comida'){JOGO.buff={id,lutas:it.lutas};tiraItem(id);som(SOM.ui_vez,.6);aviso(it.nome+': '+it.desc,'#7dffa8');salvaJogo();return;}
@@ -464,7 +479,11 @@ function uiDesenha(){
   if(UI.menu)desenhaMenu();
   ctx.restore();
 }
-function desenhaEscolha(){const e=UI.escolha,x=W-250,y=H-290,w=200,h=e.ops.length*36+20;painel(x,y,w,h);
+function desenhaEscolha(){const e=UI.escolha;
+  if(e.titulo){const w=380,x=(W-w)/2,ht=e.titulo.length*26+18,h=e.ops.length*36+20,y=H/2-(ht+h)/2;painel(x,y,w,ht);   // janela com titulo (cura antes da luta)
+    e.titulo.forEach((t,i)=>texto(t,x+w/2,y+30+i*26,i<2?18:16,i<2?'#ffe27a':(/CAÍDO/.test(t)?'#ff9a9a':'#bff4ff'),'center'));
+    const y2=y+ht+8;painel(x,y2,w,h);e.ops.forEach((o,i)=>{const yy=y2+12+i*36;linhaSel(x+8,yy,w-16,32,i===e.sel);texto(o,x+28,yy+22,17,'#fff');ZONAS.push([x,yy,x+w,yy+32,()=>{e.sel=i;escolhe(i);}]);});return;}
+  const x=W-250,y=H-290,w=200,h=e.ops.length*36+20;painel(x,y,w,h);
   e.ops.forEach((o,i)=>{const yy=y+12+i*36;linhaSel(x+8,yy,w-16,32,i===e.sel);texto(o,x+28,yy+22,17,'#fff');ZONAS.push([x,yy,x+w,yy+32,()=>{e.sel=i;escolhe(i);}]);});}
 function desenhaLoja(){
   const L=LOJAS[UI.loja.id],x=120,y=50,w=W-240,h=H-120,l=itensLoja();painel(x,y,w,h);

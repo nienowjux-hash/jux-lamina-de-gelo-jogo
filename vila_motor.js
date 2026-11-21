@@ -1197,9 +1197,9 @@ function passoEncontro(){if(ENC.semLutas)return;
 const PROVAS={fenrir:{tipos:['fenrir_prova'],nv:12},skoll:{tipos:['skoll'],nv:9},acolito:{tipos:['acolito'],nv:8},
   // Cap. 2, Parte B (FICHA_CAP2_ATAQUE.md): as 3 lutas da vila em ataque (nivel fixo, como as outras provas). Calibrado 2026-11-20 com
   // luta automatica (Jux nv 13 + Bino nv 12, equipamento da forja): menor HP na luta entre ~33% e 60%
-  // Ignarok calibrado 2026-11-20 (luta automatica, Jux nv14 + Bino nv13 com equipamento de aco): vence com o Jux a 19% e o Bino caido (padrao do Fenrir: 16%)
+  // Ignarok calibrado 2026-11-20 (luta automatica, Jux nv14 + Bino nv13 com equipamento de aco): vence com o Jux a 19% e o Bino caido (padrao do Fenrir: 16%) // 2026-11-21 ('extremamente forte, diminuir um pouquinho'): hp 6->5.5, forca 1.5->1.4; depois ('ainda muito forte') hp 5, forca 1.3
   // 2026-11-20 (usuario: 'muito facil'): mais vida e forca
-  ignarok:{tipos:['ignarok_chefe'],nv:16,chefe:{nome:'Ignarok',hp:6,forca:1.5,exp:6}},
+  ignarok:{tipos:['ignarok_chefe'],nv:16,chefe:{nome:'Ignarok',hp:5,forca:1.3,exp:6}},
   atq_1:{tipos:['sombra_oskar','acolito','acolito'],nv:13,chefe:{nome:'Sombra do Oskar',hp:4.5,forca:1.65,exp:2}},
   atq_2:{tipos:['sombra_borin','acolito'],nv:13,chefe:{nome:'Sombra do Borin',hp:4,forca:1.7,exp:2}},
   atq_3:{tipos:['sombra_ingrid','acolito','acolito'],nv:14,chefe:{nome:'Sombra da Ingrid',hp:4.5,forca:1.7,exp:2.2}}};
@@ -1209,7 +1209,13 @@ for(const c of MINICHEFES)PROVAS['chefe_'+c.id]={tipos:[c.tipo],nv:c.nv,chefe:{n
 // luta da vila em ataque (as folhas das Sombras ainda estao chegando: por enquanto so avisa e nao conta)
 function atqLuta(id){if(id==='atq_2'&&!BORIN_FOLHA){aviso('Esta luta chega quando a folha da Sombra do Borin estiver pronta.','#ffe27a');return;}
   try{sessionStorage.setItem('jux_atq_luta',id);}catch(e){}iniciaProva(id);}
-function iniciaProva(nome){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
+// CURA ANTES DA LUTA (ficha aprovada 2026-11-21: 'sair de uma luta mal e entrar noutra quase morto'): antes de uma luta da
+// historia, se o Jux ou o Bino estiver abaixo de 70% (ou caido), pergunta: curar com pocoes / abrir a bolsa / lutar assim
+function grupoFerido(){if(typeof grupoMenu!=='function'||typeof vidaAtual!=='function')return [];return grupoMenu().map(q=>[q,vidaAtual(q)]).filter(([q,v])=>v.hp<=0||v.hp<v.max*.7);}
+function iniciaProva(nome,semPerguntar){if(transicao)return;
+  if(!semPerguntar&&typeof UI==='object'&&grupoFerido().length){const linhas=grupoMenu().map(q=>{const v=vidaAtual(q);return NOME_GRUPO[q]+': '+(v.hp<=0?'CAÍDO':v.hp+' / '+v.max+' HP');});
+    hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
+    UI.escolha={id:'cura_luta',prova:nome,titulo:['Vocês estão feridos.','Curar antes de lutar?',...linhas],ops:['Curar com poções','Abrir a bolsa','Lutar assim'],sel:0};som(SOM.ui_vez,.5);return;}transicao=.001;hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
   try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+((window.__semSalvar||window.__modoTeste)&&['#ataque','#altar','#invasao'].includes(location.hash.split('?')[0])?location.hash.split('?')[0]:''),prova:nome,chefe:PROVAS[nome].chefe||null}));}catch(e){}
   salvaVila();setTimeout(()=>{paraAudio();location.href=jp('batalha.html');},1100);}
