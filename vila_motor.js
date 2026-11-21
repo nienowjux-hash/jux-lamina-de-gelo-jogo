@@ -57,13 +57,31 @@ function atqQuadro(k,x,y,e,fase,fps){const D=ATQ&&ATQ[k],I=ATQI[k];if(!D||!I.com
 function desenhaAtaqueTopo(){if(!emAtaque())return;
   for(const [x,y,e] of ATQ_FUMACA)atqQuadro('fumaca',x,y,e,x*.37,7);
   for(const [x,y,e] of ATQ_TETO)atqQuadro('fogo',x,y,e,x*.13,11);}
-const ataqueDesenhos=()=>ATQ_CHAO.map(([x,y,e])=>[y,()=>atqQuadro('fogo',x,y,e,x*.11,11)]);
+// os inimigos de cada luta que falta ficam VISIVEIS no lugar dela (2026-11-20: a estrela apontava para um lugar vazio):
+// a Sombra do morador no meio e os acolitos dos lados, desenhados das folhas da batalha (inimigos_sprites.js), parados e respirando
+const INIM_V=window.JUX_INIM||{},INIM_VI={};for(const k of ['acolito','sombra_oskar','sombra_borin','sombra_ingrid'])if(INIM_V[k]){INIM_VI[k]=new Image();INIM_VI[k].src=INIM_V[k].atlas;}
+const ATQ_GRUPO={atq_1:[['sombra_oskar',0,-6,.58],['acolito',-40,-16,.55],['acolito',40,-16,.55]],atq_2:[['sombra_borin',0,-6,.68],['acolito',44,-14,.55]],atq_3:[['sombra_ingrid',0,-8,.58],['acolito',-40,-18,.55],['acolito',40,-18,.55]]};
+function atqInimDesenha(k,x,y,e,fase){const D=INIM_V[k],I=INIM_VI[k];if(!D||!I||!I.complete)return;const q=Math.floor(t*4+fase)%4,esp=hero.x<x;
+  ctx.save();ctx.translate(x,y);ctx.scale(esp?-e:e,e);ctx.drawImage(I,q*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1],D.w,D.h);ctx.restore();}
+const ataqueDesenhos=()=>[...ATQ_CHAO.map(([x,y,e])=>[y,()=>atqQuadro('fogo',x,y,e,x*.11,11)]),
+  ...ATQ_LUTAS.filter(l=>!((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]).flatMap(l=>(ATQ_GRUPO[l.id]||[]).map(([k,dx,dy,e],i)=>[l.y+dy,()=>atqInimDesenha(k,l.x+dx,l.y+dy,e,i*1.3)]))];
 // as tres lutas (a Sombra de um morador + acolitos), uma de cada vez, na ordem
 const ATQ_LUTAS=[{id:'atq_1',x:742,y:712,nome:'Praça'},{id:'atq_2',x:1150,y:612,nome:'Forja do Borin'},{id:'atq_3',x:790,y:330,nome:'Escada do altar'}];
 const atqFeitas=()=>ATQ_LUTAS.filter(l=>((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]).length;
 const atqProxima=()=>ATQ_LUTAS.find(l=>!(((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]))||null;
 // na vila em ataque so estes pontos respondem (os moradores se esconderam)
 const ATQ_PODE=new Set(['portao','entrada_trilha','atq_1','atq_2','atq_3','altar']);
+// LOJAS NO ATAQUE (2026-11-20, pedido: 'se perder a batalha fica sem poção'): a Vovó fica na porta da casa dela o tempo todo
+// (remédios), e cada morador salvo volta para o lugar dele: Oskar (luta 1), Borin com a forja (luta 2), Ingrid com a padaria (luta 3)
+const ATQ_SALVO={oskar:'atq_1',borin:'atq_2',ingrid:'atq_3'};
+const atqPode=id=>ATQ_PODE.has(id)||id==='vovo'||(ATQ_SALVO[id]&&((JOGO.cap2&&JOGO.cap2.lutas)||{})[ATQ_SALVO[id]]);
+const ATQ_CASA={vovo:[300,588],borin:null,ingrid:[330,612],oskar:[1100,740]};
+function atqMoradoresPasso(){const L=(JOGO.cap2&&JOGO.cap2.lutas)||{};
+  vovo.x=ATQ_CASA.vovo[0];vovo.y=ATQ_CASA.vovo[1];vovo.anda=false;vovo.fila=[];if(VOVO_PONTO){VOVO_PONTO.x=vovo.x;VOVO_PONTO.y=vovo.y-4;VOVO_PONTO.r=48;}
+  if(L.atq_2){borin.x=BORIN_BASE.x;borin.y=BORIN_BASE.y;borin.anda=false;borin.fila=[];BORIN_PONTO.x=borin.x;BORIN_PONTO.y=borin.y-4;BORIN_PONTO.r=48;}else BORIN_PONTO.r=0;
+  for(const n of ANDARILHOS){const salvo=ATQ_SALVO[n.id]&&L[ATQ_SALVO[n.id]],c=ATQ_CASA[n.id];if(salvo&&c){n.x=c[0];n.y=c[1];n.anda=false;n.ponto.x=n.x;n.ponto.y=n.y-4;n.ponto.r=46;}else n.ponto.r=0;}}
+const atqMoradoresDesenhos=()=>{const L=(JOGO.cap2&&JOGO.cap2.lutas)||{},o=[[vovo.y,desenhaVovo]];if(L.atq_2)o.push([borin.y,desenhaBorin]);
+  for(const n of ANDARILHOS)if(ATQ_SALVO[n.id]&&L[ATQ_SALVO[n.id]])o.push([n.y,()=>desenhaAndarilho(n)]);return o;};
 // PARTE E (FICHA_CAP2_PARTIDA.md, aprovada 2026-11-20): a manha seguinte. Fases 'manha' (as 4 missoes) e 'fim' (o capitulo acabou).
 // Mapa ref/vila/mapa_manha.png (o mesmo desenho, de manha, com o memorial do Halvard no lugar da fogueira); musica 'Contemplation' (joth, CC0).
 const emManha=()=>NA_VILA&&!!(JOGO.cap2&&(JOGO.cap2.fase==='manha'||JOGO.cap2.fase==='fim'));
@@ -207,6 +225,10 @@ const FALAS={
   manha_portao_cedo:[['Jux','Ainda não. Tem coisa pra resolver aqui antes.']],
   manha_vovo_espera:[['Vovó Hilda','Hmpf. Vá ver o menino, forasteiro. Ele subiu pro altar e não quer descer.']],
   manha_vovo_fim:[['Vovó Hilda','O portão está aberto. E a minha porta também, quando voltarem.']],
+  atq_fala_vovo:[['Vovó Hilda','Entra, forasteiro, rápido! A gente está escondido aqui dentro.'],['Vovó Hilda','Leva remédio. E volta inteiro, que eu não tenho tempo de te remendar duas vezes.']],
+  atq_fala_borin:[['Borin','Garoto! Ainda sinto o braço tremendo… mas a forja tá quente.'],['Borin','Pega o que precisar. Hoje é de graça! …Não, mentira. Mas é com desconto de herói.']],
+  atq_fala_ingrid:[['Ingrid','Leva pão, Jux. De barriga vazia ninguém salva vila nenhuma.']],
+  atq_fala_oskar:[['Oskar','…Obrigado.'],['Oskar','Vai. O tambor espera você terminar.']],
   atq_portao:[['Jux','Não vou sair daqui com a vila assim.'],['Bino','…Ninguém sai.']],
   atq_comeca:[['Aurora','As Sombras ainda estão lá dentro, Portador. Derrube sem quebrar.',1],['Jux','Derrubar sem quebrar. Tipo a minha vida amorosa.'],['Bino','…Foco.']],
   atq_1:[['✦','Na praça, a Sombra do Oskar abraça o tambor. Dois acólitos apontam os cajados para você.'],['Oskar','Jux… o tambor… eu não sinto as mãos…'],['Jux','Aguenta, Oskar. Eu vou te tirar daí.']],
@@ -317,7 +339,7 @@ const FALAS={
   derrota:[['Vovó Hilda','Te acharam desmaiado lá fora, forasteiro. Arrastaram até aqui.'],['Jux','Recuo estratégico.'],['Vovó Hilda','Recuo de bunda na neve, isso sim. Vá se equipar direito.']],
   poco:[['Jux','Um poço congelado. Jogo uma moeda e faço um pedido?'],['Jux','…Sem moeda. Pedido negado. Esse mundo é consistente, pelo menos.']],
 };
-const NOMES={camara_alfa:'Câmara do Alfa',saida_caverna:'Saída da caverna',tunel_garras:'Túnel das correntes',caverna:'Caverna de gelo (entrada)',entrada_vale:'Trilha para o Vale dos Lobos',saida_vale:'Descida para a Garganta',floco:'Sr. Floco',capitao:'Capitão Dente-de-Ferro (mercador)',saida_garganta:'Caminho para a Garganta Gelada',entrada_trilha:'Arco de volta à trilha',caverna_fechada:'Caverna de gelo (bloqueada)',prova_pegadas:'Pegadas enormes',prova_fenrir:'Círculo de pedras',circulo_pico:'Círculo de pedras',entrada_pico:'Trilha do Pico do Uivo',saida_pico:'Descida para o Vale',mirante_pico:'Mirante',saida_vila:'Caminho de volta para a vila',caverna:'Caverna de gelo',santuario:'Santuário do cristal',acampamento:'Acampamento goblin',fogueira:'Fogueira',arvore:'Árvore das lanternas',barraca_comida:'Barraca de comida',barraca_bebida:'Barraca de bebida',
+const NOMES={atq_1:'Sombra do Oskar',atq_2:'Sombra do Borin',atq_3:'Sombra da Ingrid',camara_alfa:'Câmara do Alfa',saida_caverna:'Saída da caverna',tunel_garras:'Túnel das correntes',caverna:'Caverna de gelo (entrada)',entrada_vale:'Trilha para o Vale dos Lobos',saida_vale:'Descida para a Garganta',floco:'Sr. Floco',capitao:'Capitão Dente-de-Ferro (mercador)',saida_garganta:'Caminho para a Garganta Gelada',entrada_trilha:'Arco de volta à trilha',caverna_fechada:'Caverna de gelo (bloqueada)',prova_pegadas:'Pegadas enormes',prova_fenrir:'Círculo de pedras',circulo_pico:'Círculo de pedras',entrada_pico:'Trilha do Pico do Uivo',saida_pico:'Descida para o Vale',mirante_pico:'Mirante',saida_vila:'Caminho de volta para a vila',caverna:'Caverna de gelo',santuario:'Santuário do cristal',acampamento:'Acampamento goblin',fogueira:'Fogueira',arvore:'Árvore das lanternas',barraca_comida:'Barraca de comida',barraca_bebida:'Barraca de bebida',
   ferraria:'Ferraria',bacon:'Sir Bacon',tico:'Tico',borin:'Borin',ingrid:'Ingrid, a padeira',oskar:'Oskar, o lenhador',halvard:'Halvard, o caçador',vovo:'Vovó Hilda',altar:'Altar da espada',portao:'Portão',poco:'Poço'};
 const COR={Jux:'#bff0ff',Aurora:'#c9b8ff','Sir Bacon':'#ffb6c8',Vendedora:'#ffd88a',Fenrir:'#9fe8ff',Skoll:'#c9a6ff',Halvard:'#ffd9a6','Bolotão':'#9fd8ff','Sr. Floco':'#cfeaff',Bino:'#d8b48a','Acólito':'#c9a6ff',Goblin:'#a6d96a'};
 
@@ -1099,7 +1121,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Nova tarefa: Preparativos do festival (veja no canto da tela)','#ffe27a');};
   fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // falas que mudam com a historia (pedido 2026-11-19): antes da espada / depois da espada / depois do resgate do Halvard
-function falaDaFase(id){if(emManha()&&FALAS['manha_'+id])return 'manha_'+id;if(FALAS[id]&&id.startsWith('manha_'))return id;if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
+function falaDaFase(id){if(emAtaque()&&FALAS['atq_fala_'+id])return 'atq_fala_'+id;if(emManha()&&FALAS['manha_'+id])return 'manha_'+id;if(FALAS[id]&&id.startsWith('manha_'))return id;if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
   if(diaFestival()){if(id==='vovo')return JOGO.cap2.fase==='preparo'?'dia2_vovo':'dia_vovo';if(FALAS['dia_'+id])return 'dia_'+id;}
   const res=typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita';
   if(id==='vovo'&&hero.espada&&FALAS.vovo_depois)return 'vovo_depois';
@@ -1112,7 +1134,7 @@ function avanca(){if(!fala)return;const L=fala.linhas[fala.i][1];
 let clarao=0;function ganhaEspada(){hero.espada=true;clarao=1;som(SOM.ui_vez,.9);for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});setTimeout(()=>abreFala('altar_ganha'),700);}
 function nomePonto(id){if(NOMES[id])return NOMES[id];if(id.startsWith('tes_')){const q=TESOUROS.find(s=>'tes_'+s.id===id);return q&&q.tipo==='bau'?'Baú':'Algo brilhando';}
   if(id.startsWith('col_')){const c=COLETAS.find(q=>'col_'+q.id===id);return c?ITENS[c.item].nome:'Algo';}return '';}
-function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!ATQ_PODE.has(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
+function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!atqPode(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
 
 
 /* ---------- REGIÕES E ENCONTROS ALEATÓRIOS (SISTEMA_RPG.md §7b) ----------
@@ -1667,7 +1689,7 @@ function passo(dt){
   if(rioPx.length&&!(agTex&&agTex.complete))for(let i=0;i<3;i++)if(Math.random()<dt*20){const k=rioPx[(Math.random()*rioPx.length)|0];brilhoRio.push({x:k%V.w,y:(k/V.w)|0,v:0,l:rnd(3,9)});}
   if(NA_VILA&&emFestival()){festaPoe();festaCeu(dt);vivoPasso(dt);peixePasso(dt);}
   // vila em ataque: os moradores se esconderam (nao aparecem), entao nao andam nem falam em balao (antes o Halvard 'falava' sozinho)
-  else if(NA_VILA&&emAtaque()){baloes.length=0;ignCalorPasso();}
+  else if(NA_VILA&&emAtaque()){baloes.length=0;ignCalorPasso();atqMoradoresPasso();}
   else if(NA_VILA){vivoPasso(dt);peixePasso(dt);if(!(emPreparo()&&caca.on))baconPasso(dt);ticoPasso(dt);vovoPasso(dt);if(!(emPreparo()&&!prepFeita('borin')))borinPasso(dt);prepPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
   seguidorPasso(dt);
   if(!NA_VILA&&typeof passoDescobertas==='function')passoDescobertas();
@@ -1827,7 +1849,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?ataqueDesenhos():[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;

@@ -66,3 +66,9 @@ Sons do Ignarok (assets/sfx/novos/ignarok_*), todos CC0 (OpenGameArt.org), corta
 cine_preco.ogg/.mp3 — "Fantasy: Lament for a Warrior's Soul", RandomMind (OpenGameArt.org), CC0 — https://opengameart.org/content/fantasy-lament-for-a-warriors-soul. Cutscene "O preço" (Cap. 2, Parte D), da cena 5 em diante.
 cine_preco_morte.ogg/.mp3 — "Bleeding Out", haeldb (OpenGameArt.org), CC0 (também OGA-BY 3.0) — https://opengameart.org/content/bleeding-out. Cutscene "O preço", cena 5 (o Halvard nos braços do Tico).
 Musica da vila na manha depois do ataque (assets/vila/musica_manha): "Contemplation" - joth - CC0 - https://opengameart.org/content/contemplation-0
+Sons das Sombras (assets/sfx/novos/som_oskar_*, som_borin_*, som_ingrid_*), todos CC0 (OpenGameArt.org), cortados/misturados com ffmpeg:
+  "Ghost/Monster voice moaning/growling" (qubodup) — https://opengameart.org/content/ghost-monster-voice-moaning-growling
+  "Horde war drums loop" (William Hector) — https://opengameart.org/content/horde-war-drums-loop
+  "Hammer on anvil" — https://opengameart.org/content/hammer-on-anvil ; "Blacksmith's hammer" — https://opengameart.org/content/blacksmiths-hammer
+  "Hungry ghoul" — https://opengameart.org/content/hungry-ghoul ; "Female hurt grunts/groans" — https://opengameart.org/content/female-hurt-grunts-groans
+  "Bubble sound effects" — https://opengameart.org/content/bubble-sound-effects ; "40 CC0 water/splash/slime SFX" — https://opengameart.org/content/40-cc0-water-splash-slime-sfx

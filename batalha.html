@@ -46,7 +46,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="efeitos_fx.js?v=1795117438"></script>
 <script src="fx_inimigos_sprites.js?v=1795243000"></script>
 <script src="fx_bino_sprites.js?v=1795117438"></script>
-<script src="efeitos_inimigos.js?v=1795243000"></script>
+<script src="efeitos_inimigos.js?v=1795247300"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
@@ -73,7 +73,7 @@ let AC=null;
 // nao repete em menos de 50 ms (cacos caindo juntos nao viram um estouro)
 const SOM={},somUlt={};
 for(const n of ['ui_mover','ui_ok','ui_voltar','ui_erro','ui_vez','ui_inicio','magia_gelo','carga_gelo','pocao','defender','recompensa','nivel',
-  'inimigo_ataca','inimigo_morre','inimigo_rosna','fenrir_rosna','fenrir_latido','fenrir_ataque','fenrir_mordida','fenrir_uivo','presa_rosna','presa_uivo','presa_mordida','presa_investida','ignarok_rugido','ignarok_rosna','ignarok_punho','ignarok_derreter','ignarok_erupcao','ignarok_queda','caco_pequeno','gelo_quebra','gelo_quebra2','whoosh','whoosh2','magia_brilho','magia_raio','pedras','neve_pancada','bolota_espirro','goblin_facada','goblin_moedas','goblin_pedrada','acolito_esfera','acolito_explode','acolito_drenar','acolito_vazio','skoll_mordida','skoll_correntes','bolotao_rosna','bolotao_bruf','bolotao_rolo','bolotao_avalanche','bolotao_abraco','bolotao_bola','capitao_rosna','capitao_bravata','capitao_risada','capitao_machado','capitao_clank','capitao_apito','lobo_rosna','lobo_ataque','lobo_mordida','lobo_uivo','lobo_latido','bino_whoosh','bino_golpe','bino_golpe_forte','bino_quebra','bino_rumble','bino_pedras','bino_pedra_forma','bino_muralha','bino_cura','bino_investida','bino_peito','bino_urso1','bino_urso2','bino_rugido','bino_rugido2','bino_rugido_longo','bino_rugido_queda']){
+  'inimigo_ataca','inimigo_morre','inimigo_rosna','fenrir_rosna','fenrir_latido','fenrir_ataque','fenrir_mordida','fenrir_uivo','presa_rosna','presa_uivo','presa_mordida','presa_investida','som_oskar_lamento','som_oskar_abraco','som_oskar_tambor','som_borin_lamento','som_borin_martelada','som_borin_abraco','som_ingrid_lamento','som_ingrid_sopa','som_ingrid_lagrima','ignarok_rugido','ignarok_rosna','ignarok_punho','ignarok_derreter','ignarok_erupcao','ignarok_queda','caco_pequeno','gelo_quebra','gelo_quebra2','whoosh','whoosh2','magia_brilho','magia_raio','pedras','neve_pancada','bolota_espirro','goblin_facada','goblin_moedas','goblin_pedrada','acolito_esfera','acolito_explode','acolito_drenar','acolito_vazio','skoll_mordida','skoll_correntes','bolotao_rosna','bolotao_bruf','bolotao_rolo','bolotao_avalanche','bolotao_abraco','bolotao_bola','capitao_rosna','capitao_bravata','capitao_risada','capitao_machado','capitao_clank','capitao_apito','lobo_rosna','lobo_ataque','lobo_mordida','lobo_uivo','lobo_latido','bino_whoosh','bino_golpe','bino_golpe_forte','bino_quebra','bino_rumble','bino_pedras','bino_pedra_forma','bino_muralha','bino_cura','bino_investida','bino_peito','bino_urso1','bino_urso2','bino_rugido','bino_rugido2','bino_rugido_longo','bino_rugido_queda']){
   const a=new Audio();a.preload='auto';a.src='assets/sfx/novos/'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3')+(n.startsWith('bino_')?'?v=2':'');SOM[n]=a;}
 function som(n,vol){const a=SOM[n],now=performance.now();if(!a||now-(somUlt[n]||0)<50)return;somUlt[n]=now;
   try{const c=a.cloneNode();c.volume=clamp(vol??.8,0,1);c.play().catch(()=>{});}catch(e){}}
@@ -1433,7 +1433,7 @@ const ESP_LAB={'Sopro da Montanha':()=>presaSopro(),'Uivo do Bando':()=>presaUiv
   'Uivo da Matilha':async()=>{const e=enemy;e.fase2=false;e.turn=3;await skollEspecial();},
   'Mudança de fase':async()=>{const e=enemy,f={skoll:skollEspecial,capitao:capitaoEspecial,bolotao:bolotaoEspecial,presa:presaEspecial}[e.tipo];if(!f)return;const fo=e.forca,ve=e.vel,hp=e.hp;
     e.fase2=false;e.hp=Math.round(e.max*.45);e.turn=1;await f();e.fase2=false;e.forca=fo;e.vel=ve;e.hp=hp;}};   // volta ao normal para poder repetir
-const ROSNA_TIPO={ignarok_chefe:'ignarok_rosna',ignarok_f2:'ignarok_rosna',presa:'presa_rosna',capitao:'capitao_rosna',bolotao:'bolotao_rosna',lobo:'lobo_rosna',skoll:'lobo_rosna',fenrir_prova:'fenrir_rosna'};
+const ROSNA_TIPO={sombra_oskar:'som_oskar_abraco',sombra_borin:'som_borin_lamento',sombra_ingrid:'som_ingrid_lamento',ignarok_chefe:'ignarok_rosna',ignarok_f2:'ignarok_rosna',presa:'presa_rosna',capitao:'capitao_rosna',bolotao:'bolotao_rosna',lobo:'lobo_rosna',skoll:'lobo_rosna',fenrir_prova:'fenrir_rosna'};
 const FALA_ABERTURA={presa:['…Fraco não entra na minha toca.','Presa-Antiga','#cfe6ff','presa_rosna'],capitao:['ALTO! Isto é território do Capitão Dente-de-Ferro!','Capitão','#c9e89a','capitao_bravata'],bolotao:['MEU. LAGO.','Bolotão','#9fd8ff','bolotao_rosna'],skoll:['Fuja… eu não consigo parar.','Skoll','#c9a6ff','fenrir_rosna'],fenrir_prova:['Mostre que é digno.','Fenrir','#9fe8ff','fenrir_rosna']};
 async function skollCai(sk){   // queda gentil: ele nao morre de raiva, e libertado
   musicaSome(1400);sk.morrendo=true;
@@ -1461,7 +1461,7 @@ async function sombraEspecial(){const e=enemy;
     await sombraTodos(g,null);tween(e,'glow',0,300);tween(e,'ly',0,300,easeOut);await tween(e,'lunge',0,300,easeOut);return true;}
   // Ingrid: Lagrima roxa: cura um acolito ferido (as Sombras obedecem), no maximo a cada 3 vezes
   if(e.tipo==='sombra_ingrid'&&e.turn-(e.curou||-9)>=3){const ac=inimigos().filter(x=>x!==e&&x.hp<x.max*.6).sort((a,b)=>a.hp/a.max-b.hp/b.max)[0];
-    if(ac){e.curou=e.turn;banner('Lágrima roxa');await tween(e,'glow',1,500);fxBrilho(ac.x,ac.y-90,{raio:150,ms:600,cor:'200,150,255'});som('magia_brilho',.6);
+    if(ac){e.curou=e.turn;banner('Lágrima roxa');await tween(e,'glow',1,500);fxBrilho(ac.x,ac.y-90,{raio:150,ms:600,cor:'200,150,255'});som('som_ingrid_lagrima',.9);
       const q=Math.round(ac.max*.3);ac.hp=Math.min(ac.max,ac.hp+q);pop(ac.x,ac.y-250,'+'+q,'#c9a6ff');await wait(400);tween(e,'glow',0,300);return true;}}
   return false;}
 // ---------- IGNAROK (Cap. 2, Parte C): Erupcao a cada 3 vezes (acerta todos) e a FASE 2 (o coracao exposto) abaixo de metade ----------

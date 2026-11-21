@@ -134,25 +134,27 @@ const EFX_INIM = {
       fxFlash('255,120,30', .2, 320); shake = Math.max(shake, 6); await wait(250); }},
 
   // ---------------- Sombras (Cap. 2, Parte B): o golpe ja vem desenhado no quadro 5 da folha; aqui so o impacto ----------------
+  // cada Sombra tem o proprio som (2026-11-20: 'todos estao iguais'): Oskar = gemido de velho e tambor, Borin = rosnado e bigorna,
+  // Ingrid = lamento com eco, sopa borbulhando e gota
   'Lamento': {
     glow: 750,
-    prep(e) { som('magia_brilho', .3); sfx(140, 1.1, 'sawtooth', .03, .45); fxAnel(e.x + 10, e.y - 90, {raio: 200, ms: 750, esp: 14, cor: COR_ECL2}); },
+    prep(e) { som(e.tipo === 'sombra_borin' ? 'som_borin_lamento' : e.tipo === 'sombra_ingrid' ? 'som_ingrid_lamento' : 'som_oskar_lamento', .85); fxAnel(e.x + 10, e.y - 90, {raio: 200, ms: 750, esp: 14, cor: COR_ECL2}); },
     async cast(e) { const a = alvoHeroi(); for (let i = 0; i < 3; i++) setTimeout(() => fxAnel(e.x + 60 + i * 60, e.y - 90, {raio: 160 + i * 40, ms: 520, esp: 12, cor: COR_ECL}), i * 120);
       await wait(380); fxFlash('60,0,90', .22, 380); fxBrilho(a.x, a.y, {raio: 180, ms: 500, cor: COR_ECL}); shake = Math.max(shake, 5); await wait(200); }},
   'Abraço da Sombra': {
-    hit(e) { som('acolito_vazio', .7); fxFlash('40,0,70', .25, 360); const a = alvoHeroi(); fxFaiscas(a.x, a.y, 22, {cor: COR_ECL2, vel: 300, g: -60, vida: .9}); shake = Math.max(shake, 7); }},
+    hit(e) { som(e.tipo === 'sombra_borin' ? 'som_borin_abraco' : 'som_oskar_abraco', .9); fxFlash('40,0,70', .25, 360); const a = alvoHeroi(); fxFaiscas(a.x, a.y, 22, {cor: COR_ECL2, vel: 300, g: -60, vida: .9}); shake = Math.max(shake, 7); }},
   'Sopa Amarga': {
     glow: 650,
-    prep(e) { som('magia_brilho', .3); fxBrilho(e.x + 40, e.y - 120, {raio: 110, ms: 650, cor: COR_ECL, cresce: true}); },
+    prep(e) { som('som_ingrid_sopa', .85); fxBrilho(e.x + 40, e.y - 120, {raio: 110, ms: 650, cor: COR_ECL, cresce: true}); },
     async cast(e) { const b = {x: e.x + 90, y: e.y - 90}, a = alvoHeroi(); fxProj(b.x, b.y, a.x, a.y, 420, COR_ECL, 22, true); await wait(420);
       fxFlash('90,0,120', .2, 300); fxFaiscas(a.x, a.y, 26, {cor: COR_ECL, vel: 420, g: 500, vida: .8}); shake = Math.max(shake, 5); }},
   'Tambor do Medo': {
     glow: 700,
-    prep(e) { som('impacto', .6); fxBrilho(e.x + 40, e.y - 70, {raio: 120, ms: 700, cor: COR_ECL, cresce: true}); },
-    async cast(e) { for (let i = 0; i < 4; i++) setTimeout(() => { som('impacto', .5); fxAnel(e.x + 80, e.y - 70, {raio: 260 + i * 70, ms: 600, esp: 16, cor: i % 2 ? COR_ECL : COR_ECL2}); }, i * 150);
+    prep(e) { som('som_oskar_tambor', .95); fxBrilho(e.x + 40, e.y - 70, {raio: 120, ms: 700, cor: COR_ECL, cresce: true}); },
+    async cast(e) { for (let i = 0; i < 4; i++) setTimeout(() => { fxAnel(e.x + 80, e.y - 70, {raio: 260 + i * 70, ms: 600, esp: 16, cor: i % 2 ? COR_ECL : COR_ECL2}); }, i * 150);
       await wait(600); fxFlash('70,0,110', .2, 400); shake = Math.max(shake, 8); }},
   'Martelada de Sombra': {
-    hit(e) { som('pedras', .9); fxFlash('60,0,90', .3, 380); shake = Math.max(shake, 14); }},
+    hit(e) { som('som_borin_martelada', 1); fxFlash('60,0,90', .3, 380); shake = Math.max(shake, 14); }},
 
   // ---------------- Acolito do Eclipse ----------------
   'Esfera de Trevas': {
