@@ -145,7 +145,7 @@ function entraTrecho(n, lado) {   // poe o barco na entrada do trecho n (em cima
 function passo(dt) {
   t += dt;
   if (lutando) return;
-  if (troca) { troca.t += dt; if (troca.t >= .45 && !troca.feito) { troca.feito = true; if (AGUAS[troca.para]) entraTrecho(troca.para, troca.entra); } if (troca.t >= .9) troca = null; else { cam.x += 0; return; } }
+  if (troca) { troca.t += dt; if (troca.t >= .5 && !troca.feito) { troca.feito = true; if (AGUAS[troca.para]) { entraTrecho(troca.para, troca.entra); passoEnfeites(0); } } if (troca.t >= 1.3) troca = null; else return; }
   // controle
   let ix = 0, iy = 0;
   if (teclas.arrowleft || teclas.a) ix--; if (teclas.arrowright || teclas.d) ix++;
@@ -448,7 +448,8 @@ function desenha() {
   if (aviso) faixa(aviso.txt, W / 2, H - 46, '#ffe27a');
   if (lutando) { lutando.t += 1 / 60; const k = Math.min(1, lutando.t / .9); ctx.fillStyle = 'rgba(190,230,255,' + (k < .3 ? k / .3 * .7 : .7 * (1 - (k - .3) / .7)) + ')'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(3,6,14,' + Math.max(0, (k - .35) / .65) + ')'; ctx.fillRect(0, 0, W, H); faixa('Algo se mexe embaixo do barco!', W / 2, H / 2, '#ffe27a', Math.min(1, k * 3)); }
-  if (troca) { ctx.fillStyle = 'rgba(3,6,14,' + Math.min(1, troca.t < .45 ? troca.t / .45 : (.9 - troca.t) / .45) + ')'; ctx.fillRect(0, 0, W, H); }
+  if (troca) { const a = troca.t < .5 ? troca.t / .5 : troca.t < .8 ? 1 : (1.3 - troca.t) / .5; ctx.fillStyle = 'rgba(3,6,14,' + Math.min(1, a) + ')'; ctx.fillRect(0, 0, W, H);
+    const nome = ['O rio de gelo', 'O degelo', 'As águas quentes'][troca.para] || ''; if (a > .6) faixa('Rio abaixo… ' + nome, W / 2, H / 2, '#bff4ff', Math.min(1, (a - .6) / .4)); }
   if (t < 7) faixa('Setas / WASD: remar · a correnteza leva rio abaixo · encoste nos troncos para abrir caminho', W / 2, 26, '#bff4ff', Math.min(1, (7 - t) / 1.5));
 }
 function faixa(txt, x, y, cor, al) {
@@ -466,6 +467,10 @@ function frame(agora) {
   requestAnimationFrame(frame);
 }
 window.__rio = { barco, get BOIA() { return BOIA; }, frame, passo, desenha, teclas, agua, cam, entraTrecho, get TR() { return TR; } };
-(function espera() { if (AGUAS.length === R.trechos.length && AGUAS.every(Boolean) && MAPAS.every(m => m.complete) && Object.values(F).every(f => f.i.complete)) {
+let PRONTO = false;
+function preDecodifica() { const c = document.createElement('canvas'); c.width = 64; c.height = 64; const g = c.getContext('2d');
+  return Promise.all([...MAPAS, ...Object.values(F).map(f => f.i)].map(im => (im.decode ? im.decode() : Promise.resolve()).catch(() => {}).then(() => { try { g.drawImage(im, 0, 0, 64, 64); } catch (e) {} }))); }
+(function espera() { if (!PRONTO && AGUAS.length === R.trechos.length && AGUAS.every(Boolean) && MAPAS.every(m => m.complete) && Object.values(F).every(f => f.i.complete)) { PRONTO = true; preDecodifica().then(() => espera()); return; }
+  if (PRONTO && AGUAS.every(Boolean) && MAPAS.every(m => m.complete)) {
   { const G = typeof JOGO === 'object' && JOGO.rio; const n = G && R.trechos[G.trecho] ? G.trecho : 0; montaTrecho(n);
     if (G && R.trechos[G.trecho] && barcoCabe(G.x, G.y, 'baixo')) { barco.x = G.x; barco.y = G.y; } else { barco.x = CONF.inicio[0]; barco.y = CONF.inicio[1]; } cam.x = barco.x; cam.y = barco.y; } document.getElementById('carregando').style.display = 'none'; requestAnimationFrame(frame); } else setTimeout(espera, 80); })();

@@ -64,7 +64,13 @@ const rnd=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const easeOut=p=>1-(1-p)*(1-p), easeIn=p=>p*p, lin=p=>p;
 const tweens=[];
-function tween(o,k,to,ms,ease){return new Promise(res=>{tweens.push({o,k,from:o[k],to,ms,t:0,ease:ease||lin,res});});}
+function tween(o,k,to,ms,ease){
+  // LUTA NO BARCO (so no fundo 'rio'): nenhum heroi sai do convés. Qualquer golpe que avance o heroi (corrida, investida, dança,
+  // cometa...) para na BORDA do barco e nao desce para a fileira do inimigo (2026-11-21: 'varios golpes ainda andaram na agua')
+  if(typeof NO_BARCO==='function'&&NO_BARCO()&&(o===JUX||(typeof BINO!=='undefined'&&o===BINO))){
+    if(k==='lunge'&&to>0)to=Math.min(to,Math.max(0,o.x-BORDA_RIO()));
+    if(k==='ly')to=0;}
+  return new Promise(res=>{tweens.push({o,k,from:o[k],to,ms,t:0,ease:ease||lin,res});});}
 function stepTweens(dt){for(let i=tweens.length-1;i>=0;i--){const w=tweens[i];w.t+=dt*1000;const p=Math.min(1,w.t/w.ms);w.o[w.k]=w.from+(w.to-w.from)*w.ease(p);if(p>=1){tweens.splice(i,1);w.res();}}}
 const wait=ms=>tween({v:0},'v',1,ms);
 
