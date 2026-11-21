@@ -700,7 +700,9 @@ let festaPosto=false;
 function festaPoe(){if(festaPosto||!emFestival())return;festaPosto=true;
   const M={tico,vovo,borin,bacon};for(const a of ANDARILHOS)M[a.id]=a;
   for(const k in FESTA_LUGAR){const L=FESTA_LUGAR[k];const o=M[k];
-    if(o){o.x=L[0];o.y=L[1];o.festa=k;o.anda=false;o.fila=[];o.alvo=null;if(o.ponto){o.ponto.x=o.x;o.ponto.y=o.y-4;}}
+    if(o){o.x=L[0];o.y=L[1];o.festa=k;o.anda=false;o.fila=[];o.alvo=null;if(o.ponto){o.ponto.x=o.x;o.ponto.y=o.y-4;o.ponto.r=44;}
+      // na festa o Tico, a Vovo, o Borin e o porco nao andam (os passos deles nao rodam): o ponto de conversa vai junto para o lugar da festa
+      const P={tico:TICO_PONTO,vovo:VOVO_PONTO,borin:BORIN_PONTO,bacon:PORCO_PONTO}[k];if(P){P.x=o.x;P.y=o.y-4;P.r=44;}}
     else if(k==='bardo'||k==='casal'||(k==='bino'&&JOGO.bino&&JOGO.bino.ativo)){FIGURANTES.push({id:k,x:L[0],y:L[1],festa:k});}}}
 // o desenho de festa de um morador (devolve true se desenhou no lugar do desenho normal)
 function desenhaFesta(o){const k=o.festa;if(!k||!emFestival())return false;const D=FESTA_D[k],I=FESTA_I[k];if(!D||!I.complete)return false;
