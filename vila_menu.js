@@ -445,6 +445,8 @@ function uiClique(x,y){
 
 // ---------- desenho
 // texto que diminui a letra ate caber na largura (2026-11-20: nada mais sai da janela)
+// so os numeros do item na linha do Equipar (a descricao com historia nao cabe; 2026-11-20 ela passava por cima do nome)
+function resumoBonus(d){const p=String(d||'').split(/\.\s+/).map(x=>x.replace(/\.$/,'')).filter(x=>/[+-]\s?\d/.test(x));return p.length?p.join('. ')+'.':d;}
 function textoCabe(s,x,y,size,cor,maxw,al){let t=size;for(;t>9;t--){ctx.font=`bold ${t}px "Trebuchet MS"`;if(ctx.measureText(s).width<=maxw)break;}texto(s,x,y,t,cor,al);}
 function painel(x,y,w,h){ctx.fillStyle='rgba(6,16,40,.94)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();}
 function linhaSel(x,y,w,h,on){if(on&&UI.pisca&&performance.now()<UI.pisca){const k=.5+.5*Math.sin(performance.now()/120);ctx.save();ctx.strokeStyle=`rgba(255,226,122,${.4+.6*k})`;ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(x-3,y-3,w+6,h+6,8);ctx.stroke();ctx.restore();}
@@ -597,7 +599,7 @@ function desenhaMenu(){
     // EQUIPAR (refeito 2026-11-20, pedido: 'parecia que a arma equipada era mais fraca'): ENTER no espaco abre a LISTA do que
     // serve nele; para cada opcao o painel de baixo mostra lado a lado 'agora' e 'com esta' (verde sobe, vermelho desce). ENTER equipa.
     const EQ=equipDe(UI.quem),LH=34,LE=UI.eqLista;SLOTS_EQ.forEach(([s,n],i)=>{const yy=cy+i*LH,id=EQ[s];linhaSel(cx,yy,w-48,LH-4,i===UI.sel);texto(n,cx+24,yy+21,15,LE&&i===UI.sel?'#ffe27a':'#9fe8ff');
-      if(id){iconeItem(ctx,id,cx+150,yy+3,24);texto(ITENS[id].nome,cx+190,yy+22,16,'#fff');if(ITENS[id]&&!LE)texto(ITENS[id].desc,cx+w-90,yy+21,13,'#7dffa8','right');}
+      if(id){iconeItem(ctx,id,cx+150,yy+3,24);texto(ITENS[id].nome,cx+190,yy+22,16,'#fff');if(ITENS[id]&&!LE){ctx.font='bold 16px "Trebuchet MS"';const fimNome=cx+190+ctx.measureText(ITENS[id].nome).width+18;textoCabe(resumoBonus(ITENS[id].desc),cx+w-90,yy+21,13,'#7dffa8',cx+w-90-fimNome,'right');}}
       else texto(s==='arma'?nomeArmaDe(UI.quem)+' (arma de base)':'— vazio —',cx+190,yy+22,15,'#7a8aa8');
       if(!LE){texto('ENTER',cx+w-56,yy+21,11,'rgba(255,255,255,.4)','right');ZONAS.push([cx,yy,cx+w-48,yy+LH-2,()=>{UI.sel=i;abreEqLista();}]);}});
     const q=UI.quem||'jux',agora=statusDe(q),sl=(SLOTS_EQ[UI.sel]||SLOTS_EQ[0])[0],cur=EQ[sl]||null;

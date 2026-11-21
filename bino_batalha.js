@@ -98,6 +98,8 @@ function autoEscolheBino() {
   if (hp < .35 && tem('b_sangue')) return {kind: 'b_sangue'};
   if (hp < .4 && itemList().some(o => o.id === 'pocao')) return {kind: 'item_pocao'};
   if (!(hero.muralha > 0) && !temEst(hero, 'provocar') && vivos.length > 1 && tem('b_provocar') && Math.random() < .35) return {kind: 'b_provocar'};
+  // poder do Eco equipado no Bino: a cada 3 vezes (autoEcoGolpe, index.html)
+  {const hl = habBinoLista(), k = autoEcoGolpe(hl, i => binoHabEnabled(i), alvo, vivos, reserva); if (k) return k;}
   if (vivos.length > 1) for (const id of ['b_queda', 'b_giratoria', 'b_onda']) if (tem(id) && hero.mp - custo(id) >= reserva) return {kind: id};
   for (const id of ['b_esmaga', 'b_ariete', 'b_quebra', 'b_marreta']) if (tem(id) && hero.mp - custo(id) >= reserva) return {kind: id, alvo};
   return {kind: 'b_atq', alvo};

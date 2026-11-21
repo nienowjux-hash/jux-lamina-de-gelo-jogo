@@ -50,7 +50,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
-<script src="bino_batalha.js?v=1795225500"></script>
+<script src="bino_batalha.js?v=1795246000"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -1722,8 +1722,24 @@ function drawHUD(c,t){
       const col=!en?'#6f7aa8':(i===4&&menu.level==='main'?'#ffe27a':menu.level==='alvo'?'#ffd0a0':'#fff');
       txt(c,n,r.x+26,r.y+20,size,col);
       if(i===menu.idx){const bx=Math.sin(t*10)*3;c.fillStyle='#fff';c.beginPath();c.moveTo(r.x+6+bx,r.y+8);c.lineTo(r.x+18+bx,r.y+14);c.lineTo(r.x+6+bx,r.y+20);c.fill();}});
+    desenhaDescMenu(c);
   }
 }
+// DESCRICAO do que esta selecionado no menu (pedido 2026-11-20: 'o jogador pode esquecer o que a habilidade faz'): caixa embaixo do menu
+const DESC_MAIN={Atacar:'Golpe com a arma em um inimigo. Enche a Ressonância.',Magia:'As habilidades do Jux e as do Eco equipado. Gastam MP.',Habilidades:'Os golpes especiais do Bino e as do Eco equipado. Gastam MP.',
+  Itens:'Usar um item da bolsa: poções, éter, remédios.',Defender:'Se protege: recebe metade do dano até a próxima vez e enche um pouco a Ressonância.',
+  'Ressonância':'Com a barra cheia: o golpe mais forte do Jux.',Fugir:'Tenta escapar da luta. Não funciona contra chefes.'};
+function descMenuAtual(){try{const i=menu.idx;
+  if(menu.level==='main'){const n=mainLista()[i];return DESC_MAIN[n]||null;}
+  if(menu.level==='item'){const o=itemList()[i];if(!o||o.id==='voltar')return null;const it=typeof ITENS==='object'&&ITENS[o.id];return it&&it.desc||null;}
+  if(menu.level==='res'){const r=resList()[i];const h=r&&HABILIDADES.find(x=>x.id===r.id);return h&&h.desc||null;}
+  if(menu.level==='magic'){const l=hero.quem==='bino'?habBinoLista():magicList(),h=l[i];if(!h||h.id==='voltar')return null;
+    const d=h.hab&&typeof HABS==='object'&&HABS[h.hab]?HABS[h.hab].desc:h.desc;if(!d)return null;
+    return h.nivel>nvAtor()?d+' (aprende no nível '+h.nivel+')':h.mp?d+' Custa '+h.mp+' MP.':d;}}catch(e){}return null;}
+function desenhaDescMenu(c){if(!menu.open||menu.level==='alvo')return;const d=descMenuAtual();if(!d)return;
+  const n=menu.level==='main'?mainLista().length:menuLen(),y=64+18+Math.min(VIS,n)*28+8,w=320,x=630;
+  c.font='bold 14px "Trebuchet MS"';const lin=[];let at='';for(const p of d.split(' ')){const t2=at?at+' '+p:p;if(c.measureText(t2).width>w-24&&at){lin.push(at);at=p;}else at=t2;}if(at)lin.push(at);
+  painel(c,x,y,w,14+lin.length*19);lin.forEach((l,k)=>txt(c,l,x+12,y+22+k*19,14,'#cfe6ff'));}
 // etiqueta sobre cada inimigo (tela): letra, nome, vida e estado
 function etiquetas(c,t){
   const escolhendo=menu.open&&menu.level==='alvo',vivos=inimigos();
@@ -2040,6 +2056,14 @@ function trocaAuto(){const i=AUTO_ESTILOS.indexOf(G.auto);G.auto=AUTO_ESTILOS[(i
   som('ui_ok',.5);banner(G.auto?'AUTO: '+AUTO_NOME[G.auto]:'AUTO desligado');}
 function trocaVel(){G.vel=G.vel===2?1:2;try{localStorage.setItem('jux_vel',G.vel===2?'2':'1');}catch(e){}som('ui_ok',.5);banner('Velocidade '+G.vel+'×');}
 // escolhe a ação: devolve {kind, alvo}
+// golpe do Eco no AUTO (Jux e Bino): conta as vezes desde o ultimo; na 3a usa o golpe do Eco mais forte que da para pagar
+const sobraMP=C=>hero.mmax*((C&&C.reservaMP)||.15);
+function autoEcoGolpe(lista,ok,alvo,vivos,sobra){hero.autoEcoN=(hero.autoEcoN||0)+1;if(hero.autoEcoN<3)return null;
+  let melhor=null,nota=0;
+  for(let i=0;i<lista.length;i++){const h=lista[i];if(!h.eco||!ok(i))continue;const H=HABS[h.hab];if(!H||!H.poder)continue;if(hero.mp-(h.mp||0)<sobra)continue;
+    const alvos=H.alvo==='todos'?vivos:[alvo],r=alvos.reduce((q,e)=>q+reacao(e.tipo,H.el,H.t),0)/alvos.length;if(r<=0)continue;
+    const n=H.poder.reduce((q,v)=>q+v,0)*r*alvos.length;if(n>nota){nota=n;melhor={kind:h.id,alvo};}}
+  if(melhor)hero.autoEcoN=0;return melhor;}
 function autoEscolhe(){const C=AUTO_CFG[G.auto]||AUTO_CFG.equilibrado,vivos=inimigos(),hp=hero.hp/hero.max,mp=hero.mp/Math.max(1,hero.mmax);
   const ml=magicList(),pode=id=>{const i=ml.findIndex(h=>h.id===id);return i>=0&&magicEnabled(i);};
   const il=itemList(),temItem=id=>il.some((o,i)=>o.id===id&&itemEnabled(i));
@@ -2059,6 +2083,9 @@ function autoEscolhe(){const C=AUTO_CFG[G.auto]||AUTO_CFG.equilibrado,vivos=inim
   if(!G.autoBuff&&G.auto!=='seguro'&&pode('aurora_b')&&!temEst(hero,'aurora')){G.autoBuff=true;return {kind:'aurora_b'};}
   if(!G.autoBuff&&pode('hab_'+C.buff)){G.autoBuff=true;return {kind:'hab_'+C.buff};}
   if(G.auto==='seguro'&&hp<.7&&hero.escudo<=0&&pode('escudo'))return {kind:'escudo'};
+  // 5b) PODER DO ECO (2026-11-20: 'no AUTO nao usam os poderes do Eco'): o golpe do Eco era sempre mais fraco que as magias e nunca
+  // era escolhido. Agora, a cada 3 vezes, o AUTO usa o golpe do Eco equipado (o mais forte que o MP paga), se o inimigo nao absorver
+  {const k=autoEcoGolpe(ml,magicEnabled,alvo,vivos,sobraMP(C));if(k)return k;}
   // 6) melhor golpe: magia/habilidade no elemento fraco, nunca no que o inimigo absorve
   let melhor=null,nota=0;const sobra=hero.mmax*C.reservaMP;
   for(let i=0;i<ml.length;i++){const h=ml[i];if(h.id==='voltar'||!magicEnabled(i)||hero.mp-(h.mp||0)<sobra&&!(h.mp===0))continue;
