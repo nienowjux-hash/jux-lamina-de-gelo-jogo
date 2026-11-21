@@ -101,12 +101,12 @@ const TIPOS_INIMIGO={
     golpes:[{nome:'Rasante',t:'f',poder:24,peso:3},{nome:'Sugar Energia',t:'m',el:'trevas',poder:14,peso:2,sugaMp:true}],
     drops:[['eter',.3]]},
   // ---- Capitulo 3, Parte A: a Serpente do Degelo, chefe do rio (FICHA_CAP3_RIO.md). Fase 1: as placas de gelo resistem ao gelo;
-  // abaixo da metade o gelo DERRETE na agua quente (serpente_f2): mais rapida e forte, mas o gelo do Jux passa a doer. Onda (todos) e a troca de fase ficam no index.html.
+  // abaixo da metade o gelo DERRETE na agua quente (serpente_f2): mais rapida e forte, mas PERDE a resistencia ao gelo (dano normal, nao fraqueza: ela e de gelo). Onda (todos) e a troca de fase ficam no index.html.
   serpente:{nome:'Serpente do Degelo',el:'agua',reacao:{gelo:.5,agua:.3,fogo:1.4,terra:1.4},fisico:1,magico:1,quebra:380,hp:2.2,exp:4,gil:2,vel:1.1,imuneEst:['sono','atordoado'],
     atk:n=>29+2*(n-1),atkm:n=>28+2*(n-1),def:n=>18+1.5*(n-1),defm:n=>15+1.3*(n-1),
     golpes:[{nome:'Bote',t:'f',poder:44,peso:5},{nome:'Constrição',t:'f',poder:30,peso:3,est:['atordoado',1,.5]}],
     drops:[['hipocao',1],['eter',.6],['fenix',.3,1]]},
-  serpente_f2:{nome:'Serpente do Degelo',el:'agua',reacao:{gelo:1.5,agua:.3,fogo:1.4,terra:1.4},fisico:1.2,magico:1.2,quebra:300,hp:2.2,exp:4,gil:2,vel:1.35,imuneEst:['sono','atordoado'],
+  serpente_f2:{nome:'Serpente do Degelo',el:'agua',reacao:{gelo:1,agua:.3,fogo:1.4,terra:1.4},fisico:1.2,magico:1.2,quebra:300,hp:2.2,exp:4,gil:2,vel:1.35,imuneEst:['sono','atordoado'],
     atk:n=>29+2*(n-1),atkm:n=>28+2*(n-1),def:n=>14+1.2*(n-1),defm:n=>12+1*(n-1),
     golpes:[{nome:'Bote',t:'f',poder:46,peso:5},{nome:'Constrição',t:'f',poder:32,peso:3,est:['atordoado',1,.5]}],
     drops:[['hipocao',1],['eter',.6],['fenix',.3,1]]},

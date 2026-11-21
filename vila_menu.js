@@ -60,7 +60,7 @@ function seletorGrupo(cx,cy){const g=grupoMenu();if(!g.includes(UI.quem))UI.quem
   g.forEach((q,i)=>{const bx=cx+100+i*120,on=q===UI.quem;ctx.fillStyle=on?COR_GRUPO[q]:'rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(bx,cy,110,28,7);ctx.fill();
     texto(NOME_GRUPO[q]||q,bx+55,cy+20,16,'#fff','center');ZONAS.push([bx,cy,bx+110,cy+28,()=>{if(UI.quem!==q){UI.quem=q;UI.sel=0;som(SOM.ui_mover,.4);}}]);});
   if(g.length>1)texto('Q: troca de personagem',cx+110+g.length*120,cy+20,12,'#8fa6cc');}
-function uiAberto(){return UI.menu||!!UI.loja||!!UI.escolha;}
+function uiAberto(){return UI.menu||!!UI.loja||!!UI.escolha||!!UI.saves;}
 function aviso(txt,cor){UI.avisos.push({txt,cor:cor||'#ffe27a',v:0});}
 function pegou(id){return JOGO.pegos.includes(id);}
 
@@ -224,7 +224,7 @@ function equipaEscolha(){const s=SLOTS_EQ[UI.sel][0],E=equipDe(UI.quem),cur=E[s]
 function assisteFilme(k){const f=FILMES[k];if(!f||!filmeVisto(f)){som(SOM.ui_mover,.4);aviso('Você ainda não viu esta cutscene','#ff9a9a');return;}UI.cines=null;fecha();reverFilme(f.id);}
 function trocaSlot(s,dir){const E=equipDe(UI.quem),ops=opcoesSlot(s),cur=E[s]||null,i=ops.indexOf(cur),nx=ops[(i+dir+ops.length)%ops.length];
   if(nx===cur)return;if(cur)daItem(cur);if(nx)tiraItem(nx);E[s]=nx;som(SOM.ui_mover,.5);salvaJogo();}
-const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Dicas do tutorial','Controles do teclado','Rever cutscenes','Salvar agora','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
+const SALVAR_OPS=['Volume da música','Volume dos efeitos','Volume das vozes','Velocidade do texto','Tremor da tela','Dicas do tutorial','Controles do teclado','Rever cutscenes','Salvar (escolher o espaço)','Carregar um espaço','Capítulos (voltar a um ponto)','Exportar o save (arquivo)','Importar um save (arquivo)','Novo jogo (apaga o progresso)'];
 // SAVE EM ARQUIVO (2026-11-19): leva o progresso para outro navegador/computador (o save fica no navegador, separado por site)
 function exportaSave(){salvaVila();const d={jogo:'jux-lamina-de-gelo',v:1,quando:new Date().toISOString(),dados:{}};
   for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('jux_')&&k!=='jux_pag_viva'&&k!=='jux_encontro')d.dados[k]=localStorage.getItem(k);}
@@ -248,8 +248,9 @@ function acaoSalvar(i,dir){
   if(i===6){UI.controles=!UI.controles;UI.cines=null;som(SOM.ui_vez,.5);return;}
   if(i===7){UI.cines={sel:0};UI.controles=false;som(SOM.ui_vez,.5);return;}
   if(i>7)i-=5;
-  if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}
-  else if(i===1)exportaSave();else if(i===2)importaSave();
+  if(i<3){mudaVol(VOL_OPS[i],VOL[VOL_OPS[i]]+.1*(dir||1)>1.001&&!dir?0:VOL[VOL_OPS[i]]+.1*(dir||1));som(SOM.ui_mover,.6);return;}i-=3;if(i===0){if(typeof abreSaves==='function')abreSaves('salvar');else{salvaVila();UI.msgSalvo=2;som(SOM.ui_vez,.6);aviso('Jogo salvo!','#7dffa8');}}
+  else if(i===1){if(typeof abreSaves==='function')abreSaves('carregar');}else if(i===2){if(typeof abreSaves==='function')abreSaves('caps');}
+  else if(i===3)exportaSave();else if(i===4)importaSave();
   else if(UI.confirmaNovo){novoJogo();location.reload();}else{UI.confirmaNovo=true;aviso('Toque de novo para confirmar','#ff9a9a');som(SOM.ui_mover,.5);}}
 
 // ---------- Ecos
@@ -423,6 +424,7 @@ function ativa(i){
 function abreMenu(){if(ab.on||fala||(typeof transicao!=='undefined'&&transicao))return;UI.menu=!UI.menu;UI.home=true;UI.aba=0;UI.sel=0;UI.confirmaNovo=false;som(UI.menu?SOM.ui_vez:SOM.ui_mover,.5);}
 function fecha(){UI.menu=false;UI.loja=null;UI.escolha=null;som(SOM.ui_mover,.45);}
 function uiTecla(k){
+  if(UI.saves&&typeof teclaSaves==='function'){teclaSaves(k);return true;}   // Salvar / Carregar / Capitulos (saves.js)
   if(typeof transicao!=='undefined'&&transicao)return true;   // luta comecando: ignora teclas (nao abre menu sem querer)
   if(!uiAberto()){if(k==='m'||k==='i'||k==='escape'||k==='tab'){abreMenu();return true;}return false;}
   if(UI.loja&&UI.loja.qtd){if(k==='arrowright'||k==='d')mudaQtd(1);else if(k==='arrowleft'||k==='a')mudaQtd(-1);else if(k==='arrowup'||k==='w')mudaQtd(10);else if(k==='arrowdown'||k==='s')mudaQtd(-10);
@@ -455,6 +457,7 @@ function uiTecla(k){
 // areas clicaveis montadas no desenho
 let ZONAS=[];
 function uiClique(x,y){
+  if(UI.saves&&typeof cliqueSaves==='function'){cliqueSaves(x,y);return true;}
   if(typeof transicao!=='undefined'&&transicao)return true;
   if(!uiAberto()){if(x>W-118&&x<W-10&&y>46&&y<76){abreMenu();return true;}return false;}
   for(const z of ZONAS)if(x>=z[0]&&x<=z[2]&&y>=z[1]&&y<=z[3]){z[4]();return true;}
@@ -481,6 +484,7 @@ function uiDesenha(){
   if(UI.escolha)desenhaEscolha();
   if(UI.loja)desenhaLoja();
   if(UI.menu)desenhaMenu();
+  if(UI.saves&&typeof desenhaSaves==='function')desenhaSaves();
   ctx.restore();
 }
 function desenhaEscolha(){const e=UI.escolha;

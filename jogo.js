@@ -170,7 +170,8 @@ function encheVida(q){if(!JOGO.vida)return;if(q)delete JOGO.vida[q];else JOGO.vi
 function vidaAtual(q){const s=q==='bino'?(typeof statusBino==='function'&&JOGO.bino?statusBino(JOGO.bino.nivel):{hp:400,mp:40}):statusJux(),v=(JOGO.vida||{})[q];
   return v?{hp:Math.min(v.hp,s.hp),mp:Math.min(v.mp,s.mp),max:s.hp,mmax:s.mp}:{hp:s.hp,mp:s.mp,max:s.hp,mmax:s.mp};}
 function salvaJogo(){if(window.LAB_FIXO||window.__importou||window.__semSalvar)return;   // __semSalvar: modo de teste de cena (ex.: vila.html#preparativos)
-try{localStorage.setItem(SAVE_J,JSON.stringify(JOGO));localStorage.setItem('jux_progresso',JSON.stringify({nivel:JOGO.nivel,exp:JOGO.exp}));}catch(e){}}
+try{localStorage.setItem(SAVE_J,JSON.stringify(JOGO));localStorage.setItem('jux_progresso',JSON.stringify({nivel:JOGO.nivel,exp:JOGO.exp}));}catch(e){}
+  if(typeof marcaPontos==='function')marcaPontos();}   // as fotos dos pontos da historia (saves.js)
 function temSave(){try{return !!localStorage.getItem(SAVE_J);}catch(e){return false;}}
 function novoJogo(){try{localStorage.removeItem(SAVE_J);localStorage.removeItem('jux_progresso');localStorage.removeItem('jux_abertura_vista');}catch(e){}}
 const qtd=id=>JOGO.inv[id]||0;

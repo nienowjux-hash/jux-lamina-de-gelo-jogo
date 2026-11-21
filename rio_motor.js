@@ -32,11 +32,22 @@ const livreB = (x, y) => agua(x, y) && !FIXOS.some(o => ((x - o.x) / o.r) ** 2 +
 const barcoCabe = (x, y, d) => CASCO[forma(d || barco.dir)].every(([dx, dy]) => livreB(x + dx, y + dy));
 
 // ---------- correnteza: rio abaixo, seguindo o meio do rio; forte no meio, fraca na beira ----------
+// a agua em volta de (x,y) na mesma linha: [esquerda, direita] do canal onde o barco esta (2026-11-21: no canal estreito
+// do trecho 3 a correnteza seguia o OUTRO canal e empurrava o barco contra as pedras)
+function vao(x, y) { if (!agua(x, y)) return null; let a = x, b = x; while (a > x - 420 && agua(a - 2, y)) a -= 2; while (b < x + 420 && agua(b + 2, y)) b += 2; return [a, b]; }
 function corrente(x, y) {
   const L = R.trechos[TR].linha, i = cl(Math.round(y / R.passo), 1, L.length - 2), mid = L[i];
+  const v0 = vao(x, y), v1 = vao(x, y - 16), v2 = vao(x, y + 16);
+  if (v0 && v1 && v2 && Math.abs((v0[0] + v0[1]) / 2 - mid) > 60) {   // fora do canal principal: segue o canal em que esta
+    const m0 = (v0[0] + v0[1]) / 2, larg = v0[1] - v0[0];
+    let tx = ((v2[0] + v2[1]) / 2 - (v1[0] + v1[1]) / 2) / 32, ty = 1; const n = Math.hypot(tx, ty); tx /= n; ty /= n;
+    const f = 26, centro = larg < 240 ? cl((m0 - x) * .9, -40, 40) : 0;   // canal estreito: puxa de leve para o meio dele
+    return [tx * f + centro, ty * f];
+  }
   let tx = (L[i + 1] - L[i - 1]) / (2 * R.passo), ty = 1; const n = Math.hypot(tx, ty); tx /= n; ty /= n;
   const f = 14 + 34 * Math.max(0, 1 - Math.abs(x - mid) / 300);
-  return [tx * f, ty * f];
+  const centro = v0 && v0[1] - v0[0] < 240 ? cl(((v0[0] + v0[1]) / 2 - x) * .9, -40, 40) : 0;
+  return [tx * f + centro, ty * f];
 }
 
 // ---------- sons (livres: assets/musica/CREDITOS.txt) ----------
@@ -122,6 +133,10 @@ const cabeObj = (o, x, y) => { if (o.t !== 'tronco') { for (let k = 0; k < 10; k
 // ---------- efeitos ----------
 const FX = [];   // {lin, x, y, t, dur, esc, ang, al}
 const fx = (lin, x, y, dur, esc, ang, al) => FX.push({ lin, x, y, t: 0, dur, esc: esc || 1, ang: ang || 0, al: al == null ? 1 : al });
+const CORR = []; for (let k = 0; k < 9; k++) CORR.push({ x: 0, y: 0, t: rnd(0, 2), vida: 0 });   // a correnteza (A2)
+const BOLHAS = []; for (let k = 0; k < 11; k++) BOLHAS.push({ x: 0, y: 0, t: rnd(0, 1.5), vida: 0 });   // A6: bolhas fervendo (so no trecho 3)
+let bolhaSom = 0;
+const ONDAS = []; for (let k = 0; k < 26; k++) ONDAS.push({ x: 0, y: 0, t: rnd(0, 3), vida: 0 });   // a agua viva (A1)
 const BRILHO = []; for (let k = 0; k < 7; k++) BRILHO.push({ x: 0, y: 0, t: rnd(0, 1), dur: rnd(.8, 1.3) });
 const PEIXE = []; let peixeT = 2;
 const AVES = []; let avesT = 6;
@@ -251,7 +266,7 @@ function desenhaEscolhaR() { if (!escolha) return; ctx.save(); ctx.fillStyle = '
 
 // ---------- passo ----------
 let t = 0, fimAvisado = false, troca = null;
-function guardaRio() { if (typeof JOGO !== 'object') return; JOGO.rio = { trecho: TR, x: Math.round(barco.x), y: Math.round(barco.y) }; salvaJogo(); }
+function guardaRio() { if (typeof JOGO !== 'object') return; JOGO.rio = { trecho: TR, x: Math.round(barco.x), y: Math.round(barco.y) }; JOGO.local = 'rio'; salvaJogo(); }
 function entraTrecho(n, lado, xAntes, vAntes) {   // poe o barco na entrada do trecho n (em cima ou embaixo): perto do x em que ele saiu
   montaTrecho(n); const y = lado === 'cima' ? 70 : R.h - 92, meio = R.trechos[n].linha[Math.round(y / R.passo)], alvo = xAntes == null ? meio : xAntes * .5 + meio * .5;
   let melhor = null; for (let x = 0; x < R.w; x += 6) { const d = Math.abs(x - alvo); if (barcoCabe(x, y, 'baixo') && (!melhor || d < melhor[1])) melhor = [x, d]; }
@@ -372,6 +387,18 @@ function passo(dt) {
       for (const lado of [-1, 1]) { const e = lado_ ? rnd(8, 20) : rnd(30, 40); FX.push({ lin: 3, x: bx + lx * lado * e, y: by + ly * lado * e, t: 0, dur: rnd(.9, 1.3), esc: rnd(.26, .36), ang: 0, al: Math.min(.95, sp / 115), some: true, vx: lx * lado * 14 - Math.cos(a) * 8, vy: ly * lado * 14 - Math.sin(a) * 5 }); } } }
   // esteira, brilhos, peixes, raposa, passaros
   for (const e of FX) { e.t += dt; if (e.vx) { e.x += e.vx * dt; e.y += e.vy * dt; } } for (let i = FX.length - 1; i >= 0; i--) if (FX[i].t >= FX[i].dur) FX.splice(i, 1);
+  // AGUA VIVA A1 (ref/rio/agua_ondas.png): ondinhas com brilho espalhadas pela agua visivel; cada uma nasce, anda com a
+  // correnteza por ~2 voltas da animacao e some (aparecendo de novo em outro lugar). Mais delas onde a agua e larga.
+  // A2: riscos de correnteza: nascem onde a agua corre mais (canais estreitos e o meio do rio), viram para o lado da correnteza
+  for (const o of CORR) { o.t += dt; if (o.t >= o.vida || !o.x) { let best = null, bf = 0;
+      for (let k = 0; k < 6; k++) { const p = pontoAgua(40); if (!p) continue; const [cx, cy] = corrente(p[0], p[1]), f = Math.hypot(cx, cy) * (0.7 + Math.random() * .6); if (f > bf) { bf = f; best = p; } }
+      if (best) { o.x = best[0]; o.y = best[1]; o.t = 0; o.vida = rnd(1.3, 2.2); o.esc = rnd(.8, 1.15); o.flip = Math.random() < .5; o.forca = bf; } else o.t = 0; continue; }
+    const [cx, cy] = corrente(o.x, o.y); o.ang = Math.atan2(-cx, cy); o.x += cx * .9 * dt; o.y += cy * .9 * dt; }
+  if (TR === 2) for (const o of BOLHAS) { o.t += dt; if (o.t >= o.vida || !o.x) { const p = pontoAgua(50); if (p) { o.x = p[0]; o.y = p[1]; o.t = 0; o.espera = rnd(0, 1.2); o.vida = o.espera + rnd(1.2, 1.6); o.esc = rnd(.75, 1.2); o.flip = Math.random() < .5; } else o.t = 0; continue; }
+    if (o.t > o.espera && !o.som && Math.hypot(o.x - barco.x, o.y - barco.y) < 320 && t - bolhaSom > 1.4) { o.som = true; bolhaSom = t; som('novos/sapo_borbulha', .12, true); }
+    if (o.t <= dt) o.som = false; }
+  for (const o of ONDAS) { o.t += dt; if (o.t >= o.vida || !o.x) { const p = pontoAgua(0); if (p) { o.x = p[0]; o.y = p[1]; o.t = 0; o.vida = rnd(2.2, 3.6); o.esc = rnd(.75, 1.25); o.q0 = Math.floor(rnd(0, 8)); o.flip = Math.random() < .5; } else o.t = 0; continue; }
+    const [cx, cy] = corrente(o.x, o.y); o.x += cx * .35 * dt; o.y += cy * .35 * dt; }
   for (const b of BRILHO) { b.t += dt / b.dur; if (b.t >= 1 || !b.x) { b.t = 0; b.dur = rnd(.8, 1.4); const p = pontoAgua(60); if (p) { b.x = p[0]; b.y = p[1]; } } }
   peixeT -= dt; if (peixeT <= 0) { peixeT = rnd(1.4, 3.6); const p = pontoAgua(130); if (p) PEIXE.push({ x: p[0], y: p[1], t: 0, tipo: CONF.peixes[(Math.random() * CONF.peixes.length) | 0], flip: Math.random() < .5 }); }
   for (let i = PEIXE.length - 1; i >= 0; i--) { const p = PEIXE[i]; const q0 = Math.floor(p.t / .11); p.t += dt; const q = Math.floor(p.t / .11);
@@ -552,6 +579,38 @@ function quadro(f, lin, q, x, y, esc, flip, al, ang) {   // desenha o quadro (li
   ctx.save(); ctx.translate(sx, sy); if (ang) ctx.rotate(ang); if (flip) ctx.scale(-1, 1); if (al != null) ctx.globalAlpha = al;
   ctx.drawImage(f.i, q * f.fw, lin * f.fh, f.fw, f.fh, -w / 2, -h / 2, w, h); ctx.restore();
 }
+// A3: os pontos de ESPUMA de cada trecho: agua com terra logo ACIMA (o pe de uma pedra, de uma ilha ou da margem, do lado
+// de baixo, que e o que aparece no angulo do mapa). Achados na mascara da agua, um a cada ~40 px de beira.
+const ESPUMAS = [];
+function espumasDe(n) { if (ESPUMAS[n]) return ESPUMAS[n]; const A = AGUAS[n]; if (!A) return [];
+  const ag = (x, y) => x >= 0 && y >= 0 && x < R.w && y < R.h && A[y * R.w + x], r = [];
+  for (let y = 40; y < R.h - 20; y += 10) for (let x = 20; x < R.w - 20; x += 10)
+    if (ag(x, y) && ag(x, y + 10) && !ag(x, y - 12) && !ag(x, y - 22) && ag(x - 12, y) && ag(x + 12, y) && !r.some(p => Math.abs(p.x - x) < 40 && Math.abs(p.y - y) < 24))
+      r.push({ x, y: y + 2, f: Math.random() * 8, v: rnd(5, 8), e: rnd(.8, 1.15), flip: Math.random() < .5 });
+  return ESPUMAS[n] = r; }
+// A4: VAPOR no trecho 3: em cima das colunas de vapor pintadas no mapa (achadas pela cor), das 3 pocas termais das margens
+// e de alguns pontos da agua quente. [x, y da base, escala]
+const VAPORES = { 2: [[1161, 555, 1.1], [608, 240, 1.1], [563, 448, 1], [924, 176, .9], [452, 602, .9], [178, 400, 1.2], [1195, 282, 1.2], [200, 1030, 1.1],
+  [700, 560, .8], [1000, 640, .75], [480, 700, .8], [650, 700, .75], [1080, 420, .7]].map(([x, y, e], i) => ({ x, y, e, f: i * 1.7, v: rnd(4.5, 6.5), flip: i % 2 === 1 })) };
+// A5: as 3 POCAS TERMAIS do trecho 3 (achadas pela cor turquesa no mapa): [x, y, largura]
+const POCAS = { 2: [[1181, 298, 81], [167, 416, 81], [188, 1044, 68]].map(([x, y, w], i) => ({ x, y, e: w / 82, f: i * 2.3 })) };
+// A7: CORREDEIRAS na entrada de cada trecho: a primeira faixa de agua la em cima (no trecho 1, logo abaixo da ponte),
+// coberta de ponta a ponta por corredeiras lado a lado, em 2 fileiras (a de cima mais forte)
+const CORREDEIRAS = [];
+function corredeirasDe(n) { if (CORREDEIRAS[n]) return CORREDEIRAS[n]; const A = AGUAS[n], fc = F.corredeira; if (!A || !fc) return [];
+  const ag = (x, y) => x >= 0 && y >= 0 && x < R.w && y < R.h && A[y * R.w + x], r = [], larg = fc.fw * .62;
+  let y0 = n === 0 ? 256 : 14; while (y0 < 200 + (n === 0 ? 256 : 0)) { let tem = 0; for (let x = 0; x < R.w; x += 8) if (ag(x, y0)) tem++; if (tem > 6) break; y0 += 4; }
+  [[y0 + 16, 1, .95], [y0 + 46, .8, .6]].forEach(([y, e, al], fila) => { let x = 0;
+    while (x < R.w) { if (!ag(x, y)) { x += 6; continue; } let b = x; while (b < R.w && ag(b + 6, y)) b += 6;
+      const nPecas = Math.max(1, Math.round((b - x) / larg)); for (let k = 0; k < nPecas; k++) r.push({ x: x + (k + .5) * (b - x) / nPecas, y, e: e * Math.min(1.15, (b - x) / nPecas / larg), al, f: Math.random() * 8, flip: (k + fila) % 2 === 1 });
+      x = b + 6; } });
+  return CORREDEIRAS[n] = r; }
+const TERRAS = [];   // por trecho: o mapa so com a terra (a agua fica transparente), feito uma vez quando o mapa e a mascara carregam
+function terraDe(n) { if (TERRAS[n] !== undefined) return TERRAS[n]; const M = MAPAS[n], A = AGUAS[n]; if (!M || !M.complete || !A) return null;
+  const c = document.createElement('canvas'); c.width = R.w; c.height = R.h; const g = c.getContext('2d'); g.drawImage(M, 0, 0, R.w, R.h);
+  const im = g.getImageData(0, 0, R.w, R.h), d = im.data; for (let i = 0; i < A.length; i++) if (A[i]) d[i * 4 + 3] = 0; g.putImageData(im, 0, 0);
+  return TERRAS[n] = c; }
+setTimeout(function preparaTerras() { let falta = false; for (let n = 0; n < R.trechos.length; n++) if (!TERRAS[n] && !terraDe(n)) falta = true; if (falta) setTimeout(preparaTerras, 500); }, 1500);
 function desenha() {
   ctx.fillStyle = '#081224'; ctx.fillRect(0, 0, W, H);
   { const M = MAPAS[TR]; if (M.complete) { const [x0, y0] = tela(0, 0); ctx.drawImage(M, x0, y0, R.w * Z, R.h * Z); } }
@@ -559,6 +618,14 @@ function desenha() {
   // brilhos na agua
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const b of BRILHO) if (b.x) quadro(F.fx, 4, Math.min(5, Math.floor(b.t * 6)), b.x, b.y, .5, false, .8);
+  if (F.poca) for (const p of POCAS[TR] || []) if (naTela(p.x, p.y, 60)) { const q = Math.floor(p.f + t * 5) % 8; quadro(F.poca, q >> 2, q & 3, p.x, p.y + 2, p.e, false, .75); }
+  if (F.corredeira) for (const p of corredeirasDe(TR)) if (naTela(p.x, p.y, 120)) { const q = Math.floor(p.f + t * 7) % 8; quadro(F.corredeira, q >> 2, q & 3, p.x, p.y, p.e, p.flip, p.al); }
+  if (F.espuma) for (const p of espumasDe(TR)) if (naTela(p.x, p.y, 60)) { const q = Math.floor(p.f + t * p.v) % 8; quadro(F.espuma, q >> 2, q & 3, p.x, p.y, p.e, p.flip, .8); }
+  if (F.bolhas && TR === 2) for (const o of BOLHAS) if (o.x && o.t > o.espera) { const k = (o.t - o.espera) / (o.vida - o.espera || 1), q = Math.min(7, Math.floor(k * 8)); quadro(F.bolhas, q >> 2, q & 3, o.x, o.y, o.esc, o.flip, .9); }
+  if (F.corrente) for (const o of CORR) if (o.x) { const k = o.t / o.vida, al = Math.min(1, k * 5, (1 - k) * 4) * Math.min(.9, .35 + (o.forca || 0) / 70), q = Math.min(7, Math.floor(k * 8));
+    quadro(F.corrente, q >> 2, q & 3, o.x, o.y, o.esc, o.flip, al, o.ang || 0); }
+  if (F.ondas) for (const o of ONDAS) if (o.x) { const k = o.t / o.vida, al = Math.min(1, k * 4, (1 - k) * 4) * .85;
+    const q = (o.q0 + Math.floor(o.t * 6)) % 8; quadro(F.ondas, q >> 2, q & 3, o.x, o.y, o.esc, o.flip, al); }
   ctx.restore();
   // a esteira (espuma da popa) vem embaixo do barco
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -573,7 +640,9 @@ function desenha() {
   }]);
   L.push([barco.y, () => {
     const r = DIR[barco.dir], bob = Math.sin(t * 2.4) * 1.6;
-    quadro(F.rema, r, barco.remaQ >= 0 ? barco.remaQ : 0, barco.x, barco.y - 48 + bob, 1, false, null, Math.sin(t * 1.9) * .012);
+    // canal estreito: o barco 'se encolhe' um pouco (remos mais junto do casco) para o desenho nao invadir as pedras
+    { const v = vao(barco.x, barco.y), larg = v ? v[1] - v[0] : 999, alvo = larg < 200 ? cl(larg / 200, .8, 1) : 1; barco.esc = (barco.esc || 1) + (alvo - (barco.esc || 1)) * .08; }
+    quadro(F.rema, r, barco.remaQ >= 0 ? barco.remaQ : 0, barco.x, barco.y - 48 * barco.esc + bob, barco.esc, false, null, Math.sin(t * 1.9) * .012);
   }]);
   L.push(...desenhosEnfeites());
   L.push(...desenhoTartarok());
@@ -582,6 +651,14 @@ function desenha() {
     const atras = barco.y < f.base && barco.x > f.x - 40 && barco.x < f.x + f.i.width + 40 && barco.y > f.y - 20;   // o barco embaixo da copa: ela fica meio transparente
     ctx.save(); ctx.globalAlpha = atras ? .55 : 1; ctx.drawImage(f.i, sx, sy, w, h); ctx.restore(); }]);
   L.sort((a, b) => a[0] - b[0]); for (const [, f] of L) f();
+  // o vapor sobe por cima de tudo (passa na frente do barco), leve e meio transparente
+  if (F.vapor) for (const v of VAPORES[TR] || []) if (naTela(v.x, v.y, 140)) { const q = Math.floor(v.f + t * v.v) % 8, fh = F.vapor.fh * v.e;
+    quadro(F.vapor, q >> 2, q & 3, v.x, v.y - fh / 2 + 6, v.e, v.flip, .55); }
+  // TERRA NA FRENTE DO BARCO (2026-11-21: 'nesse lado esta estreito, o barco passa por cima das pedras'): o casco cabe na agua,
+  // mas o desenho do barco e mais largo. A terra e as pedras que ficam ABAIXO da linha d'agua do barco (mais perto da camera,
+  // no angulo do mapa) sao redesenhadas por cima dele: ele passa POR TRAS das pedras em vez de por cima.
+  { const T = terraDe(TR); if (T && !troca) { const x0 = Math.round(barco.x - 96), y0 = Math.round(barco.y + 14), w = 192, h = 46, [sx, sy] = tela(x0, y0);
+    ctx.drawImage(T, x0, y0, w, h, sx, sy, w * Z, h * Z); } }
   // efeitos (respingos, splash, marola)
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const e of FX) if (!e.some) quadro(F.fx, e.lin, Math.min(5, Math.floor(e.t / e.dur * 6)), e.x, e.y, e.esc, false, e.al, e.ang);
