@@ -34,7 +34,7 @@ function aplicaFestival(){if(festAplicado)return;festAplicado=true;
 MAPA_FEST.onload=()=>{MAPA.src=MAPA_FEST.src;
   for(const f of FR){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;const g=c.getContext('2d');
     const faz=()=>{g.clearRect(0,0,f.w,f.h);g.drawImage(f.i0||f.i,0,0,f.w,f.h);g.globalCompositeOperation='source-in';g.drawImage(MAPA_FEST,f.x,f.y,f.w,f.h,0,0,f.w,f.h);g.globalCompositeOperation='source-over';f.i0=f.i0||f.i;f.i=c;};
-    if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_FEST.src='assets/vila/mapa_festival.jpg';}
+    if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_FEST.src='assets/vila/mapa_festival.jpg?v=2';}
 // VILA EM ATAQUE (FICHA_CAP2_ATAQUE.md, Parte B): o mesmo desenho, tudo por IMAGEM (pedido do usuario): mapa ref/vila/mapa_ataque.png,
 // fogo e fumaca roxos animados pelas folhas (tools/cut_ataque.py -> vila_ataque.js). Musica 'Evil Awaits' (bosslevelaudio, CC-BY 3.0).
 const emAtaque=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='ataque');
@@ -79,6 +79,9 @@ const partFeito=k=>!!((JOGO.cap2&&JOGO.cap2.e)||{})[k];
 const partProximo=()=>PART_PASSOS.find(k=>!partFeito(k))||null;
 function partMarca(k){JOGO.cap2.e=JOGO.cap2.e||{};JOGO.cap2.e[k]=true;salvaJogo();}
 const TICO_ALTAR={id:'tico_altar',x:760,y:175,r:0};
+// mapas da festa e do ataque tem as PROPRIAS lanternas e bandeiras desenhadas em outros lugares: as animadas do mapa de dia
+// (lanternas da arvore, bandeiras e cabecas de poste) nao vao por cima (2026-11-20: ficavam duas lanternas e duas bandeiras juntas)
+const mapaFesta=()=>NA_VILA&&(emFestival()||emAtaque());
 const POSTES_FEST=[[572,280,598,298],[922,280,948,298]];   // postes de bandeira que so existem no mapa da festa (pe bloqueia)
 const FEST_EFEITO={
   ingrid:()=>{if(JOGO.cap2.ingrid)return;JOGO.cap2.ingrid=true;JOGO.buff={id:'ensopado',lutas:(ITENS.ensopado&&ITENS.ensopado.lutas)||5};som(SOM.ui_vez,.6);aviso('Ensopado do Festival: bônus de comida ativo!','#7dffa8');salvaJogo();},
@@ -1778,7 +1781,7 @@ function desenha(){
   else if(NA_VILA&&emAtaque()){luz(742,648,70+Math.sin(t*9)*5+Math.sin(t*23)*2,'rgba(190,70,255,.40)');for(const[fx,fy,fe]of[...ATQ_TETO,...ATQ_CHAO])luz(fx,fy-16*fe/.4,40*fe/.4+Math.sin(t*8+fx)*3,'rgba(200,60,255,.30)');}
   else if(NA_VILA){luz(740,645,62+Math.sin(t*9)*4+Math.sin(t*23)*2,'rgba(255,150,50,.42)');
   luz(1302,515,38+Math.sin(t*7)*3,'rgba(255,130,40,.36)');
-  for(const[lx,ly,k]of[[602,490,0],[637,505,1],[670,462,2],[812,490,3],[851,480,4],[900,460,5],[930,476,6],[190,515,7],[330,500,8],[405,745,9],[320,822,10],[615,790,11],[855,790,12],[735,182,13],[870,225,14],[848,140,15]])luz(lx,ly,13,`rgba(120,220,255,${.2+.13*Math.sin(t*2+k*1.7)})`);
+  if(!mapaFesta())for(const[lx,ly,k]of[[602,490,0],[637,505,1],[670,462,2],[812,490,3],[851,480,4],[900,460,5],[930,476,6],[190,515,7],[330,500,8],[405,745,9],[320,822,10],[615,790,11],[855,790,12],[735,182,13],[870,225,14],[848,140,15]])luz(lx,ly,13,`rgba(120,220,255,${.2+.13*Math.sin(t*2+k*1.7)})`);
   // janelas acesas piscando de leve
   }
   if(NA_VILA&&!emAtaque())for(const[wx,wy,k]of[[95,210,0],[430,225,1],[240,385,2],[160,470,3],[240,475,4],[355,450,5],[1060,230,6],[1135,225,7],[1210,255,8],[1405,540,9],[70,350,10]])luz(wx,wy,10,`rgba(255,200,110,${.16+.08*Math.sin(t*1.3+k*2.1)})`);
@@ -1801,9 +1804,9 @@ function desenha(){
   // fumaca
   for(const f of fumaca){ctx.fillStyle=`rgba(190,200,215,${.32*(1-f.v/3.4)})`;ctx.beginPath();ctx.arc(f.x,f.y,f.s,0,6.283);ctx.fill();}
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
-  if(NA_VILA&&!emAtaque()&&hero.y>=520)desenhaLanternas();
+  if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?ataqueDesenhos():[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?ataqueDesenhos():[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -1840,7 +1843,7 @@ function desenha(){
   desenhaFestaCeu();   // lanternas de papel e fogos de gelo na noite do festival
   // neve levantando nos passos
   ctx.fillStyle='rgba(235,248,255,.9)';for(const p of poeira){ctx.globalAlpha=1-p.v/.6;ctx.fillRect(p.x,p.y,1.2,1.2);}ctx.globalAlpha=1;
-  if(NA_VILA){if(hero.y<520&&!emAtaque())desenhaLanternas();if(!emAtaque())desenhaFumacas();desenhaBrilhos();}
+  if(NA_VILA){if(hero.y<520&&!mapaFesta())desenhaLanternas();if(!emAtaque())desenhaFumacas();desenhaBrilhos();}
   if(typeof vidaDesenha==='function')vidaDesenha('ar');
   // "!" em cima do heroi perto de algo
   if(perto&&!fala){const bx=hero.x,by=hero.y-58+Math.sin(t*5)*1.5;ctx.fillStyle='#fff';ctx.strokeStyle='#0a2a4a';ctx.lineWidth=1;
