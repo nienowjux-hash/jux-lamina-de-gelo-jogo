@@ -1946,6 +1946,8 @@ function drawCine(c,dt){if(!cine)return;BARRA=(CINES[cine.id]&&CINES[cine.id].ba
   if(s.tremor&&p>=s.tremor[0]&&p<=s.tremor[1]){const f=s.tremor[2]*(1-(p-s.tremor[0])/(s.tremor[1]-s.tremor[0]));ox+=rnd(-f,f);oy+=rnd(-f,f);}
   // troca de tomada: guarda o ultimo quadro da anterior para a transicao (s.entra)
   if(cine.tom!==i){cine.tom=i;cine.trans=null;
+    // sem transicao escolhida: fusao curta (2026-11-20: 'cortes secos')
+    if(!s.entra&&cine.buf&&i>0){const sn=document.createElement('canvas');sn.width=W;sn.height=H;sn.getContext('2d').drawImage(cine.buf,0,0);cine.trans={tipo:'funde',snap:sn};}
     if(s.entra&&cine.buf){const sn=document.createElement('canvas');sn.width=W;sn.height=H;sn.getContext('2d').drawImage(cine.buf,0,0);
       cine.trans={tipo:s.entra,snap:sn,cacos:s.entra==='racha'?cacosDaTela():null};
       if(s.entra==='racha')SONS.cacos();else{som('whoosh2',.7);ruido(.25,900,3800,.2);}}}
@@ -2002,6 +2004,7 @@ function cacosDaTela(){const NX=6,NY=4,P=[];
   return out;}
 function desenhaTransicao(c,tr,t,AH){
   c.save();c.beginPath();c.rect(0,BARRA,W,AH);c.clip();
+  if(tr.tipo==='funde'&&t<.45){c.globalAlpha=1-(t/.45)*(t/.45)*(3-2*t/.45);c.drawImage(tr.snap,0,0);c.globalAlpha=1;}
   if(tr.tipo==='chicote'&&t<.22){const q=easeOut(t/.22),x=-W*q;
     for(let k=3;k>=0;k--){c.globalAlpha=k?.18:1;c.drawImage(tr.snap,x+k*34,0);}
     c.globalAlpha=.5;c.fillStyle='#eafcff';for(let n=0;n<18;n++)c.fillRect(rnd(0,W),BARRA+rnd(0,AH),rnd(80,260),n%4?1:3);}

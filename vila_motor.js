@@ -1533,7 +1533,7 @@ function abTermina(){if(!ab.on)return;for(const v of Object.values(VOZES))v.paus
   if(musNome!=='vila'){abMusica('vila');}musNome=null;musAtual=null;
   hero.olha='baixo';comecou=false;}
 function abPasso(dt){
-  if(ab.fim>0)ab.fim=Math.max(0,ab.fim-dt*1.4);
+  if(ab.fim>0)ab.fim=Math.max(0,ab.fim-dt*.9);   // volta do preto para o mapa devagar
   if(!ab.on||ab.esperando)return;
   const c=CENAS[ab.i];ab.t+=dt;
   for(const [tt,n] of c.sons){const k=ab.i+':'+tt;if(ab.t>=tt&&!ab.feitos.has(k)){ab.feitos.add(k);abSom(n);}}
@@ -1568,13 +1568,16 @@ function abDesenha(){
     ctx.globalAlpha=.6+.4*Math.sin(t*3);ctx.font='bold 17px "Trebuchet MS"';ctx.fillStyle='#e8f6ff';ctx.fillText('Aperte ENTER ou toque para começar',W/2,H/2+30);ctx.globalAlpha=1;
     return;
   }
-  const c=CENAS[ab.i],FUS=.7;
-  if(ab.i>0&&ab.t<FUS){abCena(ab.i-1,1,CENAS[ab.i-1].dur);abCena(ab.i,ab.t/FUS,ab.t);}
-  else abCena(ab.i,ab.i===0?Math.min(1,ab.t/1.2):1,ab.t);
+  // transicoes suaves (2026-11-20: 'cortes secos'): fusao de 1,3 s entre as cenas com curva suave, a primeira nasce do preto
+  // e a ultima escurece ate o preto no fim (antes cortava seco para o mapa)
+  const c=CENAS[ab.i],FUS=1.3,lis=u=>u*u*(3-2*u);
+  if(ab.i>0&&ab.t<FUS){abCena(ab.i-1,1,CENAS[ab.i-1].dur+ab.t);abCena(ab.i,lis(ab.t/FUS),ab.t);}
+  else abCena(ab.i,ab.i===0?lis(Math.min(1,ab.t/1.6)):1,ab.t);
   // efeitos por cena
   if(c.fx==='geada'||c.fx==='vortice'){ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(W/2,H/2,20,W/2,H/2,W*.7);
     g.addColorStop(0,`rgba(80,180,255,${.12+.08*Math.sin(t*6)})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();}
   if(c.fx==='escuro'){ctx.fillStyle=`rgba(120,0,0,${.06+.05*Math.sin(t*2.3)})`;ctx.fillRect(0,0,W,H);}
+  if(ab.i===CENAS.length-1&&c.dur-ab.t<1.2){ctx.fillStyle=`rgba(0,0,0,${lis(Math.min(1,1-(c.dur-ab.t)/1.2))})`;ctx.fillRect(0,0,W,H);}
   if(c.flash&&ab.t<c.flash+.5){ctx.fillStyle=`rgba(255,255,255,${Math.max(0,1-(ab.t-c.flash)/.5)})`;ctx.fillRect(0,0,W,H);}
   if(c.fx!=='escuro')for(const f of ab.neve){ctx.fillStyle='rgba(235,250,255,.75)';ctx.fillRect(f.x,f.y,f.s,f.s);}
   // faixas de cinema
