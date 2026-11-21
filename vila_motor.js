@@ -1343,16 +1343,28 @@ const IMG_ATAQUE=imgsFilme(CENAS_ATAQUE.map(c=>'assets/cine_ataque/'+c.img+'.jpg
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#invasao'){window.__modoTeste=true;
   if(localStorage.getItem('jux_teste_ativo')==='novo'){localStorage.setItem('jux_teste_ativo','1');JOGO.cap2={fase:'noite'};JOGO.provas=Object.assign(JOGO.provas||{},{fenrir:'feita'});for(const k of ['atq_1','atq_2','atq_3','ignarok'])delete JOGO.provas[k];
     JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;
-    JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});salvaJogo();}
+    JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true,luta:true,ressonancia:true});
+    if(/[?&]forte/.test(location.hash)){   // #invasao?forte: Jux e Bino no nivel 18 com o melhor equipamento ate ai e a bolsa cheia (so na copia)
+      const NV=18;JOGO.nivel=Math.max(JOGO.nivel||1,NV);JOGO.exp=0;JOGO.bino.nivel=Math.max(JOGO.bino.nivel||1,NV);JOGO.bino.exp=0;
+      JOGO.equip=Object.assign(EQ_VAZIO(),{arma:'esp_aco',elmo:'elmo_ferro',armadura:'cota_malha',luvas:'luvas_ferr',botas:'botas_neve',acessorio:'amuleto_vida',acessorio2:'presa_anciao'});
+      JOGO.equipDe=Object.assign(JOGO.equipDe||{},{bino:Object.assign(EQ_VAZIO(),{arma:'mar_aco',elmo:'elmo_ferro',armadura:'cota_malha',luvas:'luvas_ferr',botas:'botas_neve',acessorio:'amuleto_vida',acessorio2:'anel_gelo'})});
+      JOGO.inv=Object.assign(JOGO.inv||{},{hipocao:30,pocao:30,eter:20,fenix:15,elixir:8,remedio:10});JOGO.gil=Math.max(JOGO.gil||0,3000);delete JOGO.vida;JOGO.buff=null;
+      // 2026-11-21 ('nao quero fazer as missoes de novo'): todo o Capitulo 1 feito (missoes, provas, o Eco do Fenrir) e ja comeca NA INVASAO
+      for(const k in MISSOES)if(!/^(atq|ignarok|cap2)/.test(k))estMissoes()[k]={st:'feita'};
+      for(const k in PROVAS)if(!['atq_1','atq_2','atq_3','ignarok'].includes(k))estProvas()[k]='feita';
+      {const E=estadoEcos();if(!E.tem.includes('lamina'))E.tem.push('lamina');E.pe.lamina=Math.max(E.pe.lamina||0,2195);if(!donoEco('lamina'))equipaEco('lamina','jux');
+        for(const h of ['golpe_duplo','perfurante'])if(!vagaEco('jux').equipadas.includes(h))vagaEco('jux').equipadas.push(h);}
+      JOGO.cap2={fase:'ataque',lutas:{}};hero.x=722;hero.y=716;}
+    salvaJogo();}
   setTimeout(()=>aviso('TESTE DA INVASÃO: seu personagem, numa cópia. Para voltar ao save de verdade, abra o jogo sem #invasao.','#ffe27a'),1800);}
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#manha'){window.__semSalvar=true;JOGO.missoes=Object.assign(JOGO.missoes||{},{olhos_roxos:{st:'feita'}});JOGO.provas=Object.assign(JOGO.provas||{},{fenrir:'feita'});JOGO.cap2={fase:'manha',e:{},halvardMorreu:true,preco:true,lutas:{atq_1:true,atq_2:true,atq_3:true}};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
-  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true,luta:true,ressonancia:true});
   setTimeout(()=>{aviso('Modo teste da manhã: nada é salvo','#ffe27a');abreFala('manha_chega');},1800);}
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#altar'){window.__semSalvar=true;JOGO.cap2={fase:'ataque',lutas:{atq_1:true,atq_2:true,atq_3:true},binoCalor:false};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
-  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=790;hero.y=420;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=790;hero.y=420;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true,luta:true,ressonancia:true});
   if(JOGO.provas&&!localStorage.getItem('jux_volta_luta'))delete JOGO.provas.ignarok;setTimeout(()=>aviso('Modo teste do altar: nada é salvo','#ffe27a'),1800);}
 if(REGIAO==='vila'&&(location.hash.split('?')[0]==='#ataque'||location.hash.split('?')[0]==='#brinde')){window.__semSalvar=true;JOGO.cap2={fase:location.hash.split('?')[0]==='#ataque'?'ataque':'noite',lutas:{}};if(JOGO.provas&&!localStorage.getItem('jux_volta_luta')){for(const k of ['atq_1','atq_2','atq_3'])delete JOGO.provas[k];try{sessionStorage.removeItem('jux_atq_teste');}catch(e){}}JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
-  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true,luta:true,ressonancia:true});
   setTimeout(()=>aviso('Modo teste: nada é salvo','#ffe27a'),1800);}
 if(REGIAO==='vila'&&location.hash==='#cine_ataque')setTimeout(()=>tocaFilme(CENAS_ATAQUE,IMG_ATAQUE,()=>{}),1500);   // lab: so a cutscene
 // CUTSCENE "O IGNAROK" (FICHA_CAP2_IGNAROK.md, aprovada 2026-11-20): no altar, depois das 3 lutas. O Ignarok nao tem voz (legenda laranja, tipo 4).
@@ -1479,7 +1491,7 @@ const IMG_BINO=imgsFilme(CENAS_BINO.map((c,i)=>'assets/cine_bino_entrada/cena_'+
 // TESTE DOS PREPARATIVOS (pedido 2026-11-20: 'rever a animacao'): vila.html#preparativos abre de dia com as 3 tarefas zeradas.
 // NADA e salvo nesse modo (o save de verdade fica intacto); ao recarregar sem o #, volta tudo como estava.
 if(REGIAO==='vila'&&location.hash==='#preparativos'){window.__semSalvar=true;JOGO.cap2={fase:'preparo',tarefas:{}};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
-  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=700;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=700;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true,luta:true,ressonancia:true});
   setTimeout(()=>aviso('Modo teste dos preparativos: nada é salvo','#ffe27a'),1800);}
 if(REGIAO==='vila'&&location.hash==='#cine_bino')setTimeout(()=>tocaFilme(CENAS_BINO,IMG_BINO,()=>{}),1500);   // lab: abre a cutscene direto
 const ALTV=new Image();if(V.altar_vazio)ALTV.src=V.altar_vazio.img;let espadaSobe=99;

@@ -24,7 +24,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
 <script src="carrega.js?v=1795225800"></script>
 <script src="itens_icones.js?v=1795245000"></script>
-<script src="jogo.js?v=1795247800"></script>
+<script src="jogo.js?v=1795249600"></script>
 <script src="tutorial.js?v=1795226200"></script>
 <script src="combate.js?v=1795243200"></script>
 <script src="bino_habs.js?v=1795225300"></script>
@@ -651,7 +651,7 @@ const MAIN=['Atacar','Magia','Itens','Defender','Ressonância','Fugir'];
 const ITENS_BAT=['pocao','hipocao','eter','elixir','antidoto','colirio','ecoervas','remedio','fenix'];
 // lista de itens da batalha: no laboratorio so a Pocao (contador da luta); no jogo, o que tem na bolsa
 function itemList(){const l=TESTE||typeof qtd!=='function'?[{id:'pocao',n:hero.pots}]:ITENS_BAT.filter(id=>qtd(id)>0).map(id=>({id,n:qtd(id)}));l.push({id:'voltar'});return l;}
-function itemEnabled(i){const it=itemList()[i];if(!it||it.id==='voltar')return true;if(it.id==='fenix')return false;if(it.id==='eter')return hero.mp<hero.mmax;return true;}
+function itemEnabled(i){const it=itemList()[i];if(!it||it.id==='voltar')return true;if(it.id==='fenix')return !!caidoParaReviver();if(it.id==='eter')return hero.mp<hero.mmax;return true;}
 const nomeItemBat=id=>(typeof ITENS==='object'&&ITENS[id])?ITENS[id].nome:'Poção';
 
 /* ---------- niveis e habilidades (liberadas por nivel, como nos Final Fantasy) ---------- */
@@ -1302,11 +1302,16 @@ async function actHab(id){const H=HABS[id];hero.mp=Math.max(0,hero.mp-(H.mp||0))
   if(H.estInim&&enemy.hp>0){const [nm,tu,ch]=H.estInim;if(poeEstado(enemy,nm,tu,ch,enemy.tipo))pop(enemy.x,enemy.y-235,ESTADOS[nm].nome.toUpperCase(),ESTADOS[nm].cor);else if(!H.poder)pop(enemy.x,enemy.y-235,'FALHOU','#a9a9c8');await wait(400);}
 }
 // item da bolsa: bebe (mesma animacao da pocao) e aplica a cura/MP
+// PENA DE FENIX (2026-11-21, bug: 'tenho 15 penas e nao consigo usar, o Bino esta caido'): revive o aliado caido com 25% do HP
+const caidoParaReviver=()=>aliados().find(a=>a!==hero&&a.hp<=0)||null;
 async function actItem(id){if(bAn()&&bAn().anims.pocao){setAnim('pocao');await wait(560);}
   const it=(typeof ITENS==='object'&&ITENS[id])||{cura:150};
   if(TESTE||typeof tiraItem!=='function')hero.pots--;else{tiraItem(id);salvaJogo();hero.pots=qtd('pocao');}
   banner(nomeItemBat(id));som('pocao',.8);
-  if(it.cura&&it.mp){limpaRuins(hero,null);const a=hero.max-hero.hp,b=hero.mmax-hero.mp;hero.hp=hero.max;hero.mp=hero.mmax;spark(hero.x,hero.y-100,40,'#ffe27a',200,1.2,5);pop(hero.x,hero.y-190,'+'+a+' HP  +'+b+' MP','#ffe27a');}
+  if(it.revive){const a=caidoParaReviver();if(a){const h0=hero;a.hp=Math.max(1,Math.round(a.max*it.revive));a.dead=false;a.guard=false;a.atb=0;a.tickFeito=false;limpaRuins(a,null);
+      hero=a;setAnim('parado');hero=h0;fxBrilho(a.x,a.y-90,{raio:170,ms:900,cor:'255,170,80'});fxFaiscas(a.x,a.y-40,26,{cor:'255,190,110',vel:260,g:-160,vida:1.3,ang:-1.57,abre:1});
+      pop(a.x,a.y-200,nomeAliado(a)+' voltou! +'+a.hp+' HP','#ffb060');}}
+  else if(it.cura&&it.mp){limpaRuins(hero,null);const a=hero.max-hero.hp,b=hero.mmax-hero.mp;hero.hp=hero.max;hero.mp=hero.mmax;spark(hero.x,hero.y-100,40,'#ffe27a',200,1.2,5);pop(hero.x,hero.y-190,'+'+a+' HP  +'+b+' MP','#ffe27a');}
   else if(it.curaEst){limpaRuins(hero,it.curaEst==='todos'?null:it.curaEst);spark(hero.x,hero.y-100,22,'#d8c8ff',140,1,4);pop(hero.x,hero.y-190,'CURADO','#d8c8ff');}
   else if(it.mp){const n=Math.min(it.mp,hero.mmax-hero.mp);hero.mp+=n;spark(hero.x,hero.y-100,22,'#7fc8ff',140,1,4);pop(hero.x,hero.y-190,'+'+n+' MP','#7fc8ff');}
   else{const n=Math.min(it.cura||150,hero.max-hero.hp);hero.hp+=n;spark(hero.x,hero.y-100,22,'#7dffa8',140,1,4);pop(hero.x,hero.y-190,'+'+n,'#7dffa8');}
@@ -2070,6 +2075,7 @@ function autoEcoGolpe(lista,ok,alvo,vivos,sobra){hero.autoEcoN=(hero.autoEcoN||0
 function autoEscolhe(){const C=AUTO_CFG[G.auto]||AUTO_CFG.equilibrado,vivos=inimigos(),hp=hero.hp/hero.max,mp=hero.mp/Math.max(1,hero.mmax);
   const ml=magicList(),pode=id=>{const i=ml.findIndex(h=>h.id===id);return i>=0&&magicEnabled(i);};
   const il=itemList(),temItem=id=>il.some((o,i)=>o.id===id&&itemEnabled(i));
+  if(caidoParaReviver()&&temItem('fenix'))return {kind:'item_fenix'};   // aliado caido: a Pena de Fenix vem primeiro
   // alvo: quebrado primeiro, depois o mais fraco
   const alvo=vivos.slice().sort((a,b)=>((b.quebrado>0)-(a.quebrado>0))||(a.hp-b.hp))[0];
   // 1) vida baixa: Cura do Eco, senão poção

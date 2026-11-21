@@ -141,6 +141,11 @@ const SAVE_J='jux_save';
     ['jux_teste_ativo','jux_save_antes_teste','jux_prog_antes_teste'].forEach(k=>localStorage.removeItem(k));}
   if(h==='#invasao'&&!localStorage.getItem('jux_teste_ativo')){
     localStorage.setItem('jux_save_antes_teste',localStorage.getItem('jux_save')||'');localStorage.setItem('jux_prog_antes_teste',localStorage.getItem('jux_progresso')||'');
+    localStorage.setItem('jux_teste_ativo','novo');}
+  // vila.html#invasao?forte (2026-11-21): o link SEMPRE recomeca a invasao do brinde, a partir do save de verdade, com nivel e equipamento fortes
+  else if(h==='#invasao'&&/[?&]forte/.test(location.hash)){
+    const a=localStorage.getItem('jux_save_antes_teste'),b=localStorage.getItem('jux_prog_antes_teste');
+    if(a)localStorage.setItem('jux_save',a);else localStorage.removeItem('jux_save');if(b)localStorage.setItem('jux_progresso',b);
     localStorage.setItem('jux_teste_ativo','novo');}}catch(e){}})();
 function carregaJogo(){
   try{const s=JSON.parse(localStorage.getItem(SAVE_J)||'null');
