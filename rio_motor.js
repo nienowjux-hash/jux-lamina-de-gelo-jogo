@@ -73,12 +73,17 @@ const TRECHOS = [
   { boia: [],   // trecho 2 limpo, sem troncos nem gelo (pedido do usuario: 'deixa mais limpo, preenche com visual')
     baus: [{ id: 'rio_bau3', x: 858, y: 640, itens: { pocao: 3 }, gil: 200, txt: '3 Poções e 200 gil' }],
     cais: { x: 575, y: 585, tipo: 'meio' }, raposa: false, peixes: [0], volta: [680, 840, 30, 90], inicio: [760, 90] },
+  // trecho 3: as aguas quentes (ref/rio/trecho3.png): a ilhota grande do meio e onde a Tartarok fica presa; o Porto de Cinzas embaixo
+  { boia: [], baus: [{ id: 'rio_bau4', x: 1022, y: 470, itens: { hipocao: 2, remedio: 1 }, gil: 300, txt: '2 Hi-Poções, 1 Remédio e 300 gil' }],
+    cais: { x: 725, y: 780, tipo: 'porto' }, raposa: false, peixes: [0], volta: [700, 860, 30, 90], inicio: [760, 70] },
 ];
 // LUTAS ALEATORIAS no barco (FICHA_CAP3_RIO.md): os bichos do rio aparecem depois de uns 1400 a 2600 px navegados
 // (uns 15 a 30 s remando); perto do cais e logo depois de chegar/lutar nao tem luta. Repelente vale (1 passo = 16 px).
 const ENC_RIO = [
   { nv: [13, 15], grupos: [[['piranha', 'piranha', 'piranha'], 4], [['agua_viva'], 3], [['lontra'], 2], [['piranha', 'agua_viva'], 2], [['agua_viva', 'agua_viva'], 1], [['lontra', 'piranha'], 1]] },
   { nv: [14, 16], grupos: [[['caranguejo'], 3], [['caranguejo', 'piranha'], 2], [['lontra', 'agua_viva'], 2], [['agua_viva', 'agua_viva'], 2], [['piranha', 'piranha', 'piranha'], 2], [['caranguejo', 'lontra'], 1]] },
+  // trecho 3 (aguas quentes): bichos de fogo e vapor (pedido do usuario: os de gelo nao fazem sentido na agua quente)
+  { nv: [15, 17], grupos: [[['enguia', 'enguia'], 3], [['sapo_fervente'], 2], [['caramujo', 'morcego'], 2], [['morcego', 'morcego', 'enguia'], 2], [['sapo_fervente', 'enguia'], 2], [['caramujo'], 1], [['morcego', 'morcego', 'morcego'], 1]] },
 ];
 let encDist = 0, encAlvo = 1800, encPasso16 = 0, lutando = null;
 const sorteiaEnc = () => 1400 + Math.random() * 1200;
@@ -93,7 +98,7 @@ function contaEncontro(andou) {
   let r = Math.random() * E.grupos.reduce((a, g) => a + g[1], 0), tipos = E.grupos[0][0]; for (const g of E.grupos) { r -= g[1]; if (r <= 0) { tipos = g[0]; break; } }
   const nv = Math.round(E.nv[0] + Math.random() * (E.nv[1] - E.nv[0]));
   guardaRio(); lutando = { t: 0 }; som('rio_splash_grande', .8); MUS.pause();
-  try { localStorage.setItem('jux_encontro', JSON.stringify({ regiao: 'rio', tipos, nv, volta: 'rio.html' })); } catch (e) {}
+  try { localStorage.setItem('jux_encontro', JSON.stringify({ regiao: 'rio', trecho: TR, tipos, nv, volta: 'rio.html' })); } catch (e) {}
   setTimeout(() => { AMB.pause(); location.href = 'batalha.html?t=' + Date.now(); }, 1100);
 }
 let BOIA = [], BAUS = [], CAIS = null, CONF = TRECHOS[0];
@@ -127,12 +132,97 @@ let aviso = null;   // {txt, t}
 const avisa = (txt, t) => { aviso = { txt, t: t || 3 }; };
 let perto = null;   // o que da para usar agora
 function usa() {
-  if (!perto) return;
+  if (!perto || FILME.on || escolha || evento) return;
   if (perto.tipo === 'bau') { const b = perto.b; if (pego(b.id)) return; JOGO.pegos = JOGO.pegos || []; JOGO.pegos.push(b.id);
     for (const k in b.itens) daItem(k, b.itens[k]); if (b.gil) JOGO.gil = (JOGO.gil || 0) + b.gil; salvaJogo(); som('novos/ui_vez', .7); avisa('Baú da ilhota: ' + b.txt + '!'); }
   else if (perto.tipo === 'cais' && CAIS.tipo === 'vila') { guardaRio(); location.href = 'vila.html?t=' + Date.now(); }
+  else if (perto.tipo === 'cais' && CAIS.tipo === 'porto') {
+    if (!serpVencida()) { avisa('A Serpente do Degelo bloqueia o porto!', 3); return; }
+    if (!C3().tartarok) { avisa('Antes, a tartaruga da ilhota…', 3); return; }
+    if (C3().parteA) { guardaRio(); som('novos/ui_vez', .6); avisa('Porto de Cinzas. A trilha das cinzas chega na próxima atualização. Jogo salvo!', 5); return; }
+    chegaPorto(); }
   else if (perto.tipo === 'cais') { guardaRio(); som('novos/ui_vez', .6); avisa('Vocês descansaram no cais do meio. Jogo salvo! (a pescadora Marta chega em breve)', 4); }
 }
+
+
+// ---------- O FIM DO RIO (FICHA_CAP3_RIO.md: a Tartarok, a Serpente e a chegada) ----------
+// A Tartarok dorme presa no gelo na ilhota grande do trecho 3. Chegando perto do Porto de Cinzas a Serpente do Degelo
+// surge (cutscene na 1a vez) e bloqueia o porto: luta de chefe. Vencendo, o gelo da ilhota quebra, a Tartarok acorda
+// (cutscene) e vira o Eco do Guardiao. So entao da para atracar: cutscene do porto e fim da Parte A.
+const TARTA = { x: 765, y: 240 };
+const C3 = () => { if (typeof JOGO !== 'object') return {}; JOGO.cap3 = JOGO.cap3 || {}; return JOGO.cap3; };
+const serpVencida = () => typeof JOGO === 'object' && (JOGO.provas || {}).serpente === 'vencida';
+const ZONA_SERP = () => TR === 2 && barco.y > 600;
+let serpArmada = true, evento = null, escolha = null, foco = null, tartAnim = null, tartAviso = false;
+function desenhoTartarok() {   // [y, desenha] para ordenar com o barco
+  if (TR !== 2 || !F.tartarok || (C3().tartarok && !tartAnim)) return [];
+  return [[TARTA.y + 80, () => {
+    if (tartAnim) { const q = Math.min(3, Math.floor(tartAnim.t / .7)); quadro(F.tartarok, 1, q, TARTA.x, TARTA.y, 1); return; }
+    quadro(F.tartarok, 0, Math.floor(t * 2.2) % 4, TARTA.x, TARTA.y + Math.sin(t * .8) * 1.2, 1); }]];
+}
+function grupoFerido() { if (typeof vidaAtual !== 'function') return false; const g = ['jux']; if (JOGO.bino && JOGO.bino.ativo) g.push('bino');
+  return g.some(q => { const v = vidaAtual(q); return v.hp <= 0 || v.hp < v.max * .7; }); }
+function curaParaLutaRio() {   // igual a vila: Pena de Fenix em quem caiu, depois Hi-Pocao/Pocao ate encher
+  const gasto = {}, usa1 = id => { tiraItem(id); gasto[id] = (gasto[id] || 0) + 1; }, g = ['jux']; if (JOGO.bino && JOGO.bino.ativo) g.push('bino');
+  for (const q of g) { const v = vidaAtual(q); let hp = v.hp;
+    if (hp <= 0) { if (qtd('fenix') > 0) { usa1('fenix'); hp = Math.round(v.max * ITENS.fenix.revive); } else continue; }
+    for (let n = 0; n < 60 && hp < v.max; n++) { const falta = v.max - hp, id = falta > ITENS.pocao.cura && qtd('hipocao') > 0 ? 'hipocao' : qtd('pocao') > 0 ? 'pocao' : qtd('hipocao') > 0 ? 'hipocao' : null;
+      if (!id) break; usa1(id); hp = Math.min(v.max, hp + ITENS[id].cura); }
+    if (hp !== v.hp) guardaVida(q, hp, v.mp); }
+  const l = Object.keys(gasto).map(id => gasto[id] + 'x ' + ITENS[id].nome); salvaJogo();
+  avisa(l.length ? 'Curados! Gastou: ' + l.join(', ') + '.' : 'Sem poções na bolsa: vão assim mesmo.', 3); }
+function lutaSerpente() {
+  const vai = () => { escolha = null; guardaRio(); lutando = { t: 0 }; som('novos/serpente_rugido', .9); MUS.pause();
+    try { localStorage.setItem('jux_encontro', JSON.stringify({ regiao: 'rio', trecho: 2, tipos: ['serpente'], nv: 17, volta: 'rio.html', prova: 'serpente', chefe: { nome: 'Serpente do Degelo', hp: 4.5, forca: 1.2, exp: 6 } })); } catch (e) {}
+    setTimeout(() => { AMB.pause(); location.href = 'batalha.html?t=' + Date.now(); }, 1100); };
+  if (grupoFerido()) escolha = { titulo: 'Vocês estão feridos. Curar antes de lutar contra a Serpente?', ops: ['Curar com poções', 'Lutar assim'], sel: 0,
+    fn: i => { if (i === 0) { curaParaLutaRio(); escolha = null; setTimeout(vai, 1200); } else vai(); } };
+  else vai();
+}
+function surgeSerpente() {
+  serpArmada = false; evento = 'serpente'; barco.vx = 0; barco.vy = 0;
+  if (!C3().serpVista) { filmeRio('serpente', () => { C3().serpVista = true; salvaJogo(); lutaSerpente(); }); return; }
+  som('novos/serpente_rugido', 1); som('rio_splash_grande', .8); avisa('A Serpente do Degelo surge de novo na frente do porto!', 3); setTimeout(lutaSerpente, 1600);
+}
+function libertaTartarok() {   // voltou da luta vencida: o gelo da ilhota quebra e a Tartarok acorda
+  evento = 'tartarok'; foco = { x: TARTA.x, y: TARTA.y + 60 }; tartAnim = { t: 0 };
+  avisa('A Serpente afundou! O gelo da ilhota está rachando…', 3.5); som('novos/gelo_quebra', .8);
+  setTimeout(() => som('novos/gelo_quebra2', .7), 1300); setTimeout(() => som('novos/magia_brilho', .7), 2200);
+  setTimeout(() => filmeRio('tartarok', () => {
+    const c = C3(); c.tartarok = true; JOGO.ecos = JOGO.ecos || { equip: null, tem: [], pe: {}, equipadas: [] };
+    if (!JOGO.ecos.tem.includes('guardiao')) JOGO.ecos.tem.push('guardiao'); salvaJogo();
+    tartAnim = null; foco = null; evento = null; avisa('A Tartarok virou o Eco do Guardião! (equipe no menu Ecos) · Agora atraque no Porto de Cinzas.', 6); }), 3200);
+}
+function chegaPorto() {
+  evento = 'porto'; guardaRio();
+  filmeRio('porto', () => { const c = C3(); c.fase = 'porto'; c.parteA = true; salvaJogo(); evento = null;
+    avisa('Fim da Parte A! A trilha das cinzas chega na próxima atualização. Jogo salvo!', 8); });
+}
+function aoCarregarFimRio() {   // voltou da batalha (ou abriu o jogo) no trecho 3
+  if (TR !== 2) return;
+  if (!serpVencida() && ZONA_SERP()) { let y = 470; while (y > 360 && !barcoCabe(barco.x, y, 'cima')) y -= 6; if (!barcoCabe(barco.x, y, 'cima')) barco.x = 760; barco.y = y; barco.dir = 'cima'; cam.y = y; serpArmada = true;
+    if (C3().serpVista) avisa('A Serpente do Degelo ainda bloqueia o porto. Cure-se e volte!', 5); }
+  else if (serpVencida() && !C3().tartarok) setTimeout(libertaTartarok, 900);
+}
+function passoFimRio(dt) {   // chamado no passo: gatilhos da Serpente e a Tartarok
+  if (TR !== 2 || evento) return;
+  if (!serpVencida()) {
+    if (!ZONA_SERP()) serpArmada = true;
+    else if (serpArmada) surgeSerpente();
+    if (!tartAviso && Math.hypot(barco.x - TARTA.x, barco.y - TARTA.y - 90) < 230) { tartAviso = true; avisa('Essa ilhota… é uma tartaruga gigante presa no gelo?! Ela está dormindo.', 4.5); }
+  }
+}
+addEventListener('keydown', e => { if (!escolha || FILME.on) return; const k = e.key.toLowerCase();
+  if (k === 'arrowup' || k === 'w' || k === 'arrowleft' || k === 'a') escolha.sel = (escolha.sel + escolha.ops.length - 1) % escolha.ops.length;
+  else if (k === 'arrowdown' || k === 's' || k === 'arrowright' || k === 'd') escolha.sel = (escolha.sel + 1) % escolha.ops.length;
+  else if (k === 'enter' || k === ' ' || k === 'e') { const f = escolha.fn, i = escolha.sel; f(i); }
+  e.preventDefault(); e.stopImmediatePropagation(); }, true);
+function desenhaEscolha() { if (!escolha) return; ctx.save(); ctx.fillStyle = 'rgba(3,6,14,.6)'; ctx.fillRect(0, 0, W, H);
+  const w = 560, h = 70 + escolha.ops.length * 34, x = W / 2 - w / 2, y = H / 2 - h / 2;
+  ctx.fillStyle = 'rgba(6,16,40,.95)'; ctx.strokeStyle = '#8fdcff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
+  ctx.textAlign = 'center'; ctx.font = 'bold 17px "Trebuchet MS",sans-serif'; ctx.fillStyle = '#ffe27a'; ctx.fillText(escolha.titulo, W / 2, y + 34);
+  escolha.ops.forEach((o, i) => { ctx.fillStyle = i === escolha.sel ? '#8fe9ff' : '#cfd8e8'; ctx.font = (i === escolha.sel ? 'bold ' : '') + '17px "Trebuchet MS",sans-serif'; ctx.fillText((i === escolha.sel ? '▶ ' : '') + o, W / 2, y + 72 + i * 34); });
+  ctx.restore(); }
 
 // ---------- passo ----------
 let t = 0, fimAvisado = false, troca = null;
@@ -146,11 +236,14 @@ function entraTrecho(n, lado) {   // poe o barco na entrada do trecho n (em cima
 function passo(dt) {
   t += dt;
   if (lutando) return;
+  if (escolha) return;
+  if (tartAnim) tartAnim.t += dt;
   if (troca) { troca.t += dt; if (troca.t >= .5 && !troca.feito) { troca.feito = true; if (AGUAS[troca.para]) { entraTrecho(troca.para, troca.entra); passoEnfeites(0); } } if (troca.t >= 1.3) troca = null; else return; }
   // controle
   let ix = 0, iy = 0;
-  if (teclas.arrowleft || teclas.a) ix--; if (teclas.arrowright || teclas.d) ix++;
-  if (teclas.arrowup || teclas.w) iy--; if (teclas.arrowdown || teclas.s) iy++;
+  const tk = evento ? {} : teclas;   // durante os eventos do fim do rio o barco nao rema
+  if (tk.arrowleft || tk.a) ix--; if (tk.arrowright || tk.d) ix++;
+  if (tk.arrowup || tk.w) iy--; if (tk.arrowdown || tk.s) iy++;
   const remando = !!(ix || iy);
   if (remando) {
     const n = Math.hypot(ix, iy); ix /= n; iy /= n;
@@ -258,12 +351,13 @@ function passo(dt) {
     for (let k = 0; k < 3; k++) AVES.push({ x: x0 - dir * k * rnd(30, 55), y: y0 + rnd(-25, 25), dir, f: rnd(0, 6), v: rnd(105, 130) }); if (Math.random() < .7) som('rio_passaros', .35); }
   for (let i = AVES.length - 1; i >= 0; i--) { const a = AVES[i]; a.x += a.dir * a.v * dt; a.y += Math.sin(t * 2 + i) * 6 * dt; a.f += dt * 11; if (Math.abs(a.x - cam.x) > W / Z) AVES.splice(i, 1); }
   // o que da para usar (bau, cais)
+  passoFimRio(dt);
   perto = null;
   for (const b of BAUS) if (Math.hypot(b.x - barco.x, (b.y - barco.y) / .7) < 175) perto = { tipo: 'bau', b };   // encostar o barco na ilhota
   if (!perto && Math.hypot(CAIS.x - barco.x, CAIS.y - barco.y) < 95) perto = { tipo: 'cais' };
   if (aviso) { aviso.t -= dt; if (aviso.t <= 0) aviso = null; }
   // camera
-  cam.x += (barco.x - cam.x) * Math.min(1, dt * 4); cam.y += (barco.y + 30 - cam.y) * Math.min(1, dt * 4);
+  { const ax = foco ? foco.x : barco.x, ay = foco ? foco.y : barco.y + 30, v = foco ? 2 : 4; cam.x += (ax - cam.x) * Math.min(1, dt * v); cam.y += (ay - cam.y) * Math.min(1, dt * v); }
   cam.x = cl(cam.x, W / (2 * Z), R.w - W / (2 * Z)); cam.y = cl(cam.y, H / (2 * Z), R.h - H / (2 * Z));
 }
 // move o objeto; se bater na margem, DESLIZA ao longo dela (acha o lado da parede pelos pontos fora da agua)
@@ -449,6 +543,7 @@ function desenha() {
     quadro(F.rema, r, barco.remaQ >= 0 ? barco.remaQ : 0, barco.x, barco.y - 48 + bob, 1, false, null, Math.sin(t * 1.9) * .012);
   }]);
   L.push(...desenhosEnfeites());
+  L.push(...desenhoTartarok());
   for (const f of FRENTES[TR] || []) L.push([f.base, () => { if (!f.i.complete) return; const [sx, sy] = tela(f.x, f.y), w = f.i.width * Z, h = f.i.height * Z;
     const atras = barco.y < f.base && barco.x > f.x - 40 && barco.x < f.x + f.i.width + 40 && barco.y > f.y - 20;   // o barco embaixo da copa: ela fica meio transparente
     ctx.save(); ctx.globalAlpha = atras ? .55 : 1; ctx.drawImage(f.i, sx, sy, w, h); ctx.restore(); }]);
@@ -468,13 +563,14 @@ function desenha() {
   for (const a of AVES) quadro(F.bichos, 3, Math.floor(a.f) % 6, a.x, a.y, .7, a.dir < 0);
   desenhaInsetos();
   // textos
-  if (perto) { const txt = perto.tipo === 'bau' ? (pego(perto.b.id) ? 'Baú vazio' : 'ENTER: abrir o baú') : CAIS.tipo === 'vila' ? 'ENTER: descer do barco (voltar para a vila)' : 'ENTER: descansar no cais (salvar o jogo)';
+  if (perto) { const txt = perto.tipo === 'bau' ? (pego(perto.b.id) ? 'Baú vazio' : 'ENTER: abrir o baú') : CAIS.tipo === 'vila' ? 'ENTER: descer do barco (voltar para a vila)' : CAIS.tipo === 'porto' ? 'ENTER: atracar no Porto de Cinzas' : 'ENTER: descansar no cais (salvar o jogo)';
     const p = perto.tipo === 'bau' ? perto.b : CAIS, [sx, sy] = tela(p.x, p.y - 60); faixa(txt, sx, sy); }
   if (aviso) faixa(aviso.txt, W / 2, H - 46, '#ffe27a');
   if (lutando) { lutando.t += 1 / 60; const k = Math.min(1, lutando.t / .9); ctx.fillStyle = 'rgba(190,230,255,' + (k < .3 ? k / .3 * .7 : .7 * (1 - (k - .3) / .7)) + ')'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(3,6,14,' + Math.max(0, (k - .35) / .65) + ')'; ctx.fillRect(0, 0, W, H); faixa('Algo se mexe embaixo do barco!', W / 2, H / 2, '#ffe27a', Math.min(1, k * 3)); }
   if (troca) { const a = troca.t < .5 ? troca.t / .5 : troca.t < .8 ? 1 : (1.3 - troca.t) / .5; ctx.fillStyle = 'rgba(3,6,14,' + Math.min(1, a) + ')'; ctx.fillRect(0, 0, W, H);
     const nome = ['O rio de gelo', 'O degelo', 'As águas quentes'][troca.para] || ''; if (a > .6) faixa('Rio abaixo… ' + nome, W / 2, H / 2, '#bff4ff', Math.min(1, (a - .6) / .4)); }
+  desenhaEscolha();
   if (t < 7) faixa('Setas / WASD: remar · a correnteza leva rio abaixo · encoste nos troncos para abrir caminho', W / 2, 26, '#bff4ff', Math.min(1, (7 - t) / 1.5));
 }
 function faixa(txt, x, y, cor, al) {
@@ -487,6 +583,7 @@ function faixa(txt, x, y, cor, al) {
 let ultimo = performance.now();
 function frame(agora) {
   const dt = Math.min(.05, Math.max(0, (agora - ultimo) / 1000)); ultimo = agora;
+  if (filmeQuadro(dt)) { requestAnimationFrame(frame); return; }
   if (AGUA) passo(dt);
   desenha();
   requestAnimationFrame(frame);
@@ -498,4 +595,4 @@ function preDecodifica() { const c = document.createElement('canvas'); c.width =
 (function espera() { if (!PRONTO && AGUAS.length === R.trechos.length && AGUAS.every(Boolean) && MAPAS.every(m => m.complete) && Object.values(F).every(f => f.i.complete)) { PRONTO = true; preDecodifica().then(() => espera()); return; }
   if (PRONTO && AGUAS.every(Boolean) && MAPAS.every(m => m.complete)) {
   { const G = typeof JOGO === 'object' && JOGO.rio; const n = G && R.trechos[G.trecho] ? G.trecho : 0; montaTrecho(n);
-    if (G && R.trechos[G.trecho] && barcoCabe(G.x, G.y, 'baixo')) { barco.x = G.x; barco.y = G.y; } else { barco.x = CONF.inicio[0]; barco.y = CONF.inicio[1]; } cam.x = barco.x; cam.y = barco.y; } document.getElementById('carregando').style.display = 'none'; requestAnimationFrame(frame); } else setTimeout(espera, 80); })();
+    if (G && R.trechos[G.trecho] && barcoCabe(G.x, G.y, 'baixo')) { barco.x = G.x; barco.y = G.y; } else { barco.x = CONF.inicio[0]; barco.y = CONF.inicio[1]; } cam.x = barco.x; cam.y = barco.y; aoCarregarFimRio(); } document.getElementById('carregando').style.display = 'none'; requestAnimationFrame(frame); } else setTimeout(espera, 80); })();

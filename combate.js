@@ -82,6 +82,34 @@ const TIPOS_INIMIGO={
     atk:n=>22+1.8*(n-1),atkm:n=>8+.6*(n-1),def:n=>20+1.6*(n-1),defm:n=>14+1.2*(n-1),
     golpes:[{nome:'Pinçada',t:'f',poder:40,peso:1,est:['atordoado',1,.15]}],
     drops:[['minerio',.4],['cristal',.15,1]]},
+  // ---- trecho 3 do rio (aguas quentes): bichos de FOGO e vapor; o gelo do Jux brilha aqui. Regras especiais no index.html (rioEspecial):
+  // o Sapo cospe agua fervendo em TODOS a cada 3 vezes; o Caramujo fecha a casca (como o caranguejo); o Morcego rouba MP.
+  enguia:{nome:'Enguia de Brasa',el:'fogo',reacao:{gelo:1.6,agua:1.4,fogo:.4},fisico:1,magico:1,quebra:70,hp:.5,exp:.65,gil:.5,vel:1.4,imuneEst:['veneno'],
+    atk:n=>22+1.7*(n-1),atkm:n=>16+1.3*(n-1),def:n=>9+.9*(n-1),defm:n=>10+1*(n-1),
+    golpes:[{nome:'Chicotada de Brasa',t:'f',el:'fogo',poder:28,peso:1,est:['queimadura',3,.45]}],
+    drops:[['brasa',.4],['pocao',.2]]},
+  sapo_fervente:{nome:'Sapo-Fervente',el:'fogo',reacao:{gelo:1.6,agua:1.2,fogo:.4},fisico:.9,magico:1,quebra:80,hp:.7,exp:.7,gil:.6,vel:.95,
+    atk:n=>16+1.3*(n-1),atkm:n=>22+1.7*(n-1),def:n=>11+1*(n-1),defm:n=>12+1.1*(n-1),
+    golpes:[{nome:'Bolha Fervente',t:'m',el:'agua',poder:28,peso:1,est:['queimadura',2,.25]}],
+    drops:[['hipocao',.18],['remedio',.12]]},
+  caramujo:{nome:'Caramujo de Basalto',el:'terra',reacao:{raio:1.4,gelo:1.3,terra:.6,fogo:.5},fisico:1,magico:1,quebra:55,hp:.9,exp:.8,gil:.7,vel:.8,imuneEst:['veneno'],
+    atk:n=>18+1.5*(n-1),atkm:n=>18+1.4*(n-1),def:n=>20+1.6*(n-1),defm:n=>14+1.2*(n-1),
+    golpes:[{nome:'Jato de Vapor',t:'m',el:'fogo',poder:26,peso:1,est:['lento',3,.5]}],
+    drops:[['minerio',.4],['brasa',.25]]},
+  morcego:{nome:'Morcego de Vapor',el:'trevas',reacao:{gelo:1.5,luz:1.5,trevas:.5},fisico:1,magico:1,quebra:50,hp:.36,exp:.5,gil:.5,vel:1.7,
+    atk:n=>18+1.4*(n-1),atkm:n=>16+1.3*(n-1),def:n=>8+.8*(n-1),defm:n=>9+.9*(n-1),
+    golpes:[{nome:'Rasante',t:'f',poder:24,peso:3},{nome:'Sugar Energia',t:'m',el:'trevas',poder:14,peso:2,sugaMp:true}],
+    drops:[['eter',.3]]},
+  // ---- Capitulo 3, Parte A: a Serpente do Degelo, chefe do rio (FICHA_CAP3_RIO.md). Fase 1: as placas de gelo resistem ao gelo;
+  // abaixo da metade o gelo DERRETE na agua quente (serpente_f2): mais rapida e forte, mas o gelo do Jux passa a doer. Onda (todos) e a troca de fase ficam no index.html.
+  serpente:{nome:'Serpente do Degelo',el:'agua',reacao:{gelo:.5,agua:.3,fogo:1.4,terra:1.4},fisico:1,magico:1,quebra:380,hp:2.2,exp:4,gil:2,vel:1.1,imuneEst:['sono','atordoado'],
+    atk:n=>29+2*(n-1),atkm:n=>28+2*(n-1),def:n=>18+1.5*(n-1),defm:n=>15+1.3*(n-1),
+    golpes:[{nome:'Bote',t:'f',poder:44,peso:5},{nome:'Constrição',t:'f',poder:30,peso:3,est:['atordoado',1,.5]}],
+    drops:[['hipocao',1],['eter',.6],['fenix',.3,1]]},
+  serpente_f2:{nome:'Serpente do Degelo',el:'agua',reacao:{gelo:1.5,agua:.3,fogo:1.4,terra:1.4},fisico:1.2,magico:1.2,quebra:300,hp:2.2,exp:4,gil:2,vel:1.35,imuneEst:['sono','atordoado'],
+    atk:n=>29+2*(n-1),atkm:n=>28+2*(n-1),def:n=>14+1.2*(n-1),defm:n=>12+1*(n-1),
+    golpes:[{nome:'Bote',t:'f',poder:46,peso:5},{nome:'Constrição',t:'f',poder:32,peso:3,est:['atordoado',1,.5]}],
+    drops:[['hipocao',1],['eter',.6],['fenix',.3,1]]},
   // chefe da area (caverna): o lobo que devora o sol, acorrentado pelo Eclipse
   skoll:{nome:'Skoll, o Alfa',el:'gelo',reacao:{gelo:.5,fogo:1.5,luz:1.4},fisico:1,magico:1,quebra:220,hp:3.2,exp:8,gil:5,vel:1.2,
     atk:n=>34+2.1*(n-1),atkm:n=>30+1.9*(n-1),def:n=>16+1.4*(n-1),defm:n=>16+1.4*(n-1),
@@ -167,7 +195,8 @@ const ESTADOS={
   aurora:   {nome:'Aurora',    cor:'#7dffc8',ruim:false,dano:1.25},
   regen:    {nome:'Regen',     cor:'#7dffa8',ruim:false,tick:.06},
   muralha:  {nome:'Muralha',   cor:'#7fb8ff',ruim:false,recebido:.7},
-  fraqueza: {nome:'Fraqueza',  cor:'#c06aff',ruim:true, recebido:1.3},   // Tambor do Medo (Sombra do Oskar): recebe +30% de dano
+  fraqueza: {nome:'Fraqueza',  cor:'#c06aff',ruim:true, recebido:1.3},
+  queimadura:{nome:'Queimadura',cor:'#ff8a3c',ruim:true, tick:-.07},   // bichos das aguas quentes (Cap. 3): como o veneno, com chamas   // Tambor do Medo (Sombra do Oskar): recebe +30% de dano
 };
 // imunidades por tipo de inimigo (chefes costumam ser imunes a atordoar e sono)
 function poeEstado(alvo,nome,turnos,chance,tipoInim){

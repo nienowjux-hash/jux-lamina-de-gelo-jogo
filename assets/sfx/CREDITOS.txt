@@ -45,3 +45,8 @@ capitao_apito: apito sintetizado (ffmpeg), sem material de terceiros
 presa_rosna / presa_uivo / presa_mordida / presa_investida: feitos a partir dos sons de lobo e de gelo já creditados acima (mais graves, com eco de toca e de vale), para a Presa-Antiga.
 
 fenrir_rosna / fenrir_latido / fenrir_ataque / fenrir_mordida: "Wolf Monster Sound", CaveboyTup (OpenGameArt.org, CC0), misturado com gelo/brilho já creditados. fenrir_uivo: o uivo de lobo já creditado, mais grave, com coro e eco longo. Sons exclusivos do Fenrir (Eco lendário), diferentes dos lobos comuns.
+
+Sons proprios do Skoll e do Bolotao (2026-11-21, ffmpeg a partir de sons CC0 ja creditados acima):
+skoll_rosna, skoll_ataque, skoll_uivo: lobo_rosna/lobo_ataque/lobo_uivo (CC0 / dominio publico NPS) bem mais graves, com eco de caverna, misturados com acolito_explode e skoll_correntes (CC0).
+bolotao_pancada, bolotao_espirro: neve_pancada e bolota_espirro (CC0) mais graves, com bolotao_bruf (CC0).
+telepatia_gelo, telepatia_natureza (2026-11-21): sintetizados do zero com ffmpeg (aevalsrc), feitos para o jogo - sem licenca de terceiros.

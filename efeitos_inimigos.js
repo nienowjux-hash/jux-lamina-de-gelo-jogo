@@ -86,7 +86,7 @@ const EFX_INIM = {
 
   // ---------------- Bolota ----------------
   'Pancada Fofa': {
-    hit() { const a = alvoHeroi(); som('neve_pancada', .9);
+    hit(e) { const a = alvoHeroi(); som(e && e.tipo === 'bolotao' ? 'bolotao_pancada' : 'neve_pancada', .9);   // o Bolotao tem som proprio
       if (fxiPlay('pancada_fofa', a.x, a.y + 10, 760, {escala: 1.7})) { shake = Math.max(shake, 5); return; }
       fxEstrela(a.x, a.y, {raio: 160, ms: 300, cor: COR_NEVE}); fxAnel(a.x, a.y, {raio: 160, ms: 360, esp: 14, cor: COR_NEVE});
       fxFaiscas(a.x, a.y, 16, {cor: COR_NEVE, vel: 420, g: 260, tam: .9}); shake = Math.max(shake, 6); }},
@@ -95,7 +95,7 @@ const EFX_INIM = {
     prep() { som('whoosh', .3); },
     async cast(e) { const b = {x: e.x + 55, y: e.y - 40}, a = alvoHeroi();
       if (fxiPlay('espirro_neve', b.x + 70, b.y - 5, 780, {escala: 1.45, x1: a.x - 50, y1: a.y - 5})) {   // rajada desenhada saindo do nariz e batendo no heroi
-        som('bolota_espirro', .9); await wait(170); som('whoosh2', .5); await wait(480); som('neve_pancada', .7); fxFaiscas(a.x, a.y, 8, {cor: COR_NEVE, vel: 400, g: 200}); shake = Math.max(shake, 5); await wait(80); return; }
+        som(e.tipo === 'bolotao' ? 'bolotao_espirro' : 'bolota_espirro', .9); await wait(170); som('whoosh2', .5); await wait(480); som('neve_pancada', .7); fxFaiscas(a.x, a.y, 8, {cor: COR_NEVE, vel: 400, g: 200}); shake = Math.max(shake, 5); await wait(80); return; }
       som('whoosh2', .7); som('magia_gelo', .5);
       for (let i = 0; i < 12; i++) setTimeout(() => { const q = i / 11; fxFaiscas(b.x + (a.x - b.x) * q, b.y + (a.y - b.y) * q, 8, {ang: Math.atan2(a.y - b.y, a.x - b.x), abre: .5, vel: 500, g: 120, cor: COR_NEVE, tam: 1.2});
         fxBrilho(b.x + (a.x - b.x) * q, b.y + (a.y - b.y) * q, {raio: 60, ms: 260, cor: COR_NEVE, a: .6}); }, i * 40);
@@ -136,6 +136,26 @@ const EFX_INIM = {
   'Pinçada': {
     prep(e) { som('caranguejo_pinca', .5); },
     hit() { const a = alvoHeroi(); som('caranguejo_pinca', 1); fxiPlay('caranguejo_pinca', a.x, a.y, 800, {escala: 1.6}); shake = Math.max(shake, 11); }},
+
+  // ---------------- Bichos das aguas quentes (trecho 3 do rio) ----------------
+  'Chicotada de Brasa': {
+    prep(e) { som('enguia_sibilo', .6); },
+    hit() { const a = alvoHeroi(); som('enguia_chicote', 1); som('enguia_fogo', .6); fxiPlay('enguia_chicote', a.x, a.y - 10, 850, {escala: 1.6}); fxFlash('255,120,30', .15, 220); shake = Math.max(shake, 9); }},
+  'Bolha Fervente': {
+    glow: 600,
+    prep(e) { som('sapo_incha', .8); fxBrilho(e.x + 40, e.y - 70, {raio: 110, ms: 600, cor: '255,170,90', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('sapo_cuspe', .9); fxiPlay('sapo_cuspe', a.x, a.y - 30, 1000, {escala: 1.2}); await wait(450); som('sapo_borbulha', .5); shake = Math.max(shake, 5); await wait(200); }},
+  'Jato de Vapor': {
+    glow: 600,
+    prep(e) { som('caramujo_gosma', .7); fxBrilho(e.x + 40, e.y - 60, {raio: 110, ms: 600, cor: '255,150,80', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('caramujo_vapor', .9); fxiPlay('caramujo_vapor', a.x, a.y - 20, 1100, {escala: 1.5}); await wait(450); shake = Math.max(shake, 5); await wait(200); }},
+  'Rasante': {
+    prep(e) { som('morcego_guincho', .7); },
+    hit() { const a = alvoHeroi(); som('morcego_asas', .9); fxiPlay('morcego_rasante', a.x, a.y - 20, 800, {escala: 1.5}); shake = Math.max(shake, 6); }},
+  'Sugar Energia': {   // rouba MP do heroi (index.html, golpeDoTipo: g.sugaMp)
+    glow: 650,
+    prep(e) { som('morcego_guincho', .6); fxBrilho(e.x + 30, e.y - 80, {raio: 110, ms: 650, cor: '255,110,70', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('morcego_suga', .9); const esc = Math.max(1.3, (a.x - e.x) / 360); fxiPlay('morcego_suga', (a.x + e.x) / 2, a.y - 20, 1100, {escala: esc}); await wait(700); }},
 
   // ---------------- Ignarok (Cap. 2, Parte C): efeitos desenhados (ref/inimigos_fx/ignarok_*.png) ----------------
   'Punho de Magma': {
@@ -208,24 +228,34 @@ const EFX_INIM = {
       fxAnel(a.x, a.y + 90, {raio: 260, achata: .26, ms: 600, esp: 18, cor: COR_ECL2}); await wait(300);
       fxPilar(a.x, a.y + 100, {larg: 120, ms: 700, cor: COR_ECL2}); fxFlash('50,0,100', .3, 400); fxFaiscas(a.x, a.y, 20, {cor: COR_ECL, ang: -1.57, abre: .8, vel: 700, g: -40}); await wait(260); }},
 
+  // ---------------- Serpente do Degelo (chefe do rio) ----------------
+  'Bote': {
+    prep(e) { som('serpente_sibilo', .8); },
+    hit() { const a = alvoHeroi(); som('serpente_rugido', .6); som('rio_splash_grande', .7);
+      fxImpacto(a.x, a.y); fxCorte(a.x + 100, a.y - 130, a.x - 40, a.y + 30, {ms: 340, esp: 26, cor: '150,225,255'}); fxCorte(a.x + 70, a.y - 140, a.x - 70, a.y + 20, {ms: 340, esp: 20, cor: '220,245,255'});
+      fxFaiscas(a.x, a.y - 20, 18, {cor: '170,230,255', vel: 480, g: 300}); fxGolpe(a.x, a.y, 1.4, '150,225,255'); shake = Math.max(shake, 14); }},
+  'Constrição': {
+    prep(e) { som('serpente_sibilo', .7); },
+    hit() { const a = alvoHeroi(); som('serpente_aperta', 1); fxiPlay('serpente_aperta', a.x, a.y - 40, 1200, {escala: 1.7}); fxFlash('120,200,255', .15, 300); shake = Math.max(shake, 10); }},
+
   // ---------------- Skoll, o Alfa ----------------
   'Mordida Sombria': {
-    prep() { som('lobo_rosna', .9); },
+    prep() { som('skoll_rosna', .9); },
     hit() { const a = alvoHeroi(); som('skoll_mordida', 1);
       if (fxiPlay('mordida_sombria', a.x, a.y - 10, 850, {escala: 2.1})) { fxFlash('60,10,110', .22, 280); shake = Math.max(shake, 14); return; }
       fxImpacto(a.x, a.y);
       fxCorte(a.x + 90, a.y - 120, a.x - 30, a.y + 40, {ms: 360, esp: 26, cor: COR_ECL2}); fxCorte(a.x + 60, a.y - 130, a.x - 60, a.y + 30, {ms: 360, esp: 22, cor: COR_ECL2});
       fxGolpe(a.x, a.y, 1.5, COR_ECL2); fxFlash('60,10,110', .25, 280); shake = Math.max(shake, 14); }},
   'Investida Acorrentada': {
-    prep() { som('lobo_ataque', 1); },
-    hit() { const a = alvoHeroi(); som('skoll_correntes', 1); som('lobo_mordida', .6);
+    prep() { som('skoll_ataque', 1); },
+    hit() { const a = alvoHeroi(); som('skoll_correntes', 1); som('skoll_mordida', .5);
       if (fxiPlay('investida_acorrentada', a.x, a.y - 5, 850, {escala: 2.1})) { fxAnel(hero.x, hero.y + 8, {raio: 380, achata: .26, ms: 600, esp: 22, cor: COR_ECL2}); shake = Math.max(shake, 16); return; }
       fxLinhas(a.x, a.y, 380, {a: .5, cor: COR_ECL});
       for (let i = 0; i < 3; i++) setTimeout(() => fxCorte(a.x + 130, a.y - 90 + i * 55, a.x - 90, a.y - 70 + i * 55, {ms: 340, esp: 14, cor: '120,120,140', risca: .3}), i * 70);   // as correntes chicoteando
       fxAnel(hero.x, hero.y + 8, {raio: 380, achata: .26, ms: 600, esp: 22, cor: COR_ECL2}); fxGolpe(a.x, a.y, 1.6, COR_ECL2); shake = Math.max(shake, 16); }},
   'Uivo do Eclipse': {
     glow: 900,
-    prep(e) { som('lobo_uivo', 1); tween(G, 'dim', .45, 400); const b = {x: e.x + 90, y: e.y - 150};
+    prep(e) { som('skoll_uivo', 1); tween(G, 'dim', .45, 400); const b = {x: e.x + 90, y: e.y - 150};
       for (let k = 0; k < 3; k++) setTimeout(() => fxAnel(b.x, b.y, {raio: 330, ms: 800, esp: 14, cor: COR_ECL, a: .8}), k * 230); fxBrilho(b.x, b.y, {raio: 220, ms: 900, cor: COR_ECL2, cresce: true}); },
     async cast(e) { const b = {x: e.x + 90, y: e.y - 150}, a = alvoHeroi();
       {   // eclipse desenhado: nasce na boca, as meias-luas de som viajam (quadros 1-4) e a coluna de trevas cai no heroi (5-8)

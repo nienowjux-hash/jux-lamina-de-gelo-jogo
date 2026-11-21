@@ -1558,6 +1558,8 @@ function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone
   try{if(nome!=='vila')a.currentTime=0;a.volume=0;a.play().catch(()=>{});}catch(e){}
   musAtual=a;let v=0;const alvo=nome==='vila'?.42:.55;const f=setInterval(()=>{v+=.05;if(v>=alvo){clearInterval(f);a.volume=alvo;}else a.volume=v;},60);
 }
+// telepatia dos Ecos (pedido 2026-11-21): eles nao falam em voz alta; quando a fala e de um Eco toca um som mistico
+const TELE_SOM={Fenrir:arq('assets/sfx/novos/telepatia_gelo'),Tartarok:arq('assets/sfx/novos/telepatia_natureza')};
 const SOM_CINE={ig_rugido:arq('assets/sfx/novos/ignarok_rugido'),ig_rosna:arq('assets/sfx/novos/ignarok_rosna'),ig_punho:arq('assets/sfx/novos/ignarok_punho'),ig_erupcao:arq('assets/sfx/novos/ignarok_erupcao'),ig_queda:arq('assets/sfx/novos/ignarok_queda'),gelo:arq('assets/sfx/novos/magia_gelo'),quebra:arq('assets/sfx/novos/gelo_quebra'),brilho:arq('assets/sfx/novos/magia_brilho'),
   carga:arq('assets/sfx/novos/carga_gelo'),whoosh:arq('assets/sfx/novos/whoosh'),whoosh2:arq('assets/sfx/novos/whoosh2'),impacto:arq('assets/sfx/novos/pedras'),rosna:arq('assets/sfx/novos/lobo_rosna'),uivo:arq('assets/sfx/novos/lobo_uivo'),correntes:arq('assets/sfx/novos/skoll_correntes')};
 const ab={on:false,esperando:false,i:0,t:0,fim:0,neve:[]};
@@ -1623,6 +1625,7 @@ function abDesenha(){
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,34);ctx.fillRect(0,H-34,W,34);
   // legenda: a fala atual digitando
   let at=null;for(const fl of c.falas)if(ab.t>=fl[0])at=fl;
+  if(at&&ab.tele!==at){ab.tele=at;if(TELE_SOM[at[1]])som(TELE_SOM[at[1]],.5);}
   if(at){const [tt,quem,txt,tipo]=at,n=Math.floor((ab.t-tt)*38);
     ctx.textAlign='center';
     ctx.font=(quem==='Narrador'?'italic ':'')+'bold 21px "Trebuchet MS"';
@@ -2046,6 +2049,7 @@ function desenhaCena(){const im=CENAS_FALA[fala.cena];if(!im||!im.complete)retur
 function caixaFala(){
   if(fala.cena)desenhaCena();
   const [quem,L,ex]=fala.linhas[fala.i],x=110,y=H-150,w=W-220,h=126;
+  if(fala.tele!==fala.i){fala.tele=fala.i;if(TELE_SOM[quem])som(TELE_SOM[quem],.5);}
   const rk=RET_DE[quem],R=rk&&RET[rk],RI=rk&&RETI[rk];
   ctx.save();ctx.fillStyle='rgba(6,16,40,.9)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;
   ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
