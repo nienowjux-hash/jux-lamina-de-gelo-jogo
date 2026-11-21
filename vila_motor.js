@@ -1086,6 +1086,8 @@ function desenhaBrilhos(){
 
 const CHAMINES=[[1328,300,7],[410,128,2.5],[1138,140,2],[185,250,2]];   // x, y, quantos por segundo
 
+// pose do Jux ao conversar: na vila de luto e no ataque ele fica em pe, serio (as poses alegres, como 'rindo', pareciam ele passando mal)
+const poseFala=id=>(lutoAtivo()||emAtaque()||(JOGO.cap2&&JOGO.cap2.fase==='fim'))?null:(POSE_FALA[id]||null);
 const POSE_FALA={inicio:'surpreso',fogueira:'sentado',bacon:'rindo',tico:'rindo',borin:'confiante',ingrid:'acenar',oskar:'confiante',barraca_comida:'acenar',barraca_bebida:'acenar',poco:'examinar',arvore:'examinar',ferraria:'examinar',vovo:'examinar',portao:'confiante',pulo:'confiante',altar_escolha:'examinar',altar_ganha:'confiante',altar:'confiante'};
 // passagem entre regioes: a fala so aparece na PRIMEIRA vez (pedido do usuario); depois o Jux ja passa direto
 function passa(id,acao){JOGO.passou=JOGO.passou||{};if(JOGO.passou[id]){acao();return;}abreFala(id,()=>{JOGO.passou[id]=true;acao();});}
@@ -1133,7 +1135,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='prova_fenrir'&&!fim){if(provaFenrirEstado()==='vencida'){tocaFilme(CENAS_FENRIR_V,IMG_FENRIR_V,()=>{concluiProvaFenrir();espiritoFenrir();});return;}else abreFala('prova_fenrir',()=>{UI.escolha={id:'prova',ops:['Lutar agora','Ainda não'],sel:0};som(SOM.ui_vez,.5);});return;}
   if(id==='prova_vence'&&!fim)return;
   if(id==='santuario'&&!fim){abreFala('santuario',()=>{if(typeof encheVida==='function')encheVida();salvaVila();aviso('HP e MP recuperados · Jogo salvo!','#7dffa8');});return;}if(id.startsWith('col_')){pegaColeta(id.slice(4));return;}if(!UI.pulaLoja&&uiFala(id))return;
-  if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=POSE_FALA[id]||null;hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=POSE_FALA[id]||null;hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
+  if(!UI.soConversa&&typeof missaoFala==='function'){const mf=missaoFala(id);if(mf){hero.pose=poseFala(id);hero.parado=0;hero.alvo=null;hero.pontoAlvo=null;fala={linhas:mf.linhas,i:0,letras:0,fim:()=>{if(mf.fim)mf.fim();if(fim)fim();}};som(SOM.ui_vez,.5);return;}}if(id==='bacon')oinc(.85);if(id==='altar'&&!hero.espada){filmeEspada();return;}hero.pose=poseFala(id);hero.parado=0;if(!FALAS[id]){if(fim)fim();return;}   // ponto sem fala escrita: nao trava o jogo (bug do Tunel das correntes)
   if(!fim&&id==='vovo'&&JOGO.cap2&&['volta','preparo','noite'].includes(JOGO.cap2.fase)&&cap1Trava()){falaPendencias('vovo');return;}   // trava: a historia so anda com o Capitulo 1 completo
   if(!fim&&emFestival()&&FEST_EFEITO[id])fim=FEST_EFEITO[id];
   if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Nova tarefa: Preparativos do festival (veja no canto da tela)','#ffe27a');};
@@ -1152,6 +1154,11 @@ function avanca(){if(!fala)return;const L=fala.linhas[fala.i][1];
 let clarao=0;function ganhaEspada(){hero.espada=true;clarao=1;som(SOM.ui_vez,.9);for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});setTimeout(()=>abreFala('altar_ganha'),700);}
 function nomePonto(id){if(NOMES[id])return NOMES[id];if(id.startsWith('tes_')){const q=TESOUROS.find(s=>'tes_'+s.id===id);return q&&q.tipo==='bau'?'Baú':'Algo brilhando';}
   if(id.startsWith('col_')){const c=COLETAS.find(q=>'col_'+q.id===id);return c?ITENS[c.item].nome:'Algo';}return '';}
+// quem tem corpo agora (so quem esta visivel no mapa): elipse nos pes; so bloqueia chegando MAIS perto (nunca prende o Jux)
+function corposNpc(){if(!NA_VILA)return [];if(emAtaque()){const L=(JOGO.cap2&&JOGO.cap2.lutas)||{},o=[vovo];if(L.atq_2)o.push(borin);for(const n of ANDARILHOS)if(ATQ_SALVO[n.id]&&L[ATQ_SALVO[n.id]])o.push(n);return o;}
+  const o=[tico,vovo,borin,...ANDARILHOS,...FIGURANTES];if(!(JOGO.cap2&&JOGO.cap2.baconTime))o.push(bacon);return o.filter(n=>n&&isFinite(n.x));}
+function npcBloqueia(x,y,x0,y0){for(const n of corposNpc()){const rx=n===bacon?14:10,ry=6,d=((x-n.x)/rx)**2+((y-n.y)/ry)**2;
+  if(d<1&&d<((x0-n.x)/rx)**2+((y0-n.y)/ry)**2)return true;}return false;}
 function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!atqPode(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
 
 
@@ -1658,7 +1665,7 @@ function passo(dt){
     if(hero.esc==='descer'&&q>=.52&&!hero.escN){hero.escN=1;poeiraNeve(hero.x,hero.y,14);som(PASSOS[0],.8);}
     if(hero.pulo<=0){hero.pulo=0;hero.x=hero.px1;hero.y=hero.py1;if(hero.esc==='subir'){hero.olha='cima';som(PASSOS[0],.6);}else if(hero.esc==='descer')hero.olha='baixo';else{poeiraNeve(hero.x,hero.y,10);som(PASSOS[0],.7);}hero.esc=null;hero.puloD=0;}   // pedido do usuario (2026-11-18): o Sir Bacon fica no chiqueiro, nao segue mais o Jux depois do pulo
     moveu=true;
-  }else if(n){dx/=n;dy/=n;hero.corre=!!(teclas['shift']||(hero.alvo&&hero.alvoLonge));const v=(hero.corre?VELC:VEL)*dt,nx=hero.x+dx*v,ny=hero.y+dy*v;
+  }else if(n){const hx0=hero.x,hy0=hero.y;dx/=n;dy/=n;hero.corre=!!(teclas['shift']||(hero.alvo&&hero.alvoLonge));const v=(hero.corre?VELC:VEL)*dt,nx=hero.x+dx*v,ny=hero.y+dy*v;
     const pp=Math.abs(dx)>.5&&!livre(nx,hero.y)?pouso(hero.x,hero.y,dx>0?1:-1):Math.abs(dy)>.5&&!livre(hero.x,ny)?pousoV(hero.x,hero.y,dy>0?1:-1):null;
     if(pp!==null){   // chegou na cerca andando de lado: pula por cima
       hero.pulo=PULO;hero.puloD=PULO;hero.esc=null;hero.escN=0;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;hero.alvo=null;
@@ -1675,6 +1682,9 @@ function passo(dt){
         if(livre(nx2,ny2)){hero.x=nx2;hero.y=ny2;moveu=true;}
         else if(px&&livre(nx2,hero.y)){hero.x=nx2;moveu=true;}else if(py&&livre(hero.x,ny2)){hero.y=ny2;moveu=true;}}
     }
+    // os moradores tem CORPO (2026-11-20: 'o Jux atravessa as pessoas'): nao entra no corpo de ninguem; escorrega de lado se der
+    if(moveu&&npcBloqueia(hero.x,hero.y,hx0,hy0)){const ax=hero.x,ay=hero.y;
+      if(!npcBloqueia(ax,hy0,hx0,hy0)){hero.y=hy0;}else if(!npcBloqueia(hx0,ay,hx0,hy0)){hero.x=hx0;}else{hero.x=hx0;hero.y=hy0;moveu=false;}}
     if(!moveu)hero.alvo=null;
     if(dx)hero.dir=dx<0?-1:1;
     const ax=Math.abs(dx),ay=Math.abs(dy),hz=dx<0?'esquerda':'direita',vt=dy<0?'cima':'baixo';
