@@ -729,10 +729,10 @@ function festaPoe(){if(festaPosto||!emFestival())return;festaPosto=true;
     else if(k==='bardo'||k==='casal'||(k==='bino'&&JOGO.bino&&JOGO.bino.ativo)){FIGURANTES.push({id:k,x:L[0],y:L[1],festa:k});}}}
 // o desenho de festa de um morador (devolve true se desenhou no lugar do desenho normal)
 // LUTO (LUTO_ANIMACOES.md, 2026-11-20): na manha depois da morte do Halvard, cada morador fica parado num loop triste (vila_luto.js)
-const LUTO_D=window.JUX_LUTO||{},LUTO_I={};for(const k in LUTO_D){const i=new Image();i.src=LUTO_D[k].atlas;LUTO_I[k]=i;LUTO_D[k].escala*=1.15;}   // um pouco maiores (sentados ficavam pequenos demais)
+const LUTO_D=window.JUX_LUTO||{},LUTO_I={};for(const k in LUTO_D){const i=new Image();i.src=LUTO_D[k].atlas;LUTO_I[k]=i;LUTO_D[k].escala*=k==='bacon'?1.5:1.15;}   // um pouco maiores (sentados ficavam pequenos demais)
 const lutoAtivo=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='manha');
 // onde cada um fica: em volta do memorial, o Borin na forja, a Ingrid na barraca, o Oskar perto da outra barraca
-const LUTO_LUGAR={tico:[692,708],bacon:[656,712],vovo:[800,708],borin:[1247,580],ingrid:[486,612],oskar:[1000,640]};
+const LUTO_LUGAR={tico:[652,674],bacon:[614,678],vovo:[884,672],borin:[1247,580],ingrid:[486,612],oskar:[1000,640]};
 function lutoPasso(){TICO_ALTAR.r=partProximo()==='lanterna'?46:0;const M={tico,vovo,borin,bacon};for(const a of ANDARILHOS)M[a.id]=a;
   for(const k in LUTO_LUGAR){const o=M[k];if(!o)continue;let [x,y]=LUTO_LUGAR[k];
     if(k==='tico'&&partProximo()==='lanterna'){x=TICO_ALTAR.x;y=TICO_ALTAR.y;}   // o Tico sozinho no alto do altar
