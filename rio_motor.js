@@ -12,6 +12,7 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const cl = (v, a, b) => Math.max(a, Math.min(b, v));
 const img = s => { const i = new Image(); i.src = s; return i; };
 const MAPAS = R.trechos.map(tr => img(tr.mapa)), F = {};
+const FRENTES = R.trechos.map(tr => (tr.frentes || []).map(f => Object.assign({ i: img(f.img) }, f)));   // copas que ficam na frente do barco
 let TR = 0;   // trecho atual do rio (0 = o rio de gelo, 1 = o degelo, 2 = as aguas quentes)
 for (const k in R.folhas) F[k] = Object.assign({ i: img(R.folhas[k].atlas) }, R.folhas[k]);
 
@@ -407,9 +408,12 @@ function desenhosEnfeites() {   // [y, desenha] para ordenar por profundidade co
     quadro(F.sapo, lin, q, S.x, S.y - 16, 1); }]);
   return L;
 }
-function desenhaCachoeira() {   // a agua animada por cima da cachoeira pintada (espelhada: no mapa o degrau de cima e o da direita)
-  if (TR !== 1) return; const i = Math.floor(t * 8) % 6;
-  quadro(F.cachoeira, Math.floor(i / 3), i % 3, 1137, 410, 1, true, .92);
+function desenhaCachoeira() {   // a agua animada COBRINDO a cachoeira pintada (2026-11-21: 'da para ver o sprite parado por baixo'):
+  // o desenho do quadro (caixa 3..193 x 2..211 da celula) e esticado ate a caixa da pintada no mapa, espelhado (o degrau de cima e o da direita)
+  if (TR !== 1) return; const f = F.cachoeira; if (!f.i.complete) return; const i = Math.floor(t * 8) % 6, q = i % 3, lin = Math.floor(i / 3);
+  const bx0 = 1015, by0 = 330, bx1 = 1245, by1 = 505, kx = (bx1 - bx0) / 190, ky = (by1 - by0) / 209;
+  const [sx, sy] = tela(bx1 + 3 * kx, by0 - 2 * ky);
+  ctx.save(); ctx.translate(sx, sy); ctx.scale(-1, 1); ctx.drawImage(f.i, q * f.fw, lin * f.fh, f.fw, f.fh, 0, 0, f.fw * kx * Z, f.fh * ky * Z); ctx.restore();
 }
 function desenhaInsetos() { if (TR !== 1 || !ENF.patos) return; for (const o of ENF.insetos) quadro(F.insetos, o.lin, Math.floor(o.f) % 6, o.x, o.y, 1, o.vx < 0); }
 
@@ -445,6 +449,9 @@ function desenha() {
     quadro(F.rema, r, barco.remaQ >= 0 ? barco.remaQ : 0, barco.x, barco.y - 48 + bob, 1, false, null, Math.sin(t * 1.9) * .012);
   }]);
   L.push(...desenhosEnfeites());
+  for (const f of FRENTES[TR] || []) L.push([f.base, () => { if (!f.i.complete) return; const [sx, sy] = tela(f.x, f.y), w = f.i.width * Z, h = f.i.height * Z;
+    const atras = barco.y < f.base && barco.x > f.x - 40 && barco.x < f.x + f.i.width + 40 && barco.y > f.y - 20;   // o barco embaixo da copa: ela fica meio transparente
+    ctx.save(); ctx.globalAlpha = atras ? .55 : 1; ctx.drawImage(f.i, sx, sy, w, h); ctx.restore(); }]);
   L.sort((a, b) => a[0] - b[0]); for (const [, f] of L) f();
   // efeitos (respingos, splash, marola)
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
