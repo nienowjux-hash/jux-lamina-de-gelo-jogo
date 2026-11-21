@@ -45,11 +45,12 @@ function aplicaAtaque(){if(atqAplicado)return;atqAplicado=true;festAplicado=true
   MAPA_ATQ.onload=()=>{MAPA.src=MAPA_ATQ.src;
     for(const f of FR){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;const g=c.getContext('2d');
       const faz=()=>{g.clearRect(0,0,f.w,f.h);g.drawImage(f.i0||f.i,0,0,f.w,f.h);g.globalCompositeOperation='source-in';g.drawImage(MAPA_ATQ,f.x,f.y,f.w,f.h,0,0,f.w,f.h);g.globalCompositeOperation='source-over';f.i0=f.i0||f.i;f.i=c;};
-      if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_ATQ.src='assets/vila/mapa_ataque.jpg';}
+      if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_ATQ.src='assets/vila/mapa_ataque.jpg?v=2';}
 const ATQ=window.JUX_ATAQUE||null,ATQI={};if(ATQ)for(const k in ATQ){ATQI[k]=new Image();ATQI[k].src=ATQ[k].atlas;}
 // fogo nas marcas de queimado do desenho: [x, y (base), tamanho]; nos telhados vai por cima de tudo, no chao entra na ordem do Jux
 const ATQ_TETO=[[126,190,.42],[369,202,.4],[1128,209,.4],[1267,258,.38],[83,326,.4],[374,394,.48],[109,422,.5],[1169,448,.46],[1392,472,.36],[134,668,.42],[462,562,.36],[1009,556,.36]];
-const ATQ_CHAO=[[240,834,.3],[1035,712,.28],[664,674,.24]];
+// a fogueira da praca: o fogo pintado no mapa foi apagado (escurecido) e o fogo roxo animado fica no lugar dele
+const ATQ_CHAO=[[745,649,1.05],[240,834,.3],[1035,712,.28],[664,674,.24]];
 const ATQ_FUMACA=[[109,400,.9],[369,180,.75],[1128,188,.75],[1169,428,.85],[134,650,.7]];
 function atqQuadro(k,x,y,e,fase,fps){const D=ATQ&&ATQ[k],I=ATQI[k];if(!D||!I.complete)return;const q=Math.floor(t*fps+fase)%D.n;
   ctx.drawImage(I,q*D.w,0,D.w,D.h,x-D.ancora[0]*e,y-D.ancora[1]*e,D.w*e,D.h*e);}
@@ -1024,11 +1025,14 @@ const FEST_BAND=[[572,196,602,258],[918,196,950,258],[532,680,565,745],[906,680,
   [138,435,175,512],[365,410,402,488],[1113,495,1142,552],[678,120,702,172]];
 const FEST_LANT=[[720,362,734,405],[665,415,681,460],[710,452,726,498],[760,452,776,500],[810,410,826,458],[864,360,879,400],[932,420,951,462],[550,450,571,490],
   [586,455,614,510],[626,460,651,515],[801,460,826,515],[839,450,866,505],[916,445,941,503]];
-function desenhaVentoFesta(){
-  FEST_BAND.forEach((b,i)=>{const bw=b[2]-b[0];
+// no mapa do ataque: as bandeiras rasgadas (postes, portao e as fitas da arvore) e as 4 lanternas apagadas da arvore
+const ATQ_BAND=[[568,196,602,262],[918,196,952,262],[538,662,576,755],[902,672,942,755],[608,458,656,545],[872,470,904,522],[466,470,498,520],[1068,470,1100,520]];
+const ATQ_LANT=[[570,460,601,521],[799,444,829,519],[839,438,869,503],[911,424,943,495]];
+function desenhaVentoFesta(){const BAND=emAtaque()?ATQ_BAND:FEST_BAND,LANT=emAtaque()?ATQ_LANT:FEST_LANT;
+  BAND.forEach((b,i)=>{const bw=b[2]-b[0];
     for(let y=b[1];y<b[3];y+=2){const f=(y-b[1])/(b[3]-b[1]),dx=(Math.sin(t*2.8+y*.12+i*1.9)*2.2+vento*3)*f;
       ctx.drawImage(MAPA,b[0]*K,y*K,bw*K,2*K,b[0]+dx,y,bw,2);}});
-  FEST_LANT.forEach((b,i)=>{const bw=b[2]-b[0],a=Math.sin(t*1.7+i*1.37)*.06+vento*.03;
+  LANT.forEach((b,i)=>{const bw=b[2]-b[0],a=Math.sin(t*1.7+i*1.37)*.06+vento*.03;
     for(let y=b[1];y<b[3];y+=1){const dx=(y-b[1])*a;ctx.drawImage(MAPA,b[0]*K,y*K,bw*K,K,b[0]+dx,y,bw,1);}});}
 function desenhaBrilhos(){
   ctx.save();ctx.globalCompositeOperation='lighter';
@@ -1782,7 +1786,7 @@ function desenha(){
       ctx.fillStyle=g;ctx.fillRect(784,-40,18,130);ctx.restore();}}
   // na vila em ataque o desenho ja tem a agua, a forja e as lanternas apagadas (as animacoes azuis/laranja ficariam erradas)
   if(NA_VILA&&!emAtaque()){desenhaAgua();desenhaCascatas();desenhaPeixes();desenhaForja();}
-  if(NA_VILA&&emFestival())desenhaVentoFesta();   // bandeiras e lanternas do mapa da festa balancando
+  if(NA_VILA&&(emFestival()||emAtaque()))desenhaVentoFesta();   // bandeiras e lanternas do mapa da festa balancando
   // agua do riacho: brilhos correndo
   ctx.save();ctx.globalCompositeOperation='lighter';
   for(const b of brilhoRio){ctx.globalAlpha=Math.sin(Math.PI*b.v/1.4)*.55;ctx.fillStyle='#d8f6ff';ctx.fillRect(b.x,b.y,b.l,.8);}
