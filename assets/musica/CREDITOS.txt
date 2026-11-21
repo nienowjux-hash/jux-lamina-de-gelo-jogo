@@ -75,3 +75,11 @@ Sons das Sombras (assets/sfx/novos/som_oskar_*, som_borin_*, som_ingrid_*), todo
 Sons da Ingrid (refeitos 2026-11-20): som_ingrid_lamento = "Crying female low tone voice over" — JeanMyna_V — CC-BY 3.0 — https://opengameart.org/content/crying-female-low-tone-voice-over-vocal-sound-for-character (crédito: @JeanMyna_V);
   som_ingrid_sopa = "Boiling water loops" (CC0) — https://opengameart.org/content/boiling-water-loops + "Acid burn sounds" — mikhog — CC-BY 3.0 — https://opengameart.org/content/acid-burn-sounds;
   som_ingrid_lagrima = "Water drops" (CC0) — https://opengameart.org/content/water-drops
+
+O RIO (Capitulo 3, Parte A) - todos CC0 (dominio publico), 2026-11-21:
+- musica_rio.mp3: "Down the River" (album "It's time for adventure vol 2"), Komiku / Loyalty Freak Music, CC0 - https://opengameart.org/content/down-the-river (cortado em 108 s para o loop)
+- sfx/rio_ambiente.mp3: "Sea and river wave sounds", RandomMind, CC0 - https://opengameart.org/content/sea-and-river-wave-sounds (60 s com emenda)
+- sfx/rio_remo_1.mp3 e rio_remo_2.mp3: "Water_Paddle_soft_024" e "Water_Paddle_med_014", EpicWizard, CC0 - https://freesound.org/people/EpicWizard/sounds/316597/ e /316595/
+- sfx/rio_splash_peq.mp3 e rio_splash_grande.mp3: "40 CC0 water splash / slime sfx" (splash_10 e splash_04), rubberduck, CC0 - https://opengameart.org/content/40-cc0-water-splash-slime-sfx
+- sfx/rio_madeira.mp3: "Impact Sounds" (impactWood_heavy_000), Kenney (www.kenney.nl), CC0 - https://kenney.nl/assets/impact-sounds
+- sfx/rio_passaros.mp3: "Bird chirping sounds", syncopika, CC0 - https://opengameart.org/content/bird-chirping-sounds

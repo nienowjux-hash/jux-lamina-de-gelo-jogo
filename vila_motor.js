@@ -1115,6 +1115,8 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(id==='entrada_trilha'&&!fim){passa('entrada_trilha',()=>{JOGO.trilha={x:1360,y:515};vaiPara('trilha.html');});return;}
   if(id==='caverna_fechada'&&!fim){abreFala('caverna_fechada');return;}
   if(id==='saida_vila'&&!fim){passa('saida_vila',()=>{JOGO.vila=Object.assign(JOGO.vila||{},{x:722,y:710,espada:true});vaiPara('vila.html');});return;}
+  // depois do fim do Capitulo 2: o portao pergunta se desce ao rio (Capitulo 3) ou vai para a trilha
+  if(id==='portao'&&!fim&&REGIAO==='vila'&&JOGO.cap2&&JOGO.cap2.fase==='fim'&&typeof UI==='object'){UI.escolha={id:'rio_cap3',ops:['Descer até o rio (Capítulo 3)','Ir para a trilha','Ficar na vila'],sel:0};som(SOM.ui_vez,.5);return;}
   if(id==='portao'&&hero.espada&&!fim){const om=typeof estadoMissao==='function'?estadoMissao('olhos_roxos'):'ativa';if(om!=='ativa'&&om!=='feita'){abreFala('portao_fechado');return;}   // trava: so sai com a missao da Vovo aceita (o Bino entra no time nela)
     passa('portao_sai',()=>{JOGO.trilha=null;vaiPara('trilha.html');});return;}
   if(id==='portao_sai'&&!fim)return;
@@ -1429,10 +1431,27 @@ for(const [k,f] of [['pa1a','a1_vovo_a'],['pa1b','a1_vovo_b'],['pa2t','a2_tico']
 const imgPart=c=>c.img==='ordem1'?'assets/cine_ordem/cena_1.jpg':'assets/cine_partida/'+c.img+'.jpg';
 const IMG_ADEUS=imgsFilme(CENAS_ADEUS.map(imgPart)),IMG_CRISTAIS=imgsFilme(CENAS_CRISTAIS.map(imgPart)),IMG_PARTIDA=imgsFilme(CENAS_PARTIDA.map(imgPart));
 {const h=location.hash.split('?')[0];if(REGIAO==='vila'&&h==='#cine_partida')setTimeout(()=>tocaFilme(CENAS_PARTIDA,IMG_PARTIDA,()=>{}),1500);if(REGIAO==='vila'&&h==='#cine_adeus')setTimeout(()=>tocaFilme(CENAS_ADEUS,IMG_ADEUS,()=>{}),1500);}
+// CAPITULO 3, PARTE A (FICHA_CAP3_RIO.md): "O barco do Borin". Depois do fim do Cap. 2, o portao leva ao cais do rio:
+// o Borin construiu um barco de presente (o Halvard) e o time desce o rio (rio.html). Vozes: ROTEIRO_VOZ_BARCO.md
+const CENAS_BARCO=[
+  {img:'barco1',mus:'bino_b',cam:[.5,.55,1.0, .58,.5,1.1],dur:19.5,fx:'neve',vozes:[[.8,'bb1a'],[4.8,'bb1b'],[10.8,'bb1j'],[15.1,'bb1c']],
+    falas:[[.8,'Borin','Eu não dormi. Martelei a noite toda.'],[4.8,'Borin','O Halvard sempre dizia que o rio leva a gente pra onde a estrada não chega.'],[10.8,'Jux','Borin… você fez um barco. Em uma noite.'],[15.1,'Borin','Fiz! E chorei em cada prego!']],sons:[]},
+  {img:'barco2',mus:'bino_b',cam:[.5,.45,1.12, .5,.5,1.0],dur:14.5,fx:'neve',vozes:[[.8,'bb2a'],[5,'bb2j'],[8.9,'bb2n'],[10.3,'bb2b']],
+    falas:[[.8,'Borin','O nome dele é Halvard. Não aceito outro.'],[5,'Jux','Então o Halvard vai levar a gente até o fogo.'],[8.9,'Bino','…Bom barco.'],[10.3,'Borin','O BINO ELOGIOU! Alguém anota o dia de hoje!']],sons:[]},
+  {img:'barco3',mus:'rio',cam:[.4,.5,1.12, .55,.55,1.0],dur:12,fx:'neve',vozes:[[1,'bb3b'],[4.6,'bb3j']],
+    falas:[[1,'Borin','Voltem vivos! E tragam histórias!'],[3.8,'Sir Bacon','Oinc!'],[4.6,'Jux','Sir Bacon, você não é o capitão.'],[8.4,'✦','O barco Halvard entrou no time. Desça o rio até o sul.',1]],sons:[[3.8,'oinc'],[8.2,'brilho']]},
+];
+for(const [k,f] of [['bb1a','1_borin_a'],['bb1b','1_borin_b'],['bb1j','1_jux'],['bb1c','1_borin_c'],['bb2a','2_borin_a'],['bb2j','2_jux'],['bb2n','2_bino'],['bb2b','2_borin_b'],['bb3b','3_borin'],['bb3j','3_jux']])VOZES[k]=arq('assets/cine_barco/voz_barco_'+f);
+let IMG_BARCO=null;   // carrega so quando precisa (e a cena 3 so entra quando a imagem existir)
+function filmeBarco(depois){const cenas=CENAS_BARCO.slice();const t=new Image();t.onload=()=>go(cenas);t.onerror=()=>go(cenas.slice(0,2));t.src='assets/cine_barco/barco3.jpg';
+  function go(c){IMG_BARCO=imgsFilme(c.map(x=>'assets/cine_barco/'+x.img+'.jpg'));tocaFilme(c,IMG_BARCO,depois);}}
+function desceRio(){if(JOGO.cap3&&JOGO.cap3.barco){vaiPara('rio.html');return;}
+  filmeBarco(()=>{JOGO.cap3=Object.assign(JOGO.cap3||{},{fase:'rio',barco:true});salvaJogo();vaiPara('rio.html');});}
+{const h=location.hash.split('?')[0];if(REGIAO==='vila'&&h==='#cine_barco')setTimeout(()=>filmeBarco(()=>{}),1500);}
 // "Na manha seguinte…" (depois de O preco) e o fim do capitulo usam a mesma tela que escurece (noiteFade), com outro texto
 function manhaSeguinte(){noiteFade={t:0,virou:false,txt:'Na manhã seguinte…',vira:()=>{JOGO.cap2.fase='manha';JOGO.cap2.e={};salvaJogo();aplicaManha();hero.x=722;hero.y=716;hero.olha='cima';},
   fim:()=>abreFala('manha_chega')};hero.alvo=null;hero.pontoAlvo=null;}
-function fimCapitulo2(){noiteFade={t:0,virou:false,k:1.8,txt:'Fim do Capítulo 2 — O festival da Rainha do Inverno',txt2:'Capítulo 3: em breve',vira:()=>{JOGO.cap2.fase='fim';JOGO.cap2.baconTime=true;salvaJogo();
+function fimCapitulo2(){noiteFade={t:0,virou:false,k:1.8,txt:'Fim do Capítulo 2 — O festival da Rainha do Inverno',txt2:'Capítulo 3: em breve',vira:()=>{JOGO.cap2.fase='fim';if(typeof marcaFimCapitulo==='function')marcaFimCapitulo(2);JOGO.cap2.baconTime=true;salvaJogo();
     hero.x=722;hero.y=700;hero.olha='baixo';},fim:()=>aviso('Obrigado por jogar o Capítulo 2!','#ffe27a')};}
 // a lanterna do Tico: no alto do altar, depois do adeus
 function ticoAltar(){fala={linhas:FALAS.manha_tico_altar,i:0,letras:0,fim:()=>{daItem('lanterna_halvard',1);partMarca('lanterna');aviso('Você recebeu a Lanterna do Halvard! (acessório)','#9fe8ff');}};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
@@ -1513,6 +1532,7 @@ const FILMES=[
   {id:'fenrir',nome:'O Fenrir aparece',c:()=>CENAS_FENRIR,i:()=>IMG_FENRIR,visto:()=>typeof estProvas==='function'&&(['vencida','feita'].includes(estProvas().fenrir)||estadoEcos().tem.includes('lamina'))},
   {id:'fenrir_v',nome:'O Fenrir se junta ao Jux',c:()=>CENAS_FENRIR_V,i:()=>IMG_FENRIR_V,visto:()=>typeof estProvas==='function'&&(estProvas().fenrir==='feita'||estadoEcos().tem.includes('lamina'))},
   {id:'partida',nome:'A partida',c:()=>CENAS_PARTIDA,i:()=>IMG_PARTIDA,visto:()=>!!(JOGO.cap2&&JOGO.cap2.e&&JOGO.cap2.e.partida)},
+  {id:'barco',nome:'O barco do Borin',c:()=>CENAS_BARCO,i:()=>(IMG_BARCO&&IMG_BARCO.length===3)?IMG_BARCO:(IMG_BARCO=imgsFilme(CENAS_BARCO.map(x=>'assets/cine_barco/'+x.img+'.jpg'))),visto:()=>!!(JOGO.cap3&&JOGO.cap3.barco)},
   {id:'cristais',nome:'Os sete Cristais',c:()=>CENAS_CRISTAIS,i:()=>IMG_CRISTAIS,visto:()=>!!(JOGO.cap2&&JOGO.cap2.e&&JOGO.cap2.e.cristais)},
   {id:'adeus',nome:'O adeus',c:()=>CENAS_ADEUS,i:()=>IMG_ADEUS,visto:()=>!!(JOGO.cap2&&JOGO.cap2.e&&JOGO.cap2.e.adeus)},
   {id:'preco',nome:'O preço',c:()=>CENAS_PRECO,i:()=>IMG_PRECO,visto:()=>!!(JOGO.cap2&&JOGO.cap2.preco)},
@@ -1524,7 +1544,7 @@ function reverFilme(id){const f=FILMES.find(x=>x.id===id);if(!f||!filmeVisto(f))
 function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
-const MUS_CINE={bino_b:arq('assets/musica/bino_b'),preco_morte:arq('assets/musica/cine_preco_morte'),preco:arq('assets/musica/cine_preco'),ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
+const MUS_CINE={bino_b:arq('assets/musica/bino_b'),rio:arq('assets/musica/musica_rio'),preco_morte:arq('assets/musica/cine_preco_morte'),preco:arq('assets/musica/cine_preco'),ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
 let musAtual=null,musNome=null,drone=null;
 function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone grave sintetizado; 'vila' = musica da vila (continua no jogo)
   if(nome===musNome||window.__morta)return;musNome=nome;
@@ -2087,7 +2107,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
     salvaVila();}
   if(!uiCarregado&&TER){uiCarregado=true;uiCarrega();
     // CAPITULO 2: voltando para a vila com o Fenrir, comeca a noite do festival
-    if(NA_VILA&&festivalPronto()){JOGO.cap2={fase:'volta'};salvaJogo();setTimeout(()=>abreFala('fest_volta'),900);}
+    if(NA_VILA&&festivalPronto()){JOGO.cap2={fase:'volta'};if(typeof marcaFimCapitulo==='function')marcaFimCapitulo(1);salvaJogo();setTimeout(()=>abreFala('fest_volta'),900);}
     else if(NA_VILA&&!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita'&&cap1Trava()&&!JOGO.avisoCap1){JOGO.avisoCap1=true;salvaJogo();setTimeout(()=>falaPendencias('aurora'),900);}
     if(emFestival())aplicaFestival();
     if(emAtaque())aplicaAtaque();

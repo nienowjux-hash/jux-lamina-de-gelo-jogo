@@ -132,6 +132,13 @@ const OPC=(()=>{const d={texto:1,tremor:true};try{return Object.assign(d,JSON.pa
 const VEL_TEXTO=[[.5,'Lento'],[1,'Normal'],[2,'Rápido'],[99,'Na hora']];
 function salvaOpc(){try{localStorage.setItem('jux_opc',JSON.stringify(OPC));}catch(e){}}
 const SAVE_J='jux_save';
+// TEMPO DE JOGO (pedido 2026-11-21): JOGO.tempo em segundos, so conta com o jogo aberto, visivel e em foco (vila, mapas e batalha).
+// JOGO.tempoCap = {fim1, fim2...}: o tempo total no momento em que cada capitulo terminou. O save automatico (15 s) guarda.
+setInterval(()=>{if(typeof JOGO!=='object'||window.LAB_FIXO||document.hidden||!document.hasFocus())return;JOGO.tempo=(JOGO.tempo||0)+1;},1000);
+function fmtTempo(s){s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+'h '+String(m).padStart(2,'0')+'min':m+'min';}
+function marcaFimCapitulo(n){JOGO.tempoCap=JOGO.tempoCap||{};if(JOGO.tempoCap['fim'+n]==null)JOGO.tempoCap['fim'+n]=JOGO.tempo||0;}
+function textoTempos(){const T=JOGO.tempoCap||{},l=['Tempo de jogo: '+fmtTempo(JOGO.tempo)];let ant=0;
+  for(let n=1;n<=9;n++){const f=T['fim'+n];if(f==null)break;l.push('Cap. '+n+': '+(n===1&&!f?'—':fmtTempo(f-ant)));ant=f;}return l.join('  ·  ');}
 // TESTE DA INVASAO (vila.html#invasao, 2026-11-20): joga do brinde ate o fim do capitulo com o SEU personagem (nivel, equipamento),
 // mas numa copia: ao entrar o save de verdade vai para 'jux_save_antes_teste'; ao abrir o jogo sem #invasao ele volta como estava
 (function(){try{const h=location.hash.split('?')[0],batalha=/(batalha|index)\.html$|\/$/.test(location.pathname);

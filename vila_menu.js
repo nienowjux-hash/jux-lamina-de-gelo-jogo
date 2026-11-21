@@ -133,6 +133,7 @@ function uiFala(id){
   UI.escolha={id,ops:[...(mk?[mk==='!'?'❗ Missão':mk==='✔'?'✔ Entregar':'Missão']:[]),'Comprar','Conversar','Sair'],sel:0};som(SOM.ui_vez,.5);return true;
 }
 function escolhe(i){const e=UI.escolha;UI.escolha=null;
+  if(e.id==='rio_cap3'){if(i===0&&typeof desceRio==='function')desceRio();else if(i===1){JOGO.trilha=null;vaiPara('trilha.html');}return;}
   if(e.id==='cura_luta'){if(i===0){curaParaLuta();setTimeout(()=>iniciaProva(e.prova,true),900);}
     else if(i===1){UI.menu=true;UI.home=false;UI.aba=1;UI.sel=0;UI.depoisBolsa=e.prova;som(SOM.ui_vez,.5);}
     else iniciaProva(e.prova,true);return;}
@@ -655,6 +656,7 @@ function desenhaMenu(){
         ZONAS.push([bx,yy,bx+bw,yy+30,(mx)=>{UI.sel=i;}]);}
       else ZONAS.push([cx,yy,cx+460,yy+30,()=>{UI.sel=i;acaoSalvar(i);}]);});
     if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*29+6,13,'#c8d8f0');
+    if(!UI.controles&&!UI.cines&&typeof textoTempos==='function')texto('⏱ '+textoTempos(),cx,cy+SALVAR_OPS.length*29+28,14,'#ffe27a');
     if(UI.controles){const px=cx+275,py=cy+7*29-2,pw=300,ph=148;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+24,16,'#ffe27a');
       [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+46+k*18,13,'#9fe8ff');texto(b,px+128,py+46+k*18,13,'#e8f6ff');});}
     if(UI.cines&&typeof FILMES!=='undefined'){const px=cx+250,pw=w-48-250,lh=30,py=cy+2,ph=FILMES.length*lh+44;painel(px,py,pw,ph);
