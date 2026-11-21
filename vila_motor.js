@@ -728,7 +728,22 @@ function festaPoe(){if(festaPosto||!emFestival())return;festaPosto=true;
       const P={tico:TICO_PONTO,vovo:VOVO_PONTO,borin:BORIN_PONTO,bacon:PORCO_PONTO}[k];if(P){P.x=o.x;P.y=o.y-4;P.r=44;}}
     else if(k==='bardo'||k==='casal'||(k==='bino'&&JOGO.bino&&JOGO.bino.ativo)){FIGURANTES.push({id:k,x:L[0],y:L[1],festa:k});}}}
 // o desenho de festa de um morador (devolve true se desenhou no lugar do desenho normal)
-function desenhaFesta(o){const k=o.festa;if(!k||!emFestival())return false;const D=FESTA_D[k],I=FESTA_I[k];if(!D||!I.complete)return false;
+// LUTO (LUTO_ANIMACOES.md, 2026-11-20): na manha depois da morte do Halvard, cada morador fica parado num loop triste (vila_luto.js)
+const LUTO_D=window.JUX_LUTO||{},LUTO_I={};for(const k in LUTO_D){const i=new Image();i.src=LUTO_D[k].atlas;LUTO_I[k]=i;LUTO_D[k].escala*=1.15;}   // um pouco maiores (sentados ficavam pequenos demais)
+const lutoAtivo=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='manha');
+// onde cada um fica: em volta do memorial, o Borin na forja, a Ingrid na barraca, o Oskar perto da outra barraca
+const LUTO_LUGAR={tico:[692,708],bacon:[656,712],vovo:[800,708],borin:[1247,580],ingrid:[486,612],oskar:[1000,640]};
+function lutoPasso(){TICO_ALTAR.r=partProximo()==='lanterna'?46:0;const M={tico,vovo,borin,bacon};for(const a of ANDARILHOS)M[a.id]=a;
+  for(const k in LUTO_LUGAR){const o=M[k];if(!o)continue;let [x,y]=LUTO_LUGAR[k];
+    if(k==='tico'&&partProximo()==='lanterna'){x=TICO_ALTAR.x;y=TICO_ALTAR.y;}   // o Tico sozinho no alto do altar
+    o.x=x;o.y=y;o.anda=false;o.fila=[];o.alvo=null;o.luto=k;
+    const P={tico:TICO_PONTO,vovo:VOVO_PONTO,borin:BORIN_PONTO,bacon:PORCO_PONTO}[k]||o.ponto;
+    if(P){P.x=x;P.y=y-4;P.r=(k==='tico'&&partProximo()==='lanterna')?0:44;}}}
+function desenhaLuto(o){const k=o.luto,D=LUTO_D[k],I=LUTO_I[k];if(!D||!I||!I.complete)return false;
+  const perto=Math.hypot(hero.x-o.x,hero.y-o.y)<46,n=D.quadros.length;
+  const q=perto?D.quadros[n-1]:D.quadros[Math.floor((t*2.2+(o.x%5))%(n-1))];   // loop lento; perto do Jux: levanta o rosto (ultimo quadro)
+  desenhaNpc(D,I,o.x,o.y,q,false,12,46);return true;}
+function desenhaFesta(o){if(o.luto&&lutoAtivo()&&desenhaLuto(o))return true;const k=o.festa;if(!k||!emFestival())return false;const D=FESTA_D[k],I=FESTA_I[k];if(!D||!I.complete)return false;
   const L=FESTA_LUGAR[k],perto=Math.hypot(hero.x-o.x,hero.y-o.y)<46,n=D.quadros.length;
   const q=perto?D.quadros[n-1]:D.quadros[Math.floor((t*L[2]+(o.x%7))%n)];   // perto do Jux: o ultimo quadro (de frente, sorrindo)
   desenhaNpc(D,I,o.x,o.y,q,false,12,46);
@@ -1699,6 +1714,7 @@ function passo(dt){
   if(NA_VILA&&emFestival()){festaPoe();festaCeu(dt);vivoPasso(dt);peixePasso(dt);}
   // vila em ataque: os moradores se esconderam (nao aparecem), entao nao andam nem falam em balao (antes o Halvard 'falava' sozinho)
   else if(NA_VILA&&emAtaque()){baloes.length=0;ignCalorPasso();atqMoradoresPasso();}
+  else if(lutoAtivo()){baloes.length=0;lutoPasso();peixePasso(dt);}
   else if(NA_VILA){vivoPasso(dt);peixePasso(dt);if(!(emPreparo()&&caca.on))baconPasso(dt);ticoPasso(dt);vovoPasso(dt);if(!(emPreparo()&&!prepFeita('borin')))borinPasso(dt);prepPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
   seguidorPasso(dt);
   if(!NA_VILA&&typeof passoDescobertas==='function')passoDescobertas();
