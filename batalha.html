@@ -23,8 +23,8 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <!-- aparece enquanto os sprites e as cenas das cinematicas (~5 MB) baixam; some quando o jogo comeca -->
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
 <script src="carrega.js?v=1795225800"></script>
-<script src="itens_icones.js?v=1795117438"></script>
-<script src="jogo.js?v=1795228300"></script>
+<script src="itens_icones.js?v=1795245000"></script>
+<script src="jogo.js?v=1795245000"></script>
 <script src="tutorial.js?v=1795226200"></script>
 <script src="combate.js?v=1795243200"></script>
 <script src="bino_habs.js?v=1795225300"></script>
@@ -797,6 +797,8 @@ function newBattle(){
   if(temBino())iniciaBino();
   menu.open=false;menu.level='main';menu.idx=0;menu.top=0;G.busy=false;G.dim=0;G.autoBuff=false;G.scene='battle';G.t0=performance.now();G.recompensa=null;parts.length=fx.length=pops.length=0;
   climaZera();
+  // Lanterna do Halvard (acessorio, Cap. 2 Parte E): Regen no comeco de cada luta para quem estiver com ela
+  if(!TESTE&&typeof equipDe==='function')for(const [q,a] of [['jux',JUX],['bino',typeof BINO!=='undefined'?BINO:null]]){const E=equipDe(q);if(a&&E&&(E.acessorio==='lanterna_halvard'||E.acessorio2==='lanterna_halvard'))poeEstado(a,'regen',3);}
   if(vitrine){ENEMIES.forEach(e=>e.max=e.hp=99999);hero.res=100;}
   {const nv=ENEMIES[0].nv,nomes={};for(const e of ENEMIES){const nm=(TIPOS_INIMIGO[e.tipo]||{}).nome||'Ignarok';nomes[nm]=(nomes[nm]||0)+1;}
    if(ENEMIES[0].tipo==='capitao'&&!vitrine){setTimeout(()=>{ecoPensa('ALTO! Isto é território do Capitão Dente-de-Ferro!',3000,'Capitão','#c9e89a');som('capitao_bravata',.9);},1400);}

@@ -46,6 +46,7 @@ const ITENS={
   anel_gelo:  {nome:'Anel de Gelo',        tipo:'acessorio',preco:310,req:{espada:true}, cor:'#9fe8ff',desc:'ATQ.M +5, MP +6.',bonus:{atkm:5,mp:6}},
   botas_neve: {nome:'Botas de Neve',       tipo:'botas',preco:230, cor:'#d8e6f2',desc:'VEL +1, Esquiva +1%.',bonus:{vel:1,esq:1}},
   anel_goblin:{nome:'Anel do Goblin',      tipo:'acessorio',preco:0,venda:60, cor:'#9adf5a',desc:'Roubado de alguém. VEL +1, Esquiva +2%, SOR +2.',bonus:{vel:1,esq:2,sor:2}},
+  lanterna_halvard:{nome:'Lanterna do Halvard',tipo:'acessorio',preco:0,venda:0,cor:'#9fe8ff',desc:'A lanterna do caçador, dada pelo Tico. HP +30, MP +10 e Regen no começo de cada luta.',bonus:{hp:30,mp:10}},
   presa_anciao:{nome:'Presa do Ancião',   tipo:'acessorio',preco:0,venda:120, cor:'#cfe6ff',desc:'Um dente do Lobo Ancião, dado por respeito. ATQ +5, Crítico +2%.',bonus:{atk:5,crit:2}},
   amuleto_vida:{nome:'Amuleto da Vida',    tipo:'acessorio',preco:420,req:{nivel:8}, cor:'#ff7a8a',desc:'HP +40.',bonus:{hp:40}},
   // --- coisas de missão (missoes.js): não vendem, somem ao entregar

@@ -63,6 +63,22 @@ const atqFeitas=()=>ATQ_LUTAS.filter(l=>((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]
 const atqProxima=()=>ATQ_LUTAS.find(l=>!(((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]))||null;
 // na vila em ataque so estes pontos respondem (os moradores se esconderam)
 const ATQ_PODE=new Set(['portao','entrada_trilha','atq_1','atq_2','atq_3','altar']);
+// PARTE E (FICHA_CAP2_PARTIDA.md, aprovada 2026-11-20): a manha seguinte. Fases 'manha' (as 4 missoes) e 'fim' (o capitulo acabou).
+// Mapa ref/vila/mapa_manha.png (o mesmo desenho, de manha, com o memorial do Halvard no lugar da fogueira); musica 'Contemplation' (joth, CC0).
+const emManha=()=>NA_VILA&&!!(JOGO.cap2&&(JOGO.cap2.fase==='manha'||JOGO.cap2.fase==='fim'));
+const MAPA_MANHA=new Image();let manhaAplicada=false;
+function aplicaManha(){if(manhaAplicada)return;manhaAplicada=true;festAplicado=false;atqAplicado=false;
+  {const tocava=MUS&&!MUS.paused;MUSICAS[0]=['Manhã em Invernália','musica_manha'];if(musI===0){pegaMus();if(tocava&&MUS)MUS.play().catch(()=>{});}if(typeof marcaMus==='function')marcaMus();}
+  MAPA_MANHA.onload=()=>{MAPA.src=MAPA_MANHA.src;
+    for(const f of FR){const c=document.createElement('canvas');c.width=f.w;c.height=f.h;const g=c.getContext('2d');
+      const faz=()=>{g.clearRect(0,0,f.w,f.h);g.drawImage(f.i0||f.i,0,0,f.w,f.h);g.globalCompositeOperation='source-in';g.drawImage(MAPA_MANHA,f.x,f.y,f.w,f.h,0,0,f.w,f.h);g.globalCompositeOperation='source-over';f.i0=f.i0||f.i;f.i=c;};
+      if((f.i0||f.i).complete)faz();else (f.i0||f.i).addEventListener('load',faz,{once:true});}};MAPA_MANHA.src='assets/vila/mapa_manha.jpg';}
+// os passos da Parte E, na ordem: adeus -> lanterna -> cristais -> partida
+const PART_PASSOS=['adeus','lanterna','cristais','partida'];
+const partFeito=k=>!!((JOGO.cap2&&JOGO.cap2.e)||{})[k];
+const partProximo=()=>PART_PASSOS.find(k=>!partFeito(k))||null;
+function partMarca(k){JOGO.cap2.e=JOGO.cap2.e||{};JOGO.cap2.e[k]=true;salvaJogo();}
+const TICO_ALTAR={id:'tico_altar',x:760,y:175,r:0};
 const POSTES_FEST=[[572,280,598,298],[922,280,948,298]];   // postes de bandeira que so existem no mapa da festa (pe bloqueia)
 const FEST_EFEITO={
   ingrid:()=>{if(JOGO.cap2.ingrid)return;JOGO.cap2.ingrid=true;JOGO.buff={id:'ensopado',lutas:(ITENS.ensopado&&ITENS.ensopado.lutas)||5};som(SOM.ui_vez,.6);aviso('Ensopado do Festival: bônus de comida ativo!','#7dffa8');salvaJogo();},
@@ -173,6 +189,20 @@ const FALAS={
   atq_3_fim:[['✦','A fumaça sai da Ingrid. Ela segura o braço do Jux, tremendo.'],['Ingrid','Eles foram para o altar… estão cavando embaixo da espada!'],['Aurora','O Cristal do Gelo, Portador. Está escondido debaixo do altar.',1],['Jux','Então é para lá que a gente vai.']],
   ign_calor:[['Bino','…Calor. Lá em cima.'],['Jux','A neve da escada está derretendo. Isso não é a Vovó fazendo sopa.']],
   ign_vence:[['✦','O Ignarok desaba dentro da fenda. O magma esfria e vira pedra preta.'],['Jux','…Ninguém derrete nada hoje. Eu avisei.'],['Aurora','O Cristal ainda está lá embaixo, Portador. Mas sinto ele… rachado.',1]],
+  manha_chega:[['✦','A neve caiu a noite toda. Cobriu o fogo, as cinzas e as pegadas.'],['Aurora','A dor é o preço de quem se importa, Portador. A Ordem não entende isso. É por isso que vai perder.',1],
+    ['Bino','…Ele me deu comida. Sem perguntar.'],['Jux','Eu sei, Bino.'],['✦','A Vovó Hilda espera na praça.']],
+  manha_borin:[['Borin','Eu fiz aquele machado pra ele, sabe. Vinte anos atrás.'],['Borin','…Ainda está afiado.']],
+  manha_ingrid:[['Ingrid','Eu fiz a sopa que ele gostava. Ninguém comeu.'],['Ingrid','…Leva um pouco, Jux. Pra estrada.']],
+  manha_oskar:[['Oskar','O tambor não toca hoje. Amanhã, talvez.'],['Oskar','Ele ia querer que tocasse.']],
+  manha_bacon:[['✦','O Sir Bacon está deitado na neve, com o laço azul da festa ainda no pescoço.'],['Sir Bacon','…oinc.']],
+  manha_tico:[['Tico','…'],['✦','O Tico não quer falar agora. Ele segura a lanterna com força.']],
+  manha_memorial:[['✦','A pedra do Halvard. O machado cravado em cima, a capa vermelha dobrada, as lanternas acesas.'],['Jux','…Eu cuido dele. Prometi.']],
+  manha_tico_altar:[['✦','O Tico está sentado sozinho no alto do altar, olhando a rachadura azul.'],['Tico','Eu fiquei com raiva de você. Porque você é forte e não conseguiu…'],
+    ['Tico','Mas o papai disse pra você cuidar de mim. Então eu também vou cuidar de você.'],['Tico','Leva a lanterna do papai. Ela ilumina a neve à noite. Pra você não se perder.'],
+    ['Jux','Eu volto pra devolver. Prometo. E aí você me ensina a caçar.'],['✦','Você recebeu a Lanterna do Halvard.']],
+  manha_portao_cedo:[['Jux','Ainda não. Tem coisa pra resolver aqui antes.']],
+  manha_vovo_espera:[['Vovó Hilda','Hmpf. Vá ver o menino, forasteiro. Ele subiu pro altar e não quer descer.']],
+  manha_vovo_fim:[['Vovó Hilda','O portão está aberto. E a minha porta também, quando voltarem.']],
   atq_portao:[['Jux','Não vou sair daqui com a vila assim.'],['Bino','…Ninguém sai.']],
   atq_comeca:[['Aurora','As Sombras ainda estão lá dentro, Portador. Derrube sem quebrar.',1],['Jux','Derrubar sem quebrar. Tipo a minha vida amorosa.'],['Bino','…Foco.']],
   atq_1:[['✦','Na praça, a Sombra do Oskar abraça o tambor. Dois acólitos apontam os cajados para você.'],['Oskar','Jux… o tambor… eu não sinto as mãos…'],['Jux','Aguenta, Oskar. Eu vou te tirar daí.']],
@@ -338,6 +368,7 @@ let oincT=rnd(2,5);
 function oinc(v){const dh=Math.hypot(hero.x-bacon.x,hero.y-bacon.y);som(OINC[(Math.random()*OINC.length)|0],clamp(1-dh/220,0,1)*(v||.7));}
 function baconPasso(dt){
   if(!BAC)return;
+  if(JOGO.cap2&&JOGO.cap2.baconTime&&!bacon.segue){bacon.segue=true;bacon.vaiSeguir=0;bacon.x=hero.x-40;bacon.y=hero.y+6;bacon.pts=[];}   // fim do Cap. 2: o Sir Bacon segue o time
   oincT-=dt;if(oincT<=0){oincT=bacon.acao==='dorme'?rnd(6,10):rnd(3,8);oinc(bacon.acao==='dorme'?.25:.6);}
   // trilha do Jux (a cada 3 px, e todo quadro durante o pulo)
   const u=trilha[trilha.length-1];
@@ -408,6 +439,7 @@ function ticoProxima(){const a=tico.fila.shift();if(!a){tico.acao='respira';tico
   if(a[0]==='joga'){const ox=hero.x<tico.x?-8:8;bolas.push({x0:tico.x+ox,y0:tico.y-16,x1:hero.x+rnd(-6,6),y1:hero.y-rnd(0,4),v:0,d:.55});som(SOM.whoosh,.3);}}
 function ticoPasso(dt){
   if(!TIC)return;
+  if(emManha()&&partProximo()==='lanterna'){tico.x=TICO_ALTAR.x;tico.y=TICO_ALTAR.y;tico.anda=false;tico.acao='respira';tico.at+=dt;TICO_PONTO.r=0;TICO_ALTAR.r=46;return;}else TICO_ALTAR.r=0;
   const dh=Math.hypot(hero.x-tico.x,hero.y-tico.y);tico.cd-=dt;
   if(dh>260)tico.viu=false;
   const ocupado=tico.fila.length||(tico.acao!=='respira'&&tico.at<tico.ad);
@@ -997,6 +1029,14 @@ const POSE_FALA={inicio:'surpreso',fogueira:'sentado',bacon:'rindo',tico:'rindo'
 // passagem entre regioes: a fala so aparece na PRIMEIRA vez (pedido do usuario); depois o Jux ja passa direto
 function passa(id,acao){JOGO.passou=JOGO.passou||{};if(JOGO.passou[id]){acao();return;}abreFala(id,()=>{JOGO.passou[id]=true;acao();});}
 function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));return;}
+  if(emManha()&&!fim){const px=partProximo();
+    if(id==='tico_altar'){ticoAltar();return;}
+    if(id==='vovo'&&px==='adeus'){tocaFilme(CENAS_ADEUS,IMG_ADEUS,()=>{partMarca('adeus');aviso('O Tico subiu sozinho para o altar…','#c8d8f0');});return;}
+    if(id==='vovo'&&px==='lanterna'){id='manha_vovo_espera';}
+    else if(id==='vovo'&&px==='cristais'){tocaFilme(CENAS_CRISTAIS,IMG_CRISTAIS,()=>{partMarca('cristais');aviso('Vá até o portão quando estiver pronto.','#ffe27a');});return;}
+    else if(id==='vovo'&&!px){id='manha_vovo_fim';}
+    if(id==='portao'||id==='entrada_trilha'){if(px==='partida'){tocaFilme(CENAS_PARTIDA,IMG_PARTIDA,()=>{partMarca('partida');fimCapitulo2();});return;}if(px){id='manha_portao_cedo';}}
+    if(id==='ingrid'&&FALAS.manha_ingrid){fim=()=>{if(typeof encheVida==='function')encheVida();aviso('A sopa do Halvard: HP e MP cheios','#7dffa8');};}}
   // vila em ataque: o portao nao abre; as lutas comecam depois da fala
   if(emAtaque()&&!fim){if(id==='altar'){if(atqFeitas()>=3)altarIgnarok();else aviso('Primeiro, a vila. As Sombras ainda estão lá embaixo.','#c8d8f0');return;}
     if((id==='portao'||id==='entrada_trilha')&&!(atqFeitas()>=3&&cap1Trava()))id='atq_portao';else if(ATQ_LUTAS.some(l=>l.id===id)){const lid=id;fim=()=>atqLuta(lid);}}
@@ -1038,7 +1078,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(!fim&&id==='vovo'&&diaFestival())fim=JOGO.cap2.fase==='preparo'?anoitecer:()=>{JOGO.cap2.fase='preparo';salvaJogo();aviso('Nova tarefa: Preparativos do festival (veja no canto da tela)','#ffe27a');};
   fala={linhas:FALAS[falaDaFase(id)],i:0,letras:0,fim};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // falas que mudam com a historia (pedido 2026-11-19): antes da espada / depois da espada / depois do resgate do Halvard
-function falaDaFase(id){if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
+function falaDaFase(id){if(emManha()&&FALAS['manha_'+id])return 'manha_'+id;if(FALAS[id]&&id.startsWith('manha_'))return id;if(emFestival()&&FALAS['fest_'+id])return 'fest_'+id;
   if(diaFestival()){if(id==='vovo')return JOGO.cap2.fase==='preparo'?'dia2_vovo':'dia_vovo';if(FALAS['dia_'+id])return 'dia_'+id;}
   const res=typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita';
   if(id==='vovo'&&hero.espada&&FALAS.vovo_depois)return 'vovo_depois';
@@ -1051,7 +1091,7 @@ function avanca(){if(!fala)return;const L=fala.linhas[fala.i][1];
 let clarao=0;function ganhaEspada(){hero.espada=true;clarao=1;som(SOM.ui_vez,.9);for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});setTimeout(()=>abreFala('altar_ganha'),700);}
 function nomePonto(id){if(NOMES[id])return NOMES[id];if(id.startsWith('tes_')){const q=TESOUROS.find(s=>'tes_'+s.id===id);return q&&q.tipo==='bau'?'Baú':'Algo brilhando';}
   if(id.startsWith('col_')){const c=COLETAS.find(q=>'col_'+q.id===id);return c?ITENS[c.item].nome:'Algo';}return '';}
-function pontoPerto(){atqPontosPasso();let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!ATQ_PODE.has(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
+function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!ATQ_PODE.has(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
 
 
 /* ---------- REGIÕES E ENCONTROS ALEATÓRIOS (SISTEMA_RPG.md §7b) ----------
@@ -1113,12 +1153,14 @@ function iniciaEncontro(){if(transicao)return;transicao=.001;hero.alvo=null;hero
 // "NAQUELA NOITE..." (ligacao do Capitulo 2): a tela escurece, aparece o texto, o mapa vira o da festa e a tela clareia na praca
 let noiteFade=null;
 function anoitecer(){if(noiteFade)return;noiteFade={t:0,virou:false};if(JOGO.cap2&&!JOGO.cap2.premio){JOGO.cap2.premio=true;daItem('pao_mel',1);JOGO.gil=(JOGO.gil||0)+100;aviso('A Vovó agradece: Pão de Mel e 100 gil','#ffe27a');}hero.alvo=null;hero.pontoAlvo=null;}
-function noiteFadePasso(dt){const N=noiteFade;if(!N)return;N.t+=dt;for(const k in teclas)teclas[k]=false;hero.alvo=null;
+function noiteFadePasso(dt){const N=noiteFade;if(!N)return;N.t+=dt/(N.k||1);for(const k in teclas)teclas[k]=false;hero.alvo=null;
+  if(!N.virou&&N.t>=1.4&&N.vira){N.virou=true;N.vira();}
+  if(N.fim&&N.t>=4.6){const f=N.fim;noiteFade=null;setTimeout(f,300);return;}
   if(!N.virou&&N.t>=1.4){N.virou=true;SEG.cena=false;SEG.vaiPara=null;SEG.oculto=false;JOGO.cap2.fase='noite';salvaJogo();aplicaFestival();festaPoe();hero.x=722;hero.y=716;hero.olha='cima';}
   if(N.t>=4.6){noiteFade=null;setTimeout(()=>abreFala('fest_chega'),300);}}
 function desenhaNoiteFade(){const N=noiteFade;if(!N)return;const a=N.t<1.4?N.t/1.4:N.t<3.4?1:Math.max(0,1-(N.t-3.4)/1.2);
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='rgba(2,4,14,'+a+')';ctx.fillRect(0,0,W,H);
-  if(N.t>1.6&&N.t<3.6){const b=Math.min(1,(N.t-1.6)/.5,(3.6-N.t)/.5);ctx.globalAlpha=b;texto('Naquela noite…',W/2,H/2,30,'#ffe9b8','center');}
+  if(N.t>1.6&&N.t<3.6){const b=Math.min(1,(N.t-1.6)/.5,(3.6-N.t)/.5);ctx.globalAlpha=b;texto(N.txt||'Naquela noite…',W/2,H/2,N.txt2?26:30,'#ffe9b8','center');if(N.txt2)texto(N.txt2,W/2,H/2+40,18,'#c8d8f0','center');}
   ctx.restore();}
 function desenhaTransicao(){desenhaNoiteFade();if(!transicao)return;transicao=Math.min(1,transicao+.022);const p=transicao;
   ctx.save();ctx.setTransform(1,0,0,1,0,0);
@@ -1228,6 +1270,9 @@ const CENAS_ATAQUE=[
 for(const [k,f] of [['at1v','1_vovo'],['at1j','1_jux'],['at2t','2_tico'],['at2a','2_aurora'],['at3b','3_bino'],['at3j','3_jux'],['at4i','4_ingrid'],['at4v','4_vovo'],['at5a','5_arauto_1'],['at5b','5_arauto_2'],['at5j','5_jux']])VOZES[k]=arq('assets/cine_ataque/voz_ataque_'+f);
 const IMG_ATAQUE=imgsFilme(CENAS_ATAQUE.map(c=>'assets/cine_ataque/'+c.img+'.jpg'));
 // TESTE (sem salvar): vila.html#ataque abre a vila ja em ataque; vila.html#brinde abre a festa com a Vovo pronta para o brinde
+if(REGIAO==='vila'&&location.hash.split('?')[0]==='#manha'){window.__semSalvar=true;JOGO.missoes=Object.assign(JOGO.missoes||{},{olhos_roxos:{st:'feita'}});JOGO.provas=Object.assign(JOGO.provas||{},{fenrir:'feita'});JOGO.cap2={fase:'manha',e:{},halvardMorreu:true,preco:true,lutas:{atq_1:true,atq_2:true,atq_3:true}};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
+  JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=722;hero.y=716;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
+  setTimeout(()=>{aviso('Modo teste da manhã: nada é salvo','#ffe27a');abreFala('manha_chega');},1800);}
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#altar'){window.__semSalvar=true;JOGO.cap2={fase:'ataque',lutas:{atq_1:true,atq_2:true,atq_3:true},binoCalor:false};JOGO.bino=Object.assign(JOGO.bino||{},{ativo:true,nivel:Math.max(1,(JOGO.bino||{}).nivel||1)});
   JOGO.vila=Object.assign(JOGO.vila||{},{espada:true,abertura:true});hero.espada=true;hero.x=790;hero.y=420;JOGO.tut=Object.assign(JOGO.tut||{},{andar:true,habilidade:true,missao_npc:true,missao:true,grupo:true,equip:true,hab_nova:true,comida:true,eco:true});
   if(JOGO.provas&&!localStorage.getItem('jux_volta_luta'))delete JOGO.provas.ignarok;setTimeout(()=>aviso('Modo teste do altar: nada é salvo','#ffe27a'),1800);}
@@ -1270,7 +1315,34 @@ const IMG_PRECO=imgsFilme(CENAS_PRECO.map(c=>'assets/cine_preco/'+c.img+'.jpg'))
 if(REGIAO==='vila'&&location.hash.split('?')[0]==='#cine_preco')setTimeout(()=>tocaFilme(CENAS_PRECO,IMG_PRECO,()=>{}),1500);   // lab: so o filme
 // depois do filme: o Halvard morreu (some do jogo para sempre) e a historia segue para a Parte E
 function precoFim(){JOGO.cap2.halvardMorreu=true;JOGO.cap2.preco=true;salvaJogo();
-  {const i=ANDARILHOS.findIndex(n=>n.id==='halvard');if(i>=0){const n=ANDARILHOS[i];ANDARILHOS.splice(i,1);const k=V.pontos.indexOf(n.ponto);if(k>=0)V.pontos.splice(k,1);}}setTimeout(()=>aviso('Continua na Parte E (em breve)','#ffe27a'),600);}
+  {const i=ANDARILHOS.findIndex(n=>n.id==='halvard');if(i>=0){const n=ANDARILHOS[i];ANDARILHOS.splice(i,1);const k=V.pontos.indexOf(n.ponto);if(k>=0)V.pontos.splice(k,1);}}setTimeout(manhaSeguinte,400);}
+// CUTSCENES DA PARTE E: "O adeus" (musica do lamento), "Os sete Cristais" (a lenda) e "A partida" (The Hope, a mesma do Bino)
+const CENAS_ADEUS=[
+  {img:'adeus1',mus:'preco',cam:[.5,.5,1.0, .5,.45,1.1],dur:9,fx:'neve',vozes:[[.8,'pa1a']],falas:[[.8,'Vovó Hilda','O Halvard caçava pra quem não tinha o que comer. Nunca pediu nada de volta.']],sons:[]},
+  {img:'adeus1b',mus:'preco',cam:[.45,.5,1.1, .5,.5,1.0],dur:7.5,fx:'neve',vozes:[[.8,'pa1b']],falas:[[.8,'Vovó Hilda','Ontem ele deu a última coisa que tinha. E deu sorrindo.']],sons:[]},
+  {img:'adeus2',mus:'preco',cam:[.45,.55,1.0, .5,.5,1.12],dur:10.5,fx:'neve',vozes:[[1,'pa2t'],[7.2,'pa2b']],falas:[[1,'Tico','Pai… eu vou ser corajoso. Do jeito certo, dessa vez.'],[7.2,'Bino','…Ele foi.']],sons:[[.4,'brilho']]},
+];
+const CENAS_CRISTAIS=[
+  {img:'cristais1',mus:'lenda',cam:[.5,.55,1.0, .5,.6,1.12],dur:13.5,fx:'neve',vozes:[[.8,'pc1a'],[7.6,'pc1b']],falas:[[.8,'Vovó Hilda','O Cristal do Gelo trincou. Se um cristal cai, os outros ficam mais fracos.'],[7.6,'Vovó Hilda','Existem sete. E a Ordem vai atrás de todos.']],sons:[]},
+  {img:'ordem1',mus:'lenda',cam:[.5,.5,1.0, .5,.45,1.12],dur:16.5,fx:'neve',vozes:[[.8,'pc2a'],[8,'pc2j'],[10.4,'pc2v']],falas:[[.8,'Aurora','O próximo é o Cristal do Fogo, Portador. No sul, onde a neve acaba.',1],[8,'Jux','Então é pra lá que eu vou.'],[10.4,'Vovó Hilda','Vocês. Ninguém sai daqui sozinho.']],sons:[[.2,'brilho']]},
+];
+const CENAS_PARTIDA=[
+  {img:'partida1',mus:'bino_b',cam:[.45,.5,1.0, .5,.45,1.1],dur:13.5,fx:'neve',vozes:[[.8,'pp1v'],[5.4,'pp1b'],[9.2,'pp1j']],falas:[[.8,'Vovó Hilda','Volte vivo, forasteiro. É uma ordem.'],[5.4,'Borin','E traga histórias! Das boas!'],[9.2,'Jux','Eu volto. Ainda tenho uma lição de caça marcada.']],sons:[]},
+  {img:'partida2',mus:'bino_b',cam:[.5,.6,1.0, .55,.4,1.12],dur:8,fx:'neve',vozes:[[1.2,'pp2j'],[4.6,'pp2b']],falas:[[1.2,'Jux','Bino. Obrigado por vir.'],[4.6,'Bino','…Eu sempre vou.']],sons:[]},
+  {img:'partida3',mus:'bino_b',cam:[.35,.6,1.12, .5,.5,1.0],dur:11.5,fx:'neve',vozes:[[.8,'pp3a'],[2.6,'pp3b'],[4.2,'pp3c']],falas:[[.8,'Jux','…Estamos sendo seguidos.'],[2.6,'Bino','…Por um porco.'],[4.2,'Jux','Bem-vindo à equipe, Sir Bacon. O salário é em pão.'],[9,'✦','Sir Bacon entrou no time!',1]],sons:[[.2,'oinc'],[8.8,'brilho']]},
+];
+for(const [k,f] of [['pa1a','a1_vovo_a'],['pa1b','a1_vovo_b'],['pa2t','a2_tico'],['pa2b','a2_bino'],['pc1a','c1_vovo_a'],['pc1b','c1_vovo_b'],['pc2a','c2_aurora'],['pc2j','c2_jux'],['pc2v','c2_vovo'],
+  ['pp1v','p1_vovo'],['pp1b','p1_borin'],['pp1j','p1_jux'],['pp2j','p2_jux'],['pp2b','p2_bino'],['pp3a','p3_jux_a'],['pp3b','p3_bino'],['pp3c','p3_jux_b']])VOZES[k]=arq('assets/cine_partida/voz_partida_'+f);
+const imgPart=c=>c.img==='ordem1'?'assets/cine_ordem/cena_1.jpg':'assets/cine_partida/'+c.img+'.jpg';
+const IMG_ADEUS=imgsFilme(CENAS_ADEUS.map(imgPart)),IMG_CRISTAIS=imgsFilme(CENAS_CRISTAIS.map(imgPart)),IMG_PARTIDA=imgsFilme(CENAS_PARTIDA.map(imgPart));
+{const h=location.hash.split('?')[0];if(REGIAO==='vila'&&h==='#cine_partida')setTimeout(()=>tocaFilme(CENAS_PARTIDA,IMG_PARTIDA,()=>{}),1500);if(REGIAO==='vila'&&h==='#cine_adeus')setTimeout(()=>tocaFilme(CENAS_ADEUS,IMG_ADEUS,()=>{}),1500);}
+// "Na manha seguinte…" (depois de O preco) e o fim do capitulo usam a mesma tela que escurece (noiteFade), com outro texto
+function manhaSeguinte(){noiteFade={t:0,virou:false,txt:'Na manhã seguinte…',vira:()=>{JOGO.cap2.fase='manha';JOGO.cap2.e={};salvaJogo();aplicaManha();hero.x=722;hero.y=716;hero.olha='cima';},
+  fim:()=>abreFala('manha_chega')};hero.alvo=null;hero.pontoAlvo=null;}
+function fimCapitulo2(){noiteFade={t:0,virou:false,k:1.8,txt:'Fim do Capítulo 2 — O festival da Rainha do Inverno',txt2:'Capítulo 3: em breve',vira:()=>{JOGO.cap2.fase='fim';JOGO.cap2.baconTime=true;salvaJogo();
+    bacon.segue=true;bacon.vaiSeguir=0;bacon.x=hero.x-40;bacon.y=hero.y+6;bacon.pts=[];hero.x=722;hero.y=700;hero.olha='baixo';},fim:()=>aviso('O Sir Bacon agora segue o time. Obrigado por jogar o Capítulo 2!','#ffe27a')};}
+// a lanterna do Tico: no alto do altar, depois do adeus
+function ticoAltar(){fala={linhas:FALAS.manha_tico_altar,i:0,letras:0,fim:()=>{daItem('lanterna_halvard',1);partMarca('lanterna');aviso('Você recebeu a Lanterna do Halvard! (acessório)','#9fe8ff');}};hero.alvo=null;hero.pontoAlvo=null;som(SOM.ui_vez,.5);}
 // o altar na vila em ataque: com as 3 lutas feitas (e o Capitulo 1 completo), a cutscene e a luta; depois de perder, so a luta
 function altarIgnarok(){const C=JOGO.cap2;if(cap1Trava()){falaPendencias('aurora');return;}
   if((JOGO.provas||{}).ignarok==='vencida')return;
@@ -1347,6 +1419,9 @@ const FILMES=[
   {id:'skoll',nome:'O Skoll acorrentado',c:()=>CENAS_SKOLL,i:()=>IMG_SKOLL,visto:()=>typeof estProvas==='function'&&['vencida','feita'].includes(estProvas().skoll)},
   {id:'fenrir',nome:'O Fenrir aparece',c:()=>CENAS_FENRIR,i:()=>IMG_FENRIR,visto:()=>typeof estProvas==='function'&&(['vencida','feita'].includes(estProvas().fenrir)||estadoEcos().tem.includes('lamina'))},
   {id:'fenrir_v',nome:'O Fenrir se junta ao Jux',c:()=>CENAS_FENRIR_V,i:()=>IMG_FENRIR_V,visto:()=>typeof estProvas==='function'&&(estProvas().fenrir==='feita'||estadoEcos().tem.includes('lamina'))},
+  {id:'partida',nome:'A partida',c:()=>CENAS_PARTIDA,i:()=>IMG_PARTIDA,visto:()=>!!(JOGO.cap2&&JOGO.cap2.e&&JOGO.cap2.e.partida)},
+  {id:'cristais',nome:'Os sete Cristais',c:()=>CENAS_CRISTAIS,i:()=>IMG_CRISTAIS,visto:()=>!!(JOGO.cap2&&JOGO.cap2.e&&JOGO.cap2.e.cristais)},
+  {id:'adeus',nome:'O adeus',c:()=>CENAS_ADEUS,i:()=>IMG_ADEUS,visto:()=>!!(JOGO.cap2&&JOGO.cap2.e&&JOGO.cap2.e.adeus)},
   {id:'preco',nome:'O preço',c:()=>CENAS_PRECO,i:()=>IMG_PRECO,visto:()=>!!(JOGO.cap2&&JOGO.cap2.preco)},
   {id:'ignarok',nome:'O Ignarok',c:()=>CENAS_IGNAROK,i:()=>IMG_IGNAROK,visto:()=>!!(JOGO.cap2&&JOGO.cap2.ignVisto)},
   {id:'ataque',nome:'A aurora preta',c:()=>CENAS_ATAQUE,i:()=>IMG_ATAQUE,visto:()=>!!(JOGO.cap2&&JOGO.cap2.fase&&!['volta','preparo','noite'].includes(JOGO.cap2.fase))},
@@ -1356,7 +1431,7 @@ function reverFilme(id){const f=FILMES.find(x=>x.id===id);if(!f||!filmeVisto(f))
 function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
-const MUS_CINE={preco_morte:arq('assets/musica/cine_preco_morte'),preco:arq('assets/musica/cine_preco'),ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
+const MUS_CINE={bino_b:arq('assets/musica/bino_b'),preco_morte:arq('assets/musica/cine_preco_morte'),preco:arq('assets/musica/cine_preco'),ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
 let musAtual=null,musNome=null,drone=null;
 function abMusica(nome){   // troca a musica com fusao de 1 s; 'sombrio' = drone grave sintetizado; 'vila' = musica da vila (continua no jogo)
   if(nome===musNome||window.__morta)return;musNome=nome;
@@ -1467,6 +1542,8 @@ cv.addEventListener('pointerdown',e=>{ligaAudio();if(ab.on){if(ab.esperando)abTo
 document.getElementById('voltar').onclick=()=>{location.href=jp('index.html');};
 if(!NA_VILA)document.getElementById('abertura').style.display='none';
 if(NA_VILA)V.pontos.push({id:'portao',x:722,y:738,r:40});
+if(NA_VILA)V.pontos.push(TICO_ALTAR);
+const MEMORIAL={id:'memorial',x:742,y:690,r:0};if(NA_VILA)V.pontos.push(MEMORIAL);
 const ATQ_PONTOS=ATQ_LUTAS.map(l=>({id:l.id,x:l.x,y:l.y,r:0}));if(NA_VILA)V.pontos.push(...ATQ_PONTOS);
 function atqPontosPasso(){const px=atqProxima();for(const p of ATQ_PONTOS)p.r=(emAtaque()&&px&&px.id===p.id)?46:0;}
 document.getElementById('abertura').onclick=e=>{e.stopPropagation();ab.neve=[];abComeca();};
@@ -1697,7 +1774,8 @@ function desenha(){
   if(REGIAO==='trilha'){for(const[lx,ly,r_,k]of[[660,92,30,0],[795,92,30,1]])luz(lx,ly,r_+Math.sin(t*2+k)*2,'rgba(120,220,255,.35)');
     luz(1282,300,70+Math.sin(t*1.5)*8,'rgba(110,210,255,.30)');for(const[lx,ly,k]of[[590,930,0],[830,930,1],[640,940,2]])luz(lx,ly,26+Math.sin(t*1.8+k)*3,'rgba(120,220,255,.28)');}
   // vila em ataque: so a luz roxa do fogo (sem lanternas azuis, sem fogueira laranja, sem janelas acesas)
-  if(NA_VILA&&emAtaque()){luz(742,648,70+Math.sin(t*9)*5+Math.sin(t*23)*2,'rgba(190,70,255,.40)');for(const[fx,fy,fe]of[...ATQ_TETO,...ATQ_CHAO])luz(fx,fy-16*fe/.4,40*fe/.4+Math.sin(t*8+fx)*3,'rgba(200,60,255,.30)');}
+  if(NA_VILA&&emManha()){luz(1302,515,38+Math.sin(t*7)*3,'rgba(255,130,40,.36)');}
+  else if(NA_VILA&&emAtaque()){luz(742,648,70+Math.sin(t*9)*5+Math.sin(t*23)*2,'rgba(190,70,255,.40)');for(const[fx,fy,fe]of[...ATQ_TETO,...ATQ_CHAO])luz(fx,fy-16*fe/.4,40*fe/.4+Math.sin(t*8+fx)*3,'rgba(200,60,255,.30)');}
   else if(NA_VILA){luz(740,645,62+Math.sin(t*9)*4+Math.sin(t*23)*2,'rgba(255,150,50,.42)');
   luz(1302,515,38+Math.sin(t*7)*3,'rgba(255,130,40,.36)');
   for(const[lx,ly,k]of[[602,490,0],[637,505,1],[670,462,2],[812,490,3],[851,480,4],[900,460,5],[930,476,6],[190,515,7],[330,500,8],[405,745,9],[320,822,10],[615,790,11],[855,790,12],[735,182,13],[870,225,14],[848,140,15]])luz(lx,ly,13,`rgba(120,220,255,${.2+.13*Math.sin(t*2+k*1.7)})`);
@@ -1705,7 +1783,7 @@ function desenha(){
   }
   if(NA_VILA&&!emAtaque())for(const[wx,wy,k]of[[95,210,0],[430,225,1],[240,385,2],[160,470,3],[240,475,4],[355,450,5],[1060,230,6],[1135,225,7],[1210,255,8],[1405,540,9],[70,350,10]])luz(wx,wy,10,`rgba(255,200,110,${.16+.08*Math.sin(t*1.3+k*2.1)})`);
   // chamas e fagulhas
-  if(!emAtaque())for(const c of chamas){const a=1-c.v/(c.q?1.3:.75);ctx.fillStyle=c.q?`rgba(255,200,90,${a})`:`rgba(255,${120+((1-a)*80)|0},40,${a*.85})`;ctx.beginPath();ctx.arc(c.x,c.y,Math.max(.4,c.s),0,6.283);ctx.fill();}
+  if(!emAtaque()&&!emManha())for(const c of chamas){const a=1-c.v/(c.q?1.3:.75);ctx.fillStyle=c.q?`rgba(255,200,90,${a})`:`rgba(255,${120+((1-a)*80)|0},40,${a*.85})`;ctx.beginPath();ctx.arc(c.x,c.y,Math.max(.4,c.s),0,6.283);ctx.fill();}
   ctx.restore();
   if(typeof vidaDesenha==='function')vidaDesenha('chao');   // vida da regiao (vida_garganta.js)
   // pegadas na neve (somem devagar)
@@ -1725,7 +1803,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!emAtaque()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?ataqueDesenhos():[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?ataqueDesenhos():[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -1902,6 +1980,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
     else if(NA_VILA&&!JOGO.cap2&&typeof estProvas==='function'&&estProvas().fenrir==='feita'&&cap1Trava()&&!JOGO.avisoCap1){JOGO.avisoCap1=true;salvaJogo();setTimeout(()=>falaPendencias('aurora'),900);}
     if(emFestival())aplicaFestival();
     if(emAtaque())aplicaAtaque();
+    if(emManha())aplicaManha();
     if(emAtaque()){const pv=JOGO.provas||{};JOGO.cap2.lutas=JOGO.cap2.lutas||{};
       if(window.__semSalvar){try{Object.assign(JOGO.cap2.lutas,JSON.parse(sessionStorage.getItem('jux_atq_teste')||'{}'));}catch(e){}}
       for(const l of ATQ_LUTAS)if(pv[l.id]==='vencida'&&!JOGO.cap2.lutas[l.id]){JOGO.cap2.lutas[l.id]=true;salvaJogo();

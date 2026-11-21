@@ -8,7 +8,8 @@ const saidaPara = alvo => {   // a caverna fica DENTRO da Garganta: de fora, o c
   if (alvo === 'caverna' && REGIAO === 'garganta') return {x: 1330, y: 905, nome: 'Caverna'};
   if (alvo === 'caverna') alvo = 'garganta';
 const i = ORDEM_REG.indexOf(REGIAO), j = ORDEM_REG.indexOf(alvo), s = (SAIDAS[REGIAO] || {})[j > i ? 'fwd' : 'back']; return s ? {x: s[0], y: s[1], nome: s[2]} : null;};
-const PASSOS_DEST = {carroca_tombada: [() => {const f = PISTAS_PRESA.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_PRESA_PT[id]); return f[0] || [727, 548];}, [727, 548], null], amigo_floco: [() => {const f = PISTAS_FLOCO.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_FLOCO_PT[id]); let b = f[0] || [470, 655], bd = 1e9; for (const p of f) {const d = Math.hypot(p[0] - hero.x, p[1] - hero.y); if (d < bd) {bd = d; b = p;}} return ['trilha', b[0], b[1]];}, ['trilha', 470, 655]], machado_halvard: [['garganta', 420, 520], ['garganta', 430, 440]], olhos_roxos: [['trilha', 722, 330], ['trilha', 300, 470], ['trilha', 1232, 485], ['caverna', 720, 250]]};
+// carroca tombada: as pistas e a toca ficam no VALE (2026-11-20: faltava a regiao e a estrela apontava para a vila)
+const PASSOS_DEST = {carroca_tombada: [() => {const f = PISTAS_PRESA.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_PRESA_PT[id]); const b = f[0] || [727, 548]; return ['vale', b[0], b[1]];}, ['vale', 727, 548], null], amigo_floco: [() => {const f = PISTAS_FLOCO.filter(id => !(JOGO.desc || []).includes(id)).map(id => PISTA_FLOCO_PT[id]); let b = f[0] || [470, 655], bd = 1e9; for (const p of f) {const d = Math.hypot(p[0] - hero.x, p[1] - hero.y); if (d < bd) {bd = d; b = p;}} return ['trilha', b[0], b[1]];}, ['trilha', 470, 655]], machado_halvard: [['garganta', 420, 520], ['garganta', 430, 440]], olhos_roxos: [['trilha', 722, 330], ['trilha', 300, 470], ['trilha', 1232, 485], ['caverna', 720, 250]]};
 const COR_P = '#ffd84a', COR_S = '#5fe3ff';
 
 function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg,x,y,txt} ou null
@@ -18,6 +19,9 @@ function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg
   if (k === '_festival') return {reg: 'vila', x: 722, y: 600, txt: 'Volte para Invernália: o festival é esta noite'};
   if (k === '_preparo' && typeof destinoPreparo === 'function' && JOGO.cap2.fase === 'preparo') {const dp = destinoPreparo(); if (dp) return {reg: 'vila', x: dp.x, y: dp.y, txt: dp.txt};}
   if (k === '_preparo') {const p = (typeof POS_NPC === 'function' && NA_VILA) ? POS_NPC().vovo : null; return {reg: 'vila', x: p ? p.x : 300, y: p ? p.y : 588, txt: JOGO.cap2.fase === 'preparo' ? 'Ajude nos preparativos e volte à Vovó Hilda' : 'Fale com a Vovó Hilda: o festival é hoje'};}
+  if (k === '_partida') {const px = partProximo(), vv = (typeof POS_NPC === 'function' && NA_VILA) ? POS_NPC().vovo : null;
+    const D = {adeus: [vv ? vv.x : 722, vv ? vv.y : 600, 'O adeus: fale com a Vovó Hilda'], lanterna: [760, 175, 'A lanterna: o Tico está no alto do altar'], cristais: [vv ? vv.x : 722, vv ? vv.y : 600, 'Os sete Cristais: fale com a Vovó Hilda'], partida: [722, 738, 'A partida: vá até o portão']}[px];
+    return D ? {reg: 'vila', x: D[0], y: D[1], txt: D[2]} : null;}
   if (k === '_ignarok') return {reg: 'vila', x: 790, y: 140, txt: 'Suba ao altar: o Ignarok'};
   if (k === '_pend') {const q = cap1Pendente(); const d = q && destinoMissao(q); return d ? Object.assign({}, d, {txt: MISSOES[q].nome + ': ' + d.txt}) : null;}
   if (k === '_ataque') {const l = typeof atqProxima === 'function' ? atqProxima() : null; return l ? {reg: 'vila', x: l.x, y: l.y, txt: 'O ataque: ' + atqFeitas() + '/3 · ' + l.nome} : null;}
@@ -50,7 +54,8 @@ const missaoPrincipalAtual = () => {if (!hero.espada) return '_historia'; if (es
   if (pf === 'feita' || pf === 'tem') {const pend = typeof cap1Trava === 'function' ? cap1Trava() : (typeof cap1Completo === 'function' && !cap1Completo());
     if (!JOGO.cap2) return pend ? '_pend' : '_festival';
     if (pend && (['volta', 'preparo', 'noite'].includes(JOGO.cap2.fase) || (JOGO.cap2.fase === 'ataque' && typeof atqFeitas === 'function' && atqFeitas() >= 3))) return '_pend';
-    if (JOGO.cap2.fase === 'ataque' && typeof atqFeitas === 'function' && atqFeitas() >= 3 && (JOGO.provas || {}).ignarok !== 'vencida') return '_ignarok'; if (JOGO.cap2.fase === 'volta' || JOGO.cap2.fase === 'preparo') return '_preparo'; if (JOGO.cap2.fase === 'noite') return '_cerimonia'; if (JOGO.cap2.fase === 'ataque') return '_ataque';}
+    if (JOGO.cap2.fase === 'ataque' && typeof atqFeitas === 'function' && atqFeitas() >= 3 && (JOGO.provas || {}).ignarok !== 'vencida') return '_ignarok';
+    if (JOGO.cap2.fase === 'manha' && typeof partProximo === 'function' && partProximo()) return '_partida'; if (JOGO.cap2.fase === 'volta' || JOGO.cap2.fase === 'preparo') return '_preparo'; if (JOGO.cap2.fase === 'noite') return '_cerimonia'; if (JOGO.cap2.fase === 'ataque') return '_ataque';}
   return null;};
 function missaoRastreada() {const r = JOGO.rastreio; return (r && MISSOES[r] && !MISSOES[r].principal && estadoMissao(r) === 'ativa') ? r : null;}
 function alternaRastreio(k) {
@@ -164,7 +169,7 @@ function desenhaMapa(x, y, w, h) {
   for (const [kk, cor, forma, rot2] of [[kp, COR_P, 'estrela', 'Principal'], [kr, COR_S, 'losango', 'Rastreada']]) {
     formaMarca(ctx, forma, lx + 8, ly, 7, kk ? cor : '#4a5878'); texto(rot2, lx + 22, ly + 4, 13, kk ? cor : '#5a6688');
     const d = kk && destinoMissao(kk); ly += 18;
-    if (kk) {texto(kk === '_historia' ? 'A lâmina no altar' : kk === '_pegadas' ? 'Pegadas enormes' : kk === '_festival' || kk === '_cerimonia' || kk === '_preparo' ? 'O Festival' : kk === '_ataque' ? 'O ataque' : kk === '_ignarok' ? 'O Ignarok' : kk === '_pend' ? 'Capítulo 1: ' + cap1Feitas() + '/' + CAP1_MISSOES.length + ' missões' : MISSOES[kk].nome, lx + 22, ly + 2, 13, '#fff'); ly += 16; ly = quebra(d ? d.txt : '', lx + 22, ly + 2, lw - 40, 12, '#c8d8f0') + 4;}
+    if (kk) {texto(kk === '_historia' ? 'A lâmina no altar' : kk === '_pegadas' ? 'Pegadas enormes' : kk === '_festival' || kk === '_cerimonia' || kk === '_preparo' ? 'O Festival' : kk === '_ataque' ? 'O ataque' : kk === '_ignarok' ? 'O Ignarok' : kk === '_partida' ? 'A partida' : kk === '_pend' ? 'Capítulo 1: ' + cap1Feitas() + '/' + CAP1_MISSOES.length + ' missões' : MISSOES[kk].nome, lx + 22, ly + 2, 13, '#fff'); ly += 16; ly = quebra(d ? d.txt : '', lx + 22, ly + 2, lw - 40, 12, '#c8d8f0') + 4;}
     else {texto(forma === 'losango' ? 'Nenhuma (Missões → ENTER)' : 'Nenhuma agora', lx + 22, ly + 2, 12, '#5a6688'); ly += 20;}
     ly += 4;
   }
