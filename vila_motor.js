@@ -732,7 +732,7 @@ function festaPoe(){if(festaPosto||!emFestival())return;festaPosto=true;
 const LUTO_D=window.JUX_LUTO||{},LUTO_I={};for(const k in LUTO_D){const i=new Image();i.src=LUTO_D[k].atlas;LUTO_I[k]=i;LUTO_D[k].escala*=k==='bacon'?1.5:1.15;}   // um pouco maiores (sentados ficavam pequenos demais)
 const lutoAtivo=()=>NA_VILA&&!!(JOGO.cap2&&JOGO.cap2.fase==='manha');
 // onde cada um fica: em volta do memorial, o Borin na forja, a Ingrid na barraca, o Oskar perto da outra barraca
-const LUTO_LUGAR={tico:[652,674],bacon:[614,678],vovo:[884,672],borin:[1247,580],ingrid:[486,612],oskar:[1000,640]};
+const LUTO_LUGAR={tico:[620,650],bacon:[584,654],vovo:[884,672],borin:[1247,580],ingrid:[486,612],oskar:[1000,640]};
 function lutoPasso(){TICO_ALTAR.r=partProximo()==='lanterna'?46:0;const M={tico,vovo,borin,bacon};for(const a of ANDARILHOS)M[a.id]=a;
   for(const k in LUTO_LUGAR){const o=M[k];if(!o)continue;let [x,y]=LUTO_LUGAR[k];
     if(k==='tico'&&partProximo()==='lanterna'){x=TICO_ALTAR.x;y=TICO_ALTAR.y;}   // o Tico sozinho no alto do altar
@@ -1157,8 +1157,8 @@ function nomePonto(id){if(NOMES[id])return NOMES[id];if(id.startsWith('tes_')){c
 // quem tem corpo agora (so quem esta visivel no mapa): elipse nos pes; so bloqueia chegando MAIS perto (nunca prende o Jux)
 function corposNpc(){if(!NA_VILA)return [];if(emAtaque()){const L=(JOGO.cap2&&JOGO.cap2.lutas)||{},o=[vovo];if(L.atq_2)o.push(borin);for(const n of ANDARILHOS)if(ATQ_SALVO[n.id]&&L[ATQ_SALVO[n.id]])o.push(n);return o;}
   const o=[tico,vovo,borin,...ANDARILHOS,...FIGURANTES];if(!(JOGO.cap2&&JOGO.cap2.baconTime))o.push(bacon);return o.filter(n=>n&&isFinite(n.x));}
-function npcBloqueia(x,y,x0,y0){for(const n of corposNpc()){const rx=n===bacon?14:10,ry=6,d=((x-n.x)/rx)**2+((y-n.y)/ry)**2;
-  if(d<1&&d<((x0-n.x)/rx)**2+((y0-n.y)/ry)**2)return true;}return false;}
+function npcBloqueia(x,y,x0,y0){for(const n of corposNpc()){const rx=n===bacon?11:8,ry=5,d=((x-n.x)/rx)**2+((y-n.y)/ry)**2;
+  if(d<1&&d<((x0-n.x)/rx)**2+((y0-n.y)/ry)**2)return n;}return null;}
 function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!atqPode(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
 
 
@@ -1683,8 +1683,16 @@ function passo(dt){
         else if(px&&livre(nx2,hero.y)){hero.x=nx2;moveu=true;}else if(py&&livre(hero.x,ny2)){hero.y=ny2;moveu=true;}}
     }
     // os moradores tem CORPO (2026-11-20: 'o Jux atravessa as pessoas'): nao entra no corpo de ninguem; escorrega de lado se der
-    if(moveu&&npcBloqueia(hero.x,hero.y,hx0,hy0)){const ax=hero.x,ay=hero.y;
-      if(!npcBloqueia(ax,hy0,hx0,hy0)){hero.y=hy0;}else if(!npcBloqueia(hx0,ay,hx0,hy0)){hero.x=hx0;}else{hero.x=hx0;hero.y=hy0;moveu=false;}}
+    // e se bater de frente, CONTORNA a pessoa sozinho (2026-11-20: travava atras do Sir Bacon como parede invisivel)
+    if(moveu&&npcBloqueia(hero.x,hero.y,hx0,hy0)){const ax=hero.x,ay=hero.y,n=npcBloqueia(ax,ay,hx0,hy0),st=Math.hypot(ax-hx0,ay-hy0)||1;
+      const diag=Math.abs(ay-hy0)>.01&&Math.abs(ax-hx0)>.01;   // na diagonal: tenta seguir so num eixo
+      if(diag&&!npcBloqueia(ax,hy0,hx0,hy0))hero.y=hy0;
+      else if(diag&&!npcBloqueia(hx0,ay,hx0,hy0))hero.x=hx0;
+      else{   // de frente: anda de lado (para o lado mais perto da borda do corpo) mantendo o avanco
+        const hor=Math.abs(ax-hx0)>=Math.abs(ay-hy0),sg=hor?(hy0>=n.y?1:-1):(hx0>=n.x?1:-1);
+        const sx=hor?hx0:hx0+sg*st,sy=hor?hy0+sg*st:hy0;
+        if(livre(sx,sy)&&!npcBloqueia(sx,sy,hx0,hy0)){hero.x=sx;hero.y=sy;}
+        else{const tx=hor?hx0:hx0-sg*st,ty=hor?hy0-sg*st:hy0;if(livre(tx,ty)&&!npcBloqueia(tx,ty,hx0,hy0)){hero.x=tx;hero.y=ty;}else{hero.x=hx0;hero.y=hy0;moveu=false;}}}}
     if(!moveu)hero.alvo=null;
     if(dx)hero.dir=dx<0?-1:1;
     const ax=Math.abs(dx),ay=Math.abs(dy),hz=dx<0?'esquerda':'direita',vt=dy<0?'cima':'baixo';
