@@ -50,7 +50,7 @@ const btMus = document.getElementById('musica');
 const marcaMus = () => { btMus.textContent = '♫ Música: ' + (musLigada ? 'ligada' : 'desligada'); };
 btMus.onclick = e => { e.stopPropagation(); musLigada = !musLigada; localStorage.setItem('jux_mus_rio', musLigada ? '1' : '0'); if (musLigada && comecou) MUS.play().catch(() => {}); else MUS.pause(); marcaMus(); btMus.blur(); };
 marcaMus();
-document.getElementById('voltar').onclick = () => { location.href = 'vila.html'; };
+document.getElementById('voltar').onclick = () => { location.href = 'vila.html?t=' + Date.now(); };
 
 // ---------- o barco ----------
 const DIR = { baixo: 0, esquerda: 1, direita: 2, cima: 3 };
@@ -93,7 +93,7 @@ function contaEncontro(andou) {
   const nv = Math.round(E.nv[0] + Math.random() * (E.nv[1] - E.nv[0]));
   guardaRio(); lutando = { t: 0 }; som('rio_splash_grande', .8); MUS.pause();
   try { localStorage.setItem('jux_encontro', JSON.stringify({ regiao: 'rio', tipos, nv, volta: 'rio.html' })); } catch (e) {}
-  setTimeout(() => { AMB.pause(); location.href = 'batalha.html'; }, 1100);
+  setTimeout(() => { AMB.pause(); location.href = 'batalha.html?t=' + Date.now(); }, 1100);
 }
 let BOIA = [], BAUS = [], CAIS = null, CONF = TRECHOS[0];
 function montaTrecho(n) {
@@ -129,7 +129,7 @@ function usa() {
   if (!perto) return;
   if (perto.tipo === 'bau') { const b = perto.b; if (pego(b.id)) return; JOGO.pegos = JOGO.pegos || []; JOGO.pegos.push(b.id);
     for (const k in b.itens) daItem(k, b.itens[k]); if (b.gil) JOGO.gil = (JOGO.gil || 0) + b.gil; salvaJogo(); som('novos/ui_vez', .7); avisa('Baú da ilhota: ' + b.txt + '!'); }
-  else if (perto.tipo === 'cais' && CAIS.tipo === 'vila') { guardaRio(); location.href = 'vila.html'; }
+  else if (perto.tipo === 'cais' && CAIS.tipo === 'vila') { guardaRio(); location.href = 'vila.html?t=' + Date.now(); }
   else if (perto.tipo === 'cais') { guardaRio(); som('novos/ui_vez', .6); avisa('Vocês descansaram no cais do meio. Jogo salvo! (a pescadora Marta chega em breve)', 4); }
 }
 
@@ -314,7 +314,7 @@ function passoRaposa(dt) {
 const CACH = new Audio('assets/sfx/novos/cachoeira.mp3'); CACH.loop = true; CACH.volume = 0;
 const ENF = { patos: null, cervo: null, garca: null, sapo: null, insetos: [] };
 function montaEnfeites() {
-  ENF.patos = { cx: 700, cy: 850, rx: 95, ry: 40, a: 0, est: 'nada', t: 0, mae: { x: 0, y: 0, vx: 0 }, filhos: [0, 1, 2].map(i => ({ x: 0, y: 0, vx: 0, foge: 0 })) };
+  ENF.patos = { cx: 700, cy: 850, rx: 95, ry: 40, a: 0, est: 'nada', t: 0, mae: { x: 0, y: 0, vx: 0, vy: 0 }, filhos: [0, 1, 2].map(i => ({ x: 0, y: 0, vx: 0, vy: 0 })) };
   ENF.cervo = { x: 190, y: 702, x0: 190, dir: 1, est: 'bebe', t: 0 };
   ENF.garca = { x: 1236, y: 560, x0: 1236, y0: 560, est: 'espreita', t: 0, prox: rnd(5, 9) };
   ENF.sapo = { x: 402, y: 708, x0: 402, y0: 708, est: 'parado', t: 0, prox: rnd(4, 8) };
@@ -330,14 +330,32 @@ function passoEnfeites(dt) {
   if (!ENF.patos) montaEnfeites();
   if (comecou && CACH.paused) CACH.play().catch(() => {});
   CACH.volume = cl(.55 - Math.hypot(barco.x - 1135, barco.y - 420) / 1100, 0, .55);
-  // patos: a pata nada em volta e os patinhos atras; o barco perto -> ela voa (quac) e os patinhos se espalham; voltam depois
+  // patos (2026-11-21: 'sem massa e sem fisica'): cada pato tem corpo e velocidade. Eles nadam atras de um ponto (a fila em volta
+  // da pata), FOGEM do barco quando ele chega perto e, se o barco encosta, sao EMPURRADOS (com respingo e um quac); nunca saem da agua.
   { const P = ENF.patos; P.t += dt;
-    if (P.est === 'nada') { P.a += dt * .32; const x = P.cx + Math.cos(P.a) * P.rx, y = P.cy + Math.sin(P.a) * P.ry; P.mae.vx = x - P.mae.x; P.mae.x = x; P.mae.y = y;
-      P.filhos.forEach((f, i) => { const b = P.a - .42 * (i + 1), fx_ = P.cx + Math.cos(b) * P.rx, fy_ = P.cy + Math.sin(b) * P.ry; f.vx = fx_ - f.x; f.x = fx_; f.y = fy_; });
-      if (pertoB(P.mae.x, P.mae.y) < 165) { P.est = 'voa'; P.t = 0; som('novos/pato', .6); } }
-    else if (P.est === 'voa') { P.mae.x -= 150 * dt; P.mae.y -= 70 * dt; P.mae.vx = -1;
-      P.filhos.forEach((f, i) => { const ang = Math.atan2(f.y - barco.y, f.x - barco.x); if (P.t < 2.5) { f.x += Math.cos(ang) * 70 * dt; f.y += Math.sin(ang) * 40 * dt; f.vx = Math.cos(ang); } });
-      if (P.t > 15 && pertoB(P.cx, P.cy) > 380) { P.est = 'nada'; P.t = 0; } } }
+    const nada = (o, tx, ty, raio, forca) => {
+      let ax = (tx - o.x) * 1.6 - o.vx * 1.4, ay = (ty - o.y) * 1.6 - o.vy * 1.4;
+      const dx = o.x - barco.x, dy = (o.y - barco.y - 4) / .62, d = Math.hypot(dx, dy) || 1;
+      if (d < 150) { const k = (150 - d) * forca; ax += dx / d * k; ay += dy / d * k * .62; }   // foge do barco
+      o.vx += ax * dt; o.vy += ay * dt; const sp = Math.hypot(o.vx, o.vy); if (sp > 160) { o.vx *= 160 / sp; o.vy *= 160 / sp; }
+      if (d < raio) {   // encostou: o barco empurra (o pato leva o empurrao todo)
+        const pen = raio - d; o.x += dx / d * pen; o.y += dy / d * pen * .62;
+        o.vx += dx / d * 90 + barco.vx * .6; o.vy += dy / d * 55 + barco.vy * .6;
+        if (t - (o.bateu || 0) > .9) { o.bateu = t; fx(1, o.x, o.y + 4, .5, .3); som('novos/pato', .45, true); } }
+      const nx = o.x + o.vx * dt, ny = o.y + o.vy * dt;
+      if (agua(nx, ny + 4)) { o.x = nx; o.y = ny; } else if (agua(nx, o.y + 4)) { o.x = nx; o.vy *= -.4; } else if (agua(o.x, ny + 4)) { o.y = ny; o.vx *= -.4; } else { o.vx *= -.4; o.vy *= -.4; }
+      if (Math.hypot(o.vx, o.vy) > 70 && t - (o.esp || 0) > .35) { o.esp = t; FX.push({ lin: 3, x: o.x, y: o.y + 6, t: 0, dur: .7, esc: .12, ang: 0, al: .6, some: true }); }
+    };
+    if (!P.ok) { P.ok = true; P.mae.vy = 0; P.mae.x = P.cx + P.rx; P.mae.y = P.cy; P.filhos.forEach((f, i) => { f.vy = 0; f.x = P.mae.x - 30 * (i + 1); f.y = P.cy; }); }
+    if (P.est === 'nada') {
+      P.a += dt * .32; nada(P.mae, P.cx + Math.cos(P.a) * P.rx, P.cy + Math.sin(P.a) * P.ry, 40, 2.2);
+      if (pertoB(P.mae.x, P.mae.y) < 95) { P.est = 'voa'; P.t = 0; som('novos/pato', .6); }
+    } else if (P.est === 'voa') { P.mae.x -= 150 * dt; P.mae.y -= 70 * dt; P.mae.vx = -1;
+      if (P.t > 15 && pertoB(P.cx, P.cy) > 380) { P.est = 'nada'; P.t = 0; P.mae.x = P.cx - P.rx - 120; P.mae.y = P.cy; P.mae.vx = P.mae.vy = 0; } }
+    P.filhos.forEach((f, i) => {   // os patinhos seguem a mae (ou o lugar dela) em fila; sozinhos, ficam juntinhos e fogem mais
+      const lider = i === 0 ? (P.est === 'nada' ? P.mae : { x: P.cx, y: P.cy }) : P.filhos[i - 1], ang = Math.atan2(lider.vy || 0, lider.vx || 1);
+      nada(f, lider.x - Math.cos(ang) * 26, lider.y - Math.sin(ang) * 16, 30, P.est === 'nada' ? 3 : 4.5); });
+  }
   // cervo: bebe na beira; barco perto -> levanta a cabeca e olha; mais perto -> foge para o mato; volta depois
   { const C = ENF.cervo; C.t += dt; const d = pertoB(C.x, C.y);
     if (C.est === 'bebe' && d < 360) { C.est = 'alerta'; C.t = 0; }
