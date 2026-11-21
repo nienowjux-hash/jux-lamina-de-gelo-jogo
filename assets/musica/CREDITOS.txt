@@ -83,3 +83,5 @@ O RIO (Capitulo 3, Parte A) - todos CC0 (dominio publico), 2026-11-21:
 - sfx/rio_splash_peq.mp3 e rio_splash_grande.mp3: "40 CC0 water splash / slime sfx" (splash_10 e splash_04), rubberduck, CC0 - https://opengameart.org/content/40-cc0-water-splash-slime-sfx
 - sfx/rio_madeira.mp3: "Impact Sounds" (impactWood_heavy_000), Kenney (www.kenney.nl), CC0 - https://kenney.nl/assets/impact-sounds
 - sfx/rio_passaros.mp3: "Bird chirping sounds", syncopika, CC0 - https://opengameart.org/content/bird-chirping-sounds
+- sfx/rio_gelo_1..3.mp3: mistura de "Impact Sounds" (impactSoft_medium + impactGlass_light), Kenney (www.kenney.nl), CC0 - https://kenney.nl/assets/impact-sounds
+- sfx/rio_empurra.mp3: "40 CC0 water splash / slime sfx" (splash_07, abafado), rubberduck, CC0 - https://opengameart.org/content/40-cc0-water-splash-slime-sfx

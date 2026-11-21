@@ -7,7 +7,7 @@
    Dados: rio_dados.js (mapa, mascara da agua, folhas recortadas). Sons: assets/sfx/rio_*.  */
 const W = 960, H = 540, cv = document.getElementById('c'), ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
-const R = window.JUX_RIO, Z = 1.15;
+const R = window.JUX_RIO, Z = .85;   // camera mais longe (2026-11-21: 'da para afastar um pouco, nao da para ver o mapa')
 const rnd = (a, b) => a + Math.random() * (b - a);
 const cl = (v, a, b) => Math.max(a, Math.min(b, v));
 const img = s => { const i = new Image(); i.src = s; return i; };
@@ -54,7 +54,7 @@ document.getElementById('voltar').onclick = () => { location.href = 'vila.html';
 // ---------- o barco ----------
 const DIR = { baixo: 0, esquerda: 1, direita: 2, cima: 3 };
 const barco = { x: 640, y: 372, vx: 0, vy: 0, dir: 'baixo', rema: 0, remaQ: -1, balanco: 0 };
-const ACEL = 230, VMAX = 150, ATRITO = 1.25;
+const ACEL = 260, VMAX = 155, ATRITO = 1.6;
 const teclas = {};
 addEventListener('keydown', e => { const k = e.key.toLowerCase(); teclas[k] = true; liga(); if (k === 'enter' || k === 'e' || k === ' ') usa(); if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault(); });
 addEventListener('keyup', e => { teclas[e.key.toLowerCase()] = false; });
@@ -75,7 +75,7 @@ function maisPerto(o, px, py) {   // ponto do objeto mais perto de (px,py) e o r
   const [ax, ay, bx, by] = pontaTronco(o), dx = bx - ax, dy = by - ay, t = cl(((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy), 0, 1);
   return [ax + dx * t, ay + dy * t, TRONCO_R];
 }
-const cabeObj = (o, x, y) => { if (o.t !== 'tronco') return agua(x, y + 6) && agua(x - o.r * .7, y) && agua(x + o.r * .7, y);
+const cabeObj = (o, x, y) => { if (o.t !== 'tronco') { for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283; if (!agua(x + Math.cos(a) * o.r * .75, y + Math.sin(a) * o.r * .45 + 4)) return false; } return true; }
   const c = Math.cos(o.ang), s = Math.sin(o.ang);   // o tronco inteiro (ao longo dele e dos lados) tem que estar na agua
   for (const f of [-1, -.6, -.3, 0, .3, .6, 1]) for (const l of [-1, 1]) if (!agua(x + c * TRONCO_L * f - s * TRONCO_R * l, y + s * TRONCO_L * f + c * TRONCO_R * l + 4)) return false; return true; };
 
@@ -115,7 +115,7 @@ function passo(dt) {
     const nd = Math.abs(ix) > Math.abs(iy) ? (ix < 0 ? 'esquerda' : 'direita') : (iy < 0 ? 'cima' : 'baixo');
     if (nd !== barco.dir && barcoCabe(barco.x, barco.y, nd)) barco.dir = nd;   // so vira se o barco cabe virado ali
     barco.rema += dt / .9;   // uma remada a cada 0,9 s
-    const q = Math.floor(barco.rema * 6) % 6, forca = (q >= 1 && q <= 3) ? 1.55 : .45;   // a puxada (quadros 2 a 4) empurra mais
+    const q = Math.floor(barco.rema * 6) % 6, forca = 1 + .22 * Math.sin(barco.rema * Math.PI * 2 - 1);   // empurra o tempo todo, um pouco mais na puxada (sem tranco)
     barco.vx += ix * ACEL * forca * dt; barco.vy += iy * ACEL * forca * dt;
     if (q === 1 && barco.remaQ !== 1) {   // a pa entra na agua: respingo e som
       const P = { baixo: [-34, 30], esquerda: [-6, 34], direita: [6, 34], cima: [36, 22] }[barco.dir];
@@ -141,60 +141,67 @@ function passo(dt) {
     const vc = barco.vx * wx + barco.vy * wy; if (vc > 0) { barco.vx -= wx * vc * 1.25; barco.vy -= wy * vc * 1.25; }
     if (forte > 55 && t - (barco.bateu || 0) > .5) { barco.bateu = t; fx(2, nx, ny + 10, .5, .45); som('rio_splash_grande', cl(forte / 220, .15, .7)); }
   }
-  // coisas que boiam
+  // coisas que boiam: descem com a correnteza, deslizam nas margens e nas pedras (nunca encalham de vez)
   for (const o of BOIA) {
     o.fase += dt;
     if (!o.ok) { o.ok = true; if (!cabeObj(o, o.x, o.y)) achaLugar(o); }   // comeca num lugar onde cabe inteiro na agua
     if (!o.m) continue;
-    const [fx_, fy_] = corrente(o.x, o.y), kk = 1 - Math.exp(-.7 * dt);
-    o.vx += (fx_ * .8 - o.vx) * kk; o.vy += (fy_ * .8 - o.vy) * kk; o.va *= Math.exp(-1.4 * dt);
-    if (o.t === 'tronco') { o.va += Math.sin(o.fase * .7) * .02 * dt - o.ang * .5 * dt; if (Math.abs(o.ang) > .75) { o.ang = Math.sign(o.ang) * .75; o.va *= -.3; } }   // gira so um pouco e volta a deitar
-    const ox = o.x + o.vx * dt, oy = o.y + o.vy * dt, oa = o.ang + o.va * dt;
-    const a0 = o.ang; o.ang = oa;
-    if (cabeObj(o, ox, oy)) { o.x = ox; o.y = oy; }
-    else { o.ang = a0; if (cabeObj(o, ox, o.y)) o.x = ox; else if (cabeObj(o, o.x, oy)) o.y = oy; o.vx *= -.2; o.vy *= -.2; o.va *= -.3; }
+    if (o.sub > 0) { o.sub -= dt; if (o.sub <= 0 && encostaBarco(o)) o.sub = .3; }   // embaixo da agua: so volta quando o barco saiu de cima
+    const [fx_, fy_] = corrente(o.x, o.y), kk = 1 - Math.exp(-(o.t === 'tronco' ? .9 : .7) * dt);
+    o.vx += (fx_ * .85 - o.vx) * kk; o.vy += (fy_ * .85 - o.vy) * kk; o.va *= Math.exp(-1.6 * dt);
+    if (o.t === 'tronco') { o.va -= o.ang * .6 * dt; if (Math.abs(o.ang) > .7) { o.ang = Math.sign(o.ang) * .7; o.va *= -.2; } }   // gira so um pouco e volta a deitar
+    moveObj(o, o.vx * dt, o.vy * dt, o.va * dt);
     if (o.y > R.h + 40 || o.y > R.h - 40 && !cabeObj(o, o.x, o.y + 20)) volta(o);
-    // parado num canto ha muito tempo e fora da tela: volta a boiar la em cima (o rio nunca entope)
     const mv = Math.hypot(o.x - (o.px || o.x), o.y - (o.py || o.y)); o.px = o.x; o.py = o.y; o.par = mv < .05 ? (o.par || 0) + dt : 0;
-    if (o.par > 10 && !naTela(o.x, o.y, 90)) volta(o);
-    if (!o.contatoAgora) o.contato = Math.max(0, (o.contato || 0) - dt); o.contatoAgora = false;
+    if (o.par > 12 && !naTela(o.x, o.y, 90)) volta(o);   // parado ha muito tempo fora da tela: volta a boiar la em cima
   }
-  // barco x coisas que boiam
+  // barco x coisas que boiam: o barco EMPURRA (o objeto anda junto e desliza); se o objeto nao tem para onde ir, ele MERGULHA e o barco passa
   for (const o of BOIA) {
+    if (o.sub > 0) continue;
     const [px, py, r] = maisPerto(o, barco.x, barco.y + 4);
     let dx = barco.x - px, dy = (barco.y + 4 - py) / .62;   // a vista e achatada: distancia na "agua"
     const d = Math.hypot(dx, dy), min = (forma(barco.dir) === 'lado' ? 46 : 32) + r;
-    if (d >= min || d < .01) continue;
-    dx /= d; dy /= d; const pen = min - d, nyS = dy * .62; o.contatoAgora = true;
+    if (d >= min || d < .01) { o.preso = 0; continue; }
+    dx /= d; dy /= d; const pen = min - d, nyS = dy * .62;
     const rel = (barco.vx - o.vx) * -dx + (barco.vy - o.vy) * -nyS;   // velocidade de choque (barco indo contra o objeto)
-    if (!o.m) {   // gelo grande: e parede (no barcoCabe); aqui so o barulho e o splash da batida
-      if (rel > 45 && t - (o.som || 0) > .5) { o.som = t; som('gelo', cl(rel / 200, .15, .6)); fx(2, px, py, .5, .4); }
+    if (!o.m) {   // gelo grande: e parede (no barcoCabe); aqui so o barulho da batida
+      if (rel > 55 && t - (o.som || 0) > .6) { o.som = t; som('rio_gelo_' + (1 + (Math.random() * 3 | 0)), cl(rel / 260, .12, .5)); fx(2, px, py, .5, .35); }
       continue;
     }
-    const mb = 3, wb = o.m / (mb + o.m), wo = mb / (mb + o.m);
-    // separa os dois, mas ninguem entra na margem: se o objeto nao cabe, o barco recua sozinho
-    if (cabeObj(o, o.x - dx * pen * wo, o.y - nyS * pen * wo)) { o.x -= dx * pen * wo; o.y -= nyS * pen * wo; if (barcoCabe(barco.x + dx * pen * wb, barco.y + nyS * pen * wb)) { barco.x += dx * pen * wb; barco.y += nyS * pen * wb; } }
-    else if (barcoCabe(barco.x + dx * pen, barco.y + nyS * pen)) { barco.x += dx * pen; barco.y += nyS * pen; }
-    // o barco empurrando e nada se mexe (preso entre o objeto e a pedra): o objeto AFUNDA e volta la em cima
-    o.contato = (o.contato || 0) + (Math.hypot(barco.vx, barco.vy) < 30 ? 1 / 60 : 0); if (o.contato > 2.5) { afunda(o); continue; }
+    // o objeto leva quase todo o empurrao (desliza na margem se precisar); o barco so desacelera um pouco
+    const ax = o.x, ay = o.y;
+    moveObj(o, -dx * pen * .9, -nyS * pen * .9, 0);
+    const andou = Math.hypot(o.x - ax, o.y - ay);
     if (rel > 0) {
-      const j = rel * 1.25 / (1 / mb + 1 / o.m);
-      barco.vx += dx * j / mb; barco.vy += nyS * j / mb; o.vx -= dx * j / o.m; o.vy -= nyS * j / o.m;
-      if (o.t === 'tronco') { const off = (px - o.x) * Math.cos(o.ang) + (py - o.y) * Math.sin(o.ang); o.va += cl(-off * (dx * Math.sin(o.ang) - nyS * Math.cos(o.ang)) * j * .00045, -1.2, 1.2); }
-      if (rel > 40 && t - (o.som || 0) > .4) { o.som = t; som(o.t === 'tronco' ? 'rio_madeira' : 'gelo', cl(rel / 180, .15, .7), true); fx(2, (px + barco.x) / 2, (py + barco.y) / 2 + 6, .5, .35); }
+      const leve = o.t === 'tronco' ? 1 : o.t === 'gelo_p' ? .75 : .55;
+      o.vx -= dx * rel * leve; o.vy -= nyS * rel * leve;   // sai andando para o lado, suave
+      barco.vx += dx * rel * (1 - leve) * .7; barco.vy += nyS * rel * (1 - leve) * .7;
+      if (o.t === 'tronco') { const off = (px - o.x) * Math.cos(o.ang) + (py - o.y) * Math.sin(o.ang); o.va += cl(-off * (dx * Math.sin(o.ang) - nyS * Math.cos(o.ang)) * rel * .00035, -.9, .9); }
+      if (rel > 50 && t - (o.som || 0) > .5) { o.som = t; som(o.t === 'tronco' ? 'rio_madeira' : 'rio_gelo_' + (1 + (Math.random() * 3 | 0)), cl(rel / 240, .1, .5), true); fx(2, (px + barco.x) / 2, (py + barco.y) / 2 + 6, .45, .28); }
+      else if (rel > 12 && t - (o.somE || 0) > 1.1) { o.somE = t; som('rio_empurra', .22, true); }
     }
+    // nao saiu do lugar e o jogador continua remando contra: preso entre o objeto e a margem -> o objeto mergulha e o barco passa
+    o.preso = andou < pen * .3 && remando ? (o.preso || 0) + dt : 0;
+    if (o.preso > .45) mergulha(o);
   }
-  // coisa x coisa (troncos e gelo se empurram)
+  // coisa x coisa (troncos e gelo se empurram e deslizam um no outro)
   for (let i = 0; i < BOIA.length; i++) for (let j = i + 1; j < BOIA.length; j++) {
-    const a = BOIA[i], b = BOIA[j]; if (!a.m && !b.m) continue;
+    const a = BOIA[i], b = BOIA[j]; if ((!a.m && !b.m) || a.sub > 0 || b.sub > 0) continue;
     const [px, py, ra] = maisPerto(a, b.x, b.y), [qx, qy, rb] = maisPerto(b, px, py);
     let dx = qx - px, dy = (qy - py) / .62; const d = Math.hypot(dx, dy), min = ra + rb; if (d >= min || d < .01) continue;
-    dx /= d; dy /= d; const pen = min - d, ma = a.m || 1e9, mb2 = b.m || 1e9, wa = mb2 / (ma + mb2), wb = ma / (ma + mb2);
-    a.x -= dx * pen * wa; a.y -= dy * .62 * pen * wa; b.x += dx * pen * wb; b.y += dy * .62 * pen * wb;
-    const rel = (a.vx - b.vx) * dx + (a.vy - b.vy) * dy * .62; if (rel > 0) { const jj = rel / (1 / ma + 1 / mb2); a.vx -= dx * jj / ma; a.vy -= dy * .62 * jj / ma; b.vx += dx * jj / mb2; b.vy += dy * .62 * jj / mb2; }
+    dx /= d; dy /= d; const pen = (min - d) * .5;
+    if (a.m && b.m) { moveObj(a, -dx * pen, -dy * .62 * pen, 0); moveObj(b, dx * pen, dy * .62 * pen, 0); }
+    else if (a.m) moveObj(a, -dx * pen * 2, -dy * .62 * pen * 2, 0); else moveObj(b, dx * pen * 2, dy * .62 * pen * 2, 0);
+    const rel = (a.vx - b.vx) * dx + (a.vy - b.vy) * dy * .62; if (rel > 0) { const ma = a.m || 1e9, mb2 = b.m || 1e9, jj = rel / (1 / ma + 1 / mb2);
+      a.vx -= dx * jj / ma; a.vy -= dy * .62 * jj / ma; b.vx += dx * jj / mb2; b.vy += dy * .62 * jj / mb2; }
   }
+  // esteira: espuma e marolinhas saindo da popa (fica bonita em qualquer direcao)
+  { const sp = Math.hypot(barco.vx, barco.vy); barco.espuma = (barco.espuma || 0) + dt;
+    if (sp > 28 && barco.espuma > .06) { barco.espuma = 0; const a = Math.atan2(barco.vy, barco.vx), lado_ = forma(barco.dir) === 'lado', atras = lado_ ? 62 : 8;   // de frente/de costas a espuma sai dos lados do casco (atras ela ficaria escondida pela vela)
+      const bx = barco.x - Math.cos(a) * atras, by = barco.y + 12 - Math.sin(a) * atras * .62, lx = -Math.sin(a), ly = Math.cos(a) * .62;
+      for (const lado of [-1, 1]) { const e = lado_ ? rnd(8, 20) : rnd(30, 40); FX.push({ lin: 3, x: bx + lx * lado * e, y: by + ly * lado * e, t: 0, dur: rnd(.9, 1.3), esc: rnd(.26, .36), ang: 0, al: Math.min(.95, sp / 115), some: true, vx: lx * lado * 14 - Math.cos(a) * 8, vy: ly * lado * 14 - Math.sin(a) * 5 }); } } }
   // esteira, brilhos, peixes, raposa, passaros
-  for (const e of FX) e.t += dt; for (let i = FX.length - 1; i >= 0; i--) if (FX[i].t >= FX[i].dur) FX.splice(i, 1);
+  for (const e of FX) { e.t += dt; if (e.vx) { e.x += e.vx * dt; e.y += e.vy * dt; } } for (let i = FX.length - 1; i >= 0; i--) if (FX[i].t >= FX[i].dur) FX.splice(i, 1);
   for (const b of BRILHO) { b.t += dt / b.dur; if (b.t >= 1 || !b.x) { b.t = 0; b.dur = rnd(.8, 1.4); const p = pontoAgua(60); if (p) { b.x = p[0]; b.y = p[1]; } } }
   peixeT -= dt; if (peixeT <= 0) { peixeT = rnd(1.4, 3.6); const p = pontoAgua(130); if (p) PEIXE.push({ x: p[0], y: p[1], t: 0, tipo: Math.random() < .55 ? 0 : 1, flip: Math.random() < .5 }); }
   for (let i = PEIXE.length - 1; i >= 0; i--) { const p = PEIXE[i]; const q0 = Math.floor(p.t / .11); p.t += dt; const q = Math.floor(p.t / .11);
@@ -213,6 +220,28 @@ function passo(dt) {
   cam.x += (barco.x - cam.x) * Math.min(1, dt * 4); cam.y += (barco.y + 30 - cam.y) * Math.min(1, dt * 4);
   cam.x = cl(cam.x, W / (2 * Z), R.w - W / (2 * Z)); cam.y = cl(cam.y, H / (2 * Z), R.h - H / (2 * Z));
 }
+// move o objeto; se bater na margem, DESLIZA ao longo dela (acha o lado da parede pelos pontos fora da agua)
+function moveObj(o, mx, my, ma) {
+  const a0 = o.ang; o.ang += ma;
+  if (cabeObj(o, o.x + mx, o.y + my)) { o.x += mx; o.y += my; return true; }
+  o.ang = a0;
+  if (ma && cabeObj(o, o.x + mx, o.y + my)) { o.x += mx; o.y += my; o.va *= -.3; return true; }
+  const n = normalParede(o, o.x + mx, o.y + my);
+  if (n) { const c = mx * n[0] + my * n[1]; const sx = mx - n[0] * Math.max(0, c) - n[0] * .3, sy = my - n[1] * Math.max(0, c) - n[1] * .3;
+    if (cabeObj(o, o.x + sx, o.y + sy)) { o.x += sx; o.y += sy; const vc = o.vx * n[0] + o.vy * n[1]; if (vc > 0) { o.vx -= n[0] * vc * 1.2; o.vy -= n[1] * vc * 1.2; } return true; } }
+  if (cabeObj(o, o.x + mx, o.y)) { o.x += mx; o.vy *= .5; return true; }
+  if (cabeObj(o, o.x, o.y + my)) { o.y += my; o.vx *= .5; return true; }
+  o.vx *= .5; o.vy *= .5; return false;
+}
+function normalParede(o, x, y) {   // direcao (unitaria) de onde esta a parede em volta do objeto
+  let wx = 0, wy = 0; const pts = [];
+  if (o.t === 'tronco') { const c = Math.cos(o.ang), s = Math.sin(o.ang); for (const f of [-1, -.5, 0, .5, 1]) for (const l of [-1, 1]) pts.push([c * TRONCO_L * f - s * TRONCO_R * l, s * TRONCO_L * f + c * TRONCO_R * l + 4]); }
+  else for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283; pts.push([Math.cos(a) * o.r * .75, Math.sin(a) * o.r * .45 + 4]); }
+  for (const [dx, dy] of pts) if (!agua(x + dx, y + dy)) { wx += dx; wy += dy; }
+  const n = Math.hypot(wx, wy); return n ? [wx / n, wy / n] : null;
+}
+function encostaBarco(o) { const [px, py, r] = maisPerto(o, barco.x, barco.y + 4); return Math.hypot(barco.x - px, (barco.y + 4 - py) / .62) < (forma(barco.dir) === 'lado' ? 46 : 32) + r + 6; }
+function mergulha(o) { if (o.sub > 0) return; o.sub = 1.6; o.preso = 0; fx(2, o.x, o.y, .5, .4); fx(3, o.x, o.y + 6, .9, .5); som('rio_splash_peq', .45, true); }
 function achaLugar(o) { for (let r = 4; r < 160; r += 4) for (let k = 0; k < 16; k++) { const x = o.x + Math.cos(k / 16 * 6.283) * r, y = o.y + Math.sin(k / 16 * 6.283) * r * .7; if (cabeObj(o, x, y)) { o.x = x; o.y = y; return; } } }
 const naTela = (x, y, m) => Math.abs(x - cam.x) < W / (2 * Z) + (m || 0) && Math.abs(y - cam.y) < H / (2 * Z) + (m || 0);
 function afunda(o) { fx(2, o.x, o.y, .6, .6); fx(3, o.x, o.y + 6, 1, .7); som('rio_splash_grande', .5); o.contato = 0; volta(o); }
@@ -250,26 +279,25 @@ function desenha() {
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const b of BRILHO) if (b.x) quadro(F.fx, 4, Math.min(5, Math.floor(b.t * 6)), b.x, b.y, .5, false, .8);
   ctx.restore();
-  // esteira atras do barco
-  const sp = Math.hypot(barco.vx, barco.vy);
-  if (sp > 22) { const a = Math.atan2(barco.vy, barco.vx), atras = forma(barco.dir) === 'lado' ? 118 : 62, bx = barco.x - Math.cos(a) * atras, by = barco.y + 18 - Math.sin(a) * atras * .75;
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; quadro(F.fx, 0, Math.floor(t * 10) % 6, bx, by, 1.15, false, Math.min(.95, sp / 110), a - Math.PI / 2); ctx.restore(); }
+  // a esteira (espuma da popa) vem embaixo do barco
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  for (const e of FX) if (e.some) quadro(F.fx, e.lin, Math.min(5, Math.floor(e.t / e.dur * 6)), e.x, e.y, e.esc, false, e.al * (1 - e.t / e.dur));
+  ctx.restore();
   // o que boia + o barco, por profundidade
   const L = BOIA.map(o => [o.y, () => {
-    const f = F.flut, bob = Math.sin(o.fase * 2.2) * 1.5, q = Math.floor(o.fase * 3.2) % 4;
-    if (o.t === 'tronco') { const D = .42; if (Math.abs(o.ang) < D / 2) quadro(f, 0, q, o.x, o.y + bob, 1, false, null, o.ang);
-      else if (o.ang > 0) quadro(f, 1, q, o.x, o.y + bob, 1, false, null, o.ang - D); else quadro(f, 1, q, o.x, o.y + bob, 1, true, null, o.ang + D); }
-    else quadro(f, TIPO[o.t][0], q, o.x, o.y + bob, 1);
+    const f = F.flut, bob = Math.sin(o.fase * 1.7) * 1.4 + (o.sub > 0 ? 7 : 0), q = 0, al = o.sub > 0 ? .32 : null, bal = Math.sin(o.fase * 1.3) * .025;
+    if (o.t === 'tronco') { const D = .42; if (Math.abs(o.ang) < D / 2) quadro(f, 0, q, o.x, o.y + bob, 1, false, al, o.ang + bal);
+      else if (o.ang > 0) quadro(f, 1, q, o.x, o.y + bob, 1, false, al, o.ang - D + bal); else quadro(f, 1, q, o.x, o.y + bob, 1, true, al, o.ang + D + bal); }
+    else quadro(f, TIPO[o.t][0], q, o.x, o.y + bob, 1, false, al, o.m ? bal * .6 : 0);
   }]);
   L.push([barco.y, () => {
     const r = DIR[barco.dir], bob = Math.sin(t * 2.4) * 1.6;
-    if (barco.remaQ >= 0) quadro(F.rema, r, barco.remaQ, barco.x, barco.y - 48 + bob, 1);
-    else { const q = [0, 1, 2, 1][Math.floor(t * 2.6) % 4]; quadro(F.barco, r, q, barco.x, barco.y - 50 + bob, 1); }
+    quadro(F.rema, r, barco.remaQ >= 0 ? barco.remaQ : 0, barco.x, barco.y - 48 + bob, 1, false, null, Math.sin(t * 1.9) * .012);
   }]);
   L.sort((a, b) => a[0] - b[0]); for (const [, f] of L) f();
   // efeitos (respingos, splash, marola)
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
-  for (const e of FX) quadro(F.fx, e.lin, Math.min(5, Math.floor(e.t / e.dur * 6)), e.x, e.y, e.esc, false, e.al, e.ang);
+  for (const e of FX) if (!e.some) quadro(F.fx, e.lin, Math.min(5, Math.floor(e.t / e.dur * 6)), e.x, e.y, e.esc, false, e.al, e.ang);
   ctx.restore();
   // peixes
   for (const p of PEIXE) quadro(F.peixes, p.tipo, Math.min(7, Math.floor(p.t / .11)), p.x, p.y - 14, 1, p.flip);
