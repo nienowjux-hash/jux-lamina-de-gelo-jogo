@@ -330,6 +330,9 @@ function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),q=quemEco(),S=vagaEco(q),
   if(retratoOk(ver)){const rx=cx+w-102,ry=cy+2;ctx.fillStyle='#0c1a3a';ctx.beginPath();ctx.roundRect(rx,ry,74,74,8);ctx.fill();ctx.drawImage(RETRATO_ECO[ver],rx+1,ry+1,72,72);
     ctx.strokeStyle=e.cor;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(rx,ry,74,74,8);ctx.stroke();}
   texto(e.nome,x2,cy+22,19,e.cor);texto(e.desc,x2,cy+42,13,'#c8d8f0');
+  {const nv=nivelDoEco(ver),pe=peDe(ver),A=PE_NIVEL[nv-1]||0,B=PE_NIVEL[nv]||PE_NIVEL[NIVEL_MAX_ECO-1],xr=cx+w-114,bw=170,k=nv>=NIVEL_MAX_ECO?1:Math.max(0,Math.min(1,(pe-A)/(B-A)));   // 2026-11-21: 'como aparece se ele ta upando?' -> PE e quanto falta, bem visivel
+    ctx.fillStyle='rgba(42,58,102,.95)';ctx.fillRect(xr-bw,cy+4,bw,7);ctx.fillStyle=e.cor;ctx.fillRect(xr-bw,cy+4,bw*k,7);ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.strokeRect(xr-bw+.5,cy+4.5,bw-1,6);
+    texto(nv>=NIVEL_MAX_ECO?'Nv máximo':'Nv '+nv+' · faltam '+(B-pe)+' PE p/ o Nv '+(nv+1),xr,cy+24,11,'#e8f6ff','right');}
   texto('Bônus: '+Object.entries(e.bonus).map(([k,v])=>(NOMES_ATRIB[k]||k)+' +'+(v<1?Math.round(v*100)+'%':v)).join(', ')+(S.equip===ver?'   (equipado em '+NOME_QUEM[q]+')':donoEco(ver)?'   (com o '+NOME_QUEM[donoEco(ver)]+': ENTER passa para '+NOME_QUEM[q]+')':'   (ENTER no Eco para equipar)'),x2,cy+60,13,'#7dffa8');
   texto('Nv '+nivelDoEco(ver)+' · por nível: '+textoPorNivel(ver),x2,cy+77,12,'#ffe27a');texto(TEXTO_MARCO,x2,cy+92,11,'#c8b27a');
   const top=cy+100,compacto=e.habs.length>7,passo=Math.min(42,Math.floor((y+h-34-top)/e.habs.length)),alt=Math.min(38,passo-2);   // com 7 habilidades as linhas apertam para nao bater no rodape

@@ -24,7 +24,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
 <script src="carrega.js?v=1795225800"></script>
 <script src="itens_icones.js?v=1795245000"></script>
-<script src="jogo.js?v=1795250500"></script>
+<script src="jogo.js?v=1795255500"></script>
 <script src="tutorial.js?v=1795226200"></script>
 <script src="combate.js?v=1795254900"></script>
 <script src="bino_habs.js?v=1795225300"></script>
@@ -2197,7 +2197,7 @@ setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){sem
 // um erro num quadro nao congela a luta: mostra (jogo.js mostraErro) e segue
 function frame(now){try{frame0(now);}catch(e){try{for(let i=0;i<40;i++)ctx.restore();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.filter='none';ctx.globalCompositeOperation='source-over';}catch(_){}if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(frame);}}
 function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return;}
-  if(window.__tut){last=now;requestAnimationFrame(frame);return;}   // cartao do tutorial aberto: luta pausada
+  if(window.__tut||window.__pausa){last=now;requestAnimationFrame(frame);return;}   // cartao do tutorial ou menu de PAUSA aberto: luta congelada
   if(now-last<(document.hasFocus()?12:28)){requestAnimationFrame(frame);return;}   // no maximo 60 qps (30 sem foco): alivia a placa de video
   // TUTORIAL (tutorial.js): a primeira luta e a primeira Ressonancia cheia
   if(!TESTE&&typeof tutMostra==='function'&&typeof JOGO==='object'&&G.scene==='battle'&&menu.open&&!G.busy&&!cine){
@@ -2544,6 +2544,7 @@ requestAnimationFrame(frame);
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='serpente'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_serpente.ogg':'assets/musica/chefe_serpente.mp3';}if(s.prova==='ignarok'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_ignarok.ogg':'assets/musica/chefe_ignarok.mp3';}if(s.prova&&s.prova.startsWith('atq_')){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/vila/musica_ataque.ogg':'assets/vila/musica_ataque.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
+<script src="pausa_batalha.js?v=1795255300"></script>
 <script src="tela_cheia.js?v=1795247600"></script>
 </body>
 </html>

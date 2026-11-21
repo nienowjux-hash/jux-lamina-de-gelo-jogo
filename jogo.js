@@ -85,6 +85,7 @@ const LOJAS={
   vovo:  {nome:'Remédios da Vovó Hilda',quem:'Vovó Hilda',itens:['pocao','hipocao','eter','antidoto','colirio','ecoervas','remedio','repelente','fenix'],ola:'Poções feitas com ervas da montanha. Paga e não reclama.'},
   borin: {nome:'Forja do Borin',quem:'Borin',itens:['esp_ferro','esp_runica','esp_aco','esp_boreal','mar_ferro','mar_runica','mar_aco','mar_glaciar','gorro_la','casaco_pele','luvas_ferr','botas_neve','anel_gelo','elmo_ferro','amuleto_vida','cota_malha'],ola:'HA! Ferro bom, preço justo! ...Quase justo!',compra:true},
   capitao:{nome:'Comércio Honesto do Capitão',quem:'Capitão',itens:['pocao','hipocao','eter','antidoto','colirio','pao_mel','botas_neve','amuleto_vida'],ola:'Capitão Dente-de-Ferro, Comércio Honesto. Nunca mais roubei. (Quase.)'},
+  marta: {nome:'Peixaria da Marta',quem:'Marta',itens:['pocao','hipocao','eter','remedio','antidoto','colirio','fenix','repelente'],ola:'Peixe fresco não tenho pra vender. Poção, tenho. Vai querer?'},   // a pescadora do cais do meio do rio (Cap. 3)
   ingrid:{nome:'Padaria da Ingrid',quem:'Ingrid',itens:['cha','pao_mel','ensopado','torta'],ola:'Pão quentinho dá força pra aventura! Literalmente!'},
 };
 const NIVEL_MAX_J=100;

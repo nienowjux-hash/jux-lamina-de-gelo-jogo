@@ -41,7 +41,8 @@ function corrente(x, y) {
 
 // ---------- sons (livres: assets/musica/CREDITOS.txt) ----------
 const SOM = {};
-function som(nome, vol, varia) { try { let a = SOM[nome]; if (!a) { a = SOM[nome] = new Audio('assets/sfx/' + nome + '.mp3'); a.onerror = () => { a.morto = true; }; }
+function som(nome, vol, varia) { if (nome && typeof nome === 'object') { try { const c = nome.cloneNode(); c.volume = Math.max(0, Math.min(1, vol == null ? .8 : vol)); c.play().catch(() => {}); } catch (e) {} return; }   // o menu da vila passa o audio direto
+  try { let a = SOM[nome]; if (!a) { a = SOM[nome] = new Audio('assets/sfx/' + nome + '.mp3'); a.onerror = () => { a.morto = true; }; }
   if (a.morto) return; const b = a.cloneNode(); b.volume = cl(vol == null ? .7 : vol, 0, 1); if (varia) b.playbackRate = rnd(.9, 1.12); b.play().catch(() => {}); } catch (e) {} }
 const AMB = new Audio('assets/sfx/rio_ambiente.mp3'); AMB.loop = true; AMB.volume = .45;
 const MUS = new Audio('assets/musica/musica_rio.mp3'); MUS.loop = true; MUS.volume = .55;
@@ -128,8 +129,8 @@ const raposa = { x: 120, y: 842, dir: 1, est: 'anda', t: 0, q: 0, sumida: 0, a: 
 
 // ---------- baus nas ilhotas ----------
 const pego = id => typeof JOGO === 'object' && (JOGO.pegos || []).includes(id);
-let aviso = null;   // {txt, t}
-const avisa = (txt, t) => { aviso = { txt, t: t || 3 }; };
+let avisoR = null;   // {txt, t}
+const avisa = (txt, t) => { avisoR = { txt, t: t || 3 }; };
 let perto = null;   // o que da para usar agora
 function usa() {
   if (!perto || FILME.on || escolha || evento) return;
@@ -141,9 +142,33 @@ function usa() {
     if (!C3().tartarok) { avisa('Antes, a tartaruga da ilhota…', 3); return; }
     if (C3().parteA) { guardaRio(); som('novos/ui_vez', .6); avisa('Porto de Cinzas. A trilha das cinzas chega na próxima atualização. Jogo salvo!', 5); return; }
     chegaPorto(); }
-  else if (perto.tipo === 'cais') { guardaRio(); som('novos/ui_vez', .6); avisa('Vocês descansaram no cais do meio. Jogo salvo! (a pescadora Marta chega em breve)', 4); }
+  else if (perto.tipo === 'cais') { guardaRio(); if (typeof uiFala === 'function') uiFala('marta'); }   // a Marta pescando na pontezinha: a loja dela
 }
 
+
+// ---------- A MARTA, pescadora do cais do meio (trecho 2; ref/rio/marta.png, 3x4) ----------
+// Sentada na ponta da pontezinha, pescando (linha 1, em loop). De vez em quando fisga um peixe (linha 2). Quando o barco
+// chega perto ela vira e acena (linha 3: 9-10); com a loja aberta fica de pe apontando para a barraca (11-12).
+const MARTA = { x: 528, y: 566, est: 'pesca', t: 0, prox: 9 };
+function passoMarta(dt) {
+  if (TR !== 1 || !F.marta) return; const M = MARTA; M.t += dt;
+  const perto = Math.hypot(barco.x - CAIS.x, barco.y - CAIS.y) < 210, loja = typeof uiAberto === 'function' && (UI.loja || UI.escolha) && Math.hypot(barco.x - CAIS.x, barco.y - CAIS.y) < 120;
+  if (loja) { if (M.est !== 'loja') { M.est = 'loja'; M.t = 0; } return; }
+  if (perto && M.est !== 'acena' && M.est !== 'peixe') { M.est = 'acena'; M.t = 0; return; }
+  if (!perto && (M.est === 'acena' || M.est === 'loja')) { M.est = 'pesca'; M.t = 0; M.prox = rnd(6, 12); return; }
+  if (M.est === 'pesca') { M.prox -= dt; if (M.prox <= 0) { M.est = 'peixe'; M.t = 0; } }
+  else if (M.est === 'peixe') { if (M.t > .9 && !M.splash) { M.splash = true; fx(2, M.x + 40, M.y + 18, .5, .35); if (naTela(M.x, M.y)) som('rio_splash_peq', .35, true); }
+    if (M.t > 3) { M.est = perto ? 'acena' : 'pesca'; M.t = 0; M.prox = rnd(10, 20); M.splash = false; } }
+}
+function desenhoMarta() {
+  if (TR !== 1 || !F.marta) return []; const M = MARTA;
+  return [[M.y, () => { let lin = 0, q = Math.floor(t * 2.6) % 4;
+    if (M.est === 'peixe') { lin = 1; q = Math.min(3, Math.floor(M.t / .5)); }
+    else if (M.est === 'acena') { lin = 2; q = M.t < .5 ? 0 : 1; }
+    else if (M.est === 'loja') { lin = 2; q = M.t < .8 ? 2 : 3; }
+    if (typeof UI === 'object' && (UI.loja || UI.escolha) && Math.hypot(barco.x - CAIS.x, barco.y - CAIS.y) < 120) { lin = 2; q = UI.loja ? 3 : 2; }   // loja aberta: de pe, apontando a barraca
+    quadro(F.marta, lin, q, M.x, M.y - 20, 1); }]];
+}
 
 // ---------- O FIM DO RIO (FICHA_CAP3_RIO.md: a Tartarok, a Serpente e a chegada) ----------
 // A Tartarok dorme presa no gelo na ilhota grande do trecho 3. Chegando perto do Porto de Cinzas a Serpente do Degelo
@@ -217,7 +242,7 @@ addEventListener('keydown', e => { if (!escolha || FILME.on) return; const k = e
   else if (k === 'arrowdown' || k === 's' || k === 'arrowright' || k === 'd') escolha.sel = (escolha.sel + 1) % escolha.ops.length;
   else if (k === 'enter' || k === ' ' || k === 'e') { const f = escolha.fn, i = escolha.sel; f(i); }
   e.preventDefault(); e.stopImmediatePropagation(); }, true);
-function desenhaEscolha() { if (!escolha) return; ctx.save(); ctx.fillStyle = 'rgba(3,6,14,.6)'; ctx.fillRect(0, 0, W, H);
+function desenhaEscolhaR() { if (!escolha) return; ctx.save(); ctx.fillStyle = 'rgba(3,6,14,.6)'; ctx.fillRect(0, 0, W, H);
   const w = 560, h = 70 + escolha.ops.length * 34, x = W / 2 - w / 2, y = H / 2 - h / 2;
   ctx.fillStyle = 'rgba(6,16,40,.95)'; ctx.strokeStyle = '#8fdcff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
   ctx.textAlign = 'center'; ctx.font = 'bold 17px "Trebuchet MS",sans-serif'; ctx.fillStyle = '#ffe27a'; ctx.fillText(escolha.titulo, W / 2, y + 34);
@@ -227,18 +252,25 @@ function desenhaEscolha() { if (!escolha) return; ctx.save(); ctx.fillStyle = 'r
 // ---------- passo ----------
 let t = 0, fimAvisado = false, troca = null;
 function guardaRio() { if (typeof JOGO !== 'object') return; JOGO.rio = { trecho: TR, x: Math.round(barco.x), y: Math.round(barco.y) }; salvaJogo(); }
-function entraTrecho(n, lado) {   // poe o barco na entrada do trecho n (em cima ou embaixo), no ponto de agua mais perto do meio
-  montaTrecho(n); const y = lado === 'cima' ? 70 : R.h - 92;
-  let melhor = null; for (let x = 0; x < R.w; x += 6) { const d = Math.abs(x - R.trechos[n].linha[Math.round(y / R.passo)]); if (barcoCabe(x, y, 'baixo') && (!melhor || d < melhor[1])) melhor = [x, d]; }
-  barco.x = melhor ? melhor[0] : R.w / 2; barco.y = y; barco.vx = 0; barco.vy = lado === 'cima' ? 40 : -30; barco.dir = lado === 'cima' ? 'baixo' : 'cima';
-  cam.x = barco.x; cam.y = barco.y; fimAvisado = false; guardaRio();
+function entraTrecho(n, lado, xAntes, vAntes) {   // poe o barco na entrada do trecho n (em cima ou embaixo): perto do x em que ele saiu
+  montaTrecho(n); const y = lado === 'cima' ? 70 : R.h - 92, meio = R.trechos[n].linha[Math.round(y / R.passo)], alvo = xAntes == null ? meio : xAntes * .5 + meio * .5;
+  let melhor = null; for (let x = 0; x < R.w; x += 6) { const d = Math.abs(x - alvo); if (barcoCabe(x, y, 'baixo') && (!melhor || d < melhor[1])) melhor = [x, d]; }
+  barco.x = melhor ? melhor[0] : R.w / 2; barco.y = y; barco.dir = lado === 'cima' ? 'baixo' : 'cima';
+  const v = vAntes || [0, 0]; barco.vx = v[0] * .5; barco.vy = lado === 'cima' ? Math.max(70, v[1]) : Math.min(-55, v[1]);   // o barco chega andando
+  cam.x = barco.x; cam.y = barco.y + (lado === 'cima' ? -110 : 110); fimAvisado = false; guardaRio();   // a camera ja vem deslizando atras dele
+  nomeTrecho = { t0: t, n };
 }
+let nomeTrecho = null;   // o nome do trecho aparece em cima, no mapa, depois de entrar (nao mais na tela preta)
 function passo(dt) {
   t += dt;
   if (lutando) return;
   if (escolha) return;
+  if (typeof uiAberto === 'function' && uiAberto()) { barco.vx *= .9; barco.vy *= .9; return; }   // menu ou loja abertos: o barco para
   if (tartAnim) tartAnim.t += dt;
-  if (troca) { troca.t += dt; if (troca.t >= .5 && !troca.feito) { troca.feito = true; if (AGUAS[troca.para]) { entraTrecho(troca.para, troca.entra); passoEnfeites(0); } } if (troca.t >= 1.3) troca = null; else return; }
+  if (troca) { troca.t += dt;   // a nevoa do rio passa pela tela (0,35 s fechando, 0,45 s abrindo) e o barco continua andando
+    if (!troca.feito) { barco.x += barco.vx * dt; barco.y += Math.sign(troca.entra === 'cima' ? 1 : -1) * Math.max(60, Math.abs(barco.vy)) * dt; }
+    if (troca.t >= .35 && !troca.feito) { troca.feito = true; if (AGUAS[troca.para]) { entraTrecho(troca.para, troca.entra, barco.x, [barco.vx, barco.vy]); passoEnfeites(0); } }
+    if (troca.t >= .8) troca = null; else if (!troca.feito) return; }
   // controle
   let ix = 0, iy = 0;
   const tk = evento ? {} : teclas;   // durante os eventos do fim do rio o barco nao rema
@@ -352,10 +384,11 @@ function passo(dt) {
   for (let i = AVES.length - 1; i >= 0; i--) { const a = AVES[i]; a.x += a.dir * a.v * dt; a.y += Math.sin(t * 2 + i) * 6 * dt; a.f += dt * 11; if (Math.abs(a.x - cam.x) > W / Z) AVES.splice(i, 1); }
   // o que da para usar (bau, cais)
   passoFimRio(dt);
+  passoMarta(dt);
   perto = null;
   for (const b of BAUS) if (Math.hypot(b.x - barco.x, (b.y - barco.y) / .7) < 175) perto = { tipo: 'bau', b };   // encostar o barco na ilhota
   if (!perto && Math.hypot(CAIS.x - barco.x, CAIS.y - barco.y) < 95) perto = { tipo: 'cais' };
-  if (aviso) { aviso.t -= dt; if (aviso.t <= 0) aviso = null; }
+  if (avisoR) { avisoR.t -= dt; if (avisoR.t <= 0) avisoR = null; }
   // camera
   { const ax = foco ? foco.x : barco.x, ay = foco ? foco.y : barco.y + 30, v = foco ? 2 : 4; cam.x += (ax - cam.x) * Math.min(1, dt * v); cam.y += (ay - cam.y) * Math.min(1, dt * v); }
   cam.x = cl(cam.x, W / (2 * Z), R.w - W / (2 * Z)); cam.y = cl(cam.y, H / (2 * Z), R.h - H / (2 * Z));
@@ -544,6 +577,7 @@ function desenha() {
   }]);
   L.push(...desenhosEnfeites());
   L.push(...desenhoTartarok());
+  L.push(...desenhoMarta());
   for (const f of FRENTES[TR] || []) L.push([f.base, () => { if (!f.i.complete) return; const [sx, sy] = tela(f.x, f.y), w = f.i.width * Z, h = f.i.height * Z;
     const atras = barco.y < f.base && barco.x > f.x - 40 && barco.x < f.x + f.i.width + 40 && barco.y > f.y - 20;   // o barco embaixo da copa: ela fica meio transparente
     ctx.save(); ctx.globalAlpha = atras ? .55 : 1; ctx.drawImage(f.i, sx, sy, w, h); ctx.restore(); }]);
@@ -563,14 +597,18 @@ function desenha() {
   for (const a of AVES) quadro(F.bichos, 3, Math.floor(a.f) % 6, a.x, a.y, .7, a.dir < 0);
   desenhaInsetos();
   // textos
-  if (perto) { const txt = perto.tipo === 'bau' ? (pego(perto.b.id) ? 'Baú vazio' : 'ENTER: abrir o baú') : CAIS.tipo === 'vila' ? 'ENTER: descer do barco (voltar para a vila)' : CAIS.tipo === 'porto' ? 'ENTER: atracar no Porto de Cinzas' : 'ENTER: descansar no cais (salvar o jogo)';
+  if (perto && !(typeof uiAberto === 'function' && uiAberto())) { const txt = perto.tipo === 'bau' ? (pego(perto.b.id) ? 'Baú vazio' : 'ENTER: abrir o baú') : CAIS.tipo === 'vila' ? 'ENTER: descer do barco (voltar para a vila)' : CAIS.tipo === 'porto' ? 'ENTER: atracar no Porto de Cinzas' : 'ENTER: falar com a Marta (loja e salvar o jogo)';
     const p = perto.tipo === 'bau' ? perto.b : CAIS, [sx, sy] = tela(p.x, p.y - 60); faixa(txt, sx, sy); }
-  if (aviso) faixa(aviso.txt, W / 2, H - 46, '#ffe27a');
+  if (avisoR) faixa(avisoR.txt, W / 2, H - 46, '#ffe27a');
   if (lutando) { lutando.t += 1 / 60; const k = Math.min(1, lutando.t / .9); ctx.fillStyle = 'rgba(190,230,255,' + (k < .3 ? k / .3 * .7 : .7 * (1 - (k - .3) / .7)) + ')'; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = 'rgba(3,6,14,' + Math.max(0, (k - .35) / .65) + ')'; ctx.fillRect(0, 0, W, H); faixa('Algo se mexe embaixo do barco!', W / 2, H / 2, '#ffe27a', Math.min(1, k * 3)); }
-  if (troca) { const a = troca.t < .5 ? troca.t / .5 : troca.t < .8 ? 1 : (1.3 - troca.t) / .5; ctx.fillStyle = 'rgba(3,6,14,' + Math.min(1, a) + ')'; ctx.fillRect(0, 0, W, H);
-    const nome = ['O rio de gelo', 'O degelo', 'As águas quentes'][troca.para] || ''; if (a > .6) faixa('Rio abaixo… ' + nome, W / 2, H / 2, '#bff4ff', Math.min(1, (a - .6) / .4)); }
-  desenhaEscolha();
+  if (troca) { const a = Math.max(0, Math.min(1, troca.t < .35 ? troca.t / .35 : (.8 - troca.t) / .45)), cor = troca.para === 2 || TR === 2 ? '235,215,200' : '215,235,248';
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(' + cor + ',' + a + ')'); g.addColorStop(.5, 'rgba(' + cor + ',' + Math.min(1, a * 1.08) + ')'); g.addColorStop(1, 'rgba(' + cor + ',' + a + ')');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+  if (nomeTrecho) { const k = t - nomeTrecho.t0, al = k < .6 ? k / .6 : k > 3 ? Math.max(0, (3.6 - k) / .6) : 1; if (k > 3.6) nomeTrecho = null;
+    else faixa(['Trecho 1 — O rio de gelo', 'Trecho 2 — O degelo', 'Trecho 3 — As águas quentes'][nomeTrecho.n] || '', W / 2, 62, '#bff4ff', al); }
+  desenhaEscolhaR();
+  if (typeof uiDesenha === 'function' && !FILME.on) uiDesenha();   // o menu da vila (M) e a loja da Marta
   if (t < 7) faixa('Setas / WASD: remar · a correnteza leva rio abaixo · encoste nos troncos para abrir caminho', W / 2, 26, '#bff4ff', Math.min(1, (7 - t) / 1.5));
 }
 function faixa(txt, x, y, cor, al) {
@@ -584,6 +622,7 @@ let ultimo = performance.now();
 function frame(agora) {
   const dt = Math.min(.05, Math.max(0, (agora - ultimo) / 1000)); ultimo = agora;
   if (filmeQuadro(dt)) { requestAnimationFrame(frame); return; }
+  if (typeof uiPasso === 'function') uiPasso(dt);
   if (AGUA) passo(dt);
   desenha();
   requestAnimationFrame(frame);
