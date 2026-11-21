@@ -63,6 +63,25 @@ const TIPOS_INIMIGO={
     atk:n=>24+1.9*(n-1),atkm:n=>20+1.4*(n-1),def:n=>14+1.2*(n-1),defm:n=>9+.9*(n-1),
     golpes:[{nome:'Lamento',t:'m',el:'trevas',poder:28,peso:2,est:['medo',2,.45]},{nome:'Abraço da Sombra',t:'f',poder:38,peso:3,est:['atordoado',1,.3]}],
     drops:[]},
+  // ---- Capitulo 3, Parte A (FICHA_CAP3_RIO.md): os bichos do RIO (lutas no barco). Regras especiais no index.html (rioEspecial):
+  // a Lontra rouba um ITEM e foge na vez seguinte (vencendo antes, devolve); o Caranguejo fecha a CARAPACA (quase nao leva dano)
+  // ate a barra de Quebra encher; quebrado ele leva o dobro.
+  agua_viva:{nome:'Água-viva do Degelo',el:'agua',reacao:{terra:1.5,raio:.5,fogo:1.2},fisico:.9,magico:1,quebra:90,hp:.5,exp:.6,gil:.5,vel:1.1,imuneEst:['veneno'],
+    atk:n=>14+1.2*(n-1),atkm:n=>22+1.8*(n-1),def:n=>8+.8*(n-1),defm:n=>12+1.1*(n-1),
+    golpes:[{nome:'Choque',t:'m',el:'raio',poder:30,peso:4,est:['atordoado',1,.2]},{nome:'Clarão',t:'m',el:'luz',poder:16,peso:3,est:['cego',2,.6]}],
+    drops:[['eter',.25],['cristal',.12,1]]},
+  piranha:{nome:'Piranha de Geada',el:'gelo',reacao:{gelo:.5,fogo:1.4,raio:1.4,terra:1.3},fisico:1,magico:1,quebra:40,hp:.24,exp:.26,gil:.25,vel:1.55,
+    atk:n=>18+1.5*(n-1),atkm:n=>10+.8*(n-1),def:n=>7+.7*(n-1),defm:n=>7+.7*(n-1),
+    golpes:[{nome:'Mordida de Gelo',t:'f',el:'gelo',poder:21,peso:1}],
+    drops:[['pocao',.18]]},
+  lontra:{nome:'Lontra Ladra',el:null,reacao:{gelo:1.4,terra:1.2},fisico:1,magico:1,quebra:60,hp:.42,exp:.5,gil:1.6,vel:1.7,
+    atk:n=>16+1.3*(n-1),atkm:n=>10+.8*(n-1),def:n=>8+.8*(n-1),defm:n=>8+.8*(n-1),
+    golpes:[{nome:'Furto Molhado',rouba:'item',peso:1}],
+    drops:[['pocao',.35],['hipocao',.12,1]]},
+  caranguejo:{nome:'Caranguejo-Pedra',el:'terra',reacao:{gelo:.9,raio:1.3,terra:.6},fisico:1,magico:1,quebra:55,hp:.9,exp:.8,gil:.7,vel:.85,imuneEst:['veneno'],
+    atk:n=>22+1.8*(n-1),atkm:n=>8+.6*(n-1),def:n=>20+1.6*(n-1),defm:n=>14+1.2*(n-1),
+    golpes:[{nome:'Pinçada',t:'f',poder:40,peso:1,est:['atordoado',1,.15]}],
+    drops:[['minerio',.4],['cristal',.15,1]]},
   // chefe da area (caverna): o lobo que devora o sol, acorrentado pelo Eclipse
   skoll:{nome:'Skoll, o Alfa',el:'gelo',reacao:{gelo:.5,fogo:1.5,luz:1.4},fisico:1,magico:1,quebra:220,hp:3.2,exp:8,gil:5,vel:1.2,
     atk:n=>34+2.1*(n-1),atkm:n=>30+1.9*(n-1),def:n=>16+1.4*(n-1),defm:n=>16+1.4*(n-1),

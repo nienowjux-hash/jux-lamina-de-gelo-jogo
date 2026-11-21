@@ -118,6 +118,25 @@ const EFX_INIM = {
       for (let i = 0; i < 8; i++) setTimeout(() => fxFaiscas(a.x + (enemy.x - a.x) * i / 8, a.y + (enemy.y - 60 - a.y) * i / 8, 4, {cor: '255,225,110', vel: 120, g: 0, vida: .5}), i * 45);
       fxEstrela(a.x, a.y, {raio: 130, ms: 320, cor: '255,225,110'}); }},
 
+  // ---------------- Bichos do rio (Cap. 3, FICHA_CAP3_RIO.md): efeitos desenhados (ref/inimigos_fx/*.png) e sons CC0 ----------------
+  'Choque': {
+    glow: 650,
+    prep(e) { som('aguaviva_pulso', .7); fxBrilho(e.x + 30, e.y - 90, {raio: 120, ms: 650, cor: '140,220,255', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('aguaviva_choque', .9); fxiPlay('aguaviva_choque', a.x, a.y - 10, 900, {escala: 1.5}); await wait(320);
+      fxFlash('150,220,255', .22, 260); shake = Math.max(shake, 8); await wait(250); }},
+  'Clarão': {
+    glow: 700,
+    prep(e) { som('aguaviva_pulso', .6); fxBrilho(e.x + 30, e.y - 90, {raio: 140, ms: 700, cor: '220,240,255', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('aguaviva_clarao', .85); fxiPlay('aguaviva_clarao', a.x, a.y - 20, 1100, {escala: 1.6}); await wait(300);
+      fxFlash('235,245,255', .55, 420); await wait(350); }},
+  'Mordida de Gelo': {
+    hit() { const a = alvoHeroi(); som('piranha_mordida', .9); fxiPlay('piranha_mordida', a.x, a.y, 650, {escala: 1.4}); shake = Math.max(shake, 6); }},
+  'Furto Molhado': {   // a lontra rouba um ITEM (index.html, golpeDoTipo)
+    hit() { const a = alvoHeroi(); som('lontra_roubo', .9); fxiPlay('lontra_roubo', a.x, a.y - 10, 900, {escala: 1.5}); }},
+  'Pinçada': {
+    prep(e) { som('caranguejo_pinca', .5); },
+    hit() { const a = alvoHeroi(); som('caranguejo_pinca', 1); fxiPlay('caranguejo_pinca', a.x, a.y, 800, {escala: 1.6}); shake = Math.max(shake, 11); }},
+
   // ---------------- Ignarok (Cap. 2, Parte C): efeitos desenhados (ref/inimigos_fx/ignarok_*.png) ----------------
   'Punho de Magma': {
     prep(e) { som('ignarok_rosna', .8); fxBrilho(e.x + 80, e.y - 160, {raio: 150, ms: 500, cor: '255,140,40', cresce: true}); },

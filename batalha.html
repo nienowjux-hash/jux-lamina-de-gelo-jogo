@@ -26,7 +26,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="itens_icones.js?v=1795245000"></script>
 <script src="jogo.js?v=1795250500"></script>
 <script src="tutorial.js?v=1795226200"></script>
-<script src="combate.js?v=1795243200"></script>
+<script src="combate.js?v=1795251800"></script>
 <script src="bino_habs.js?v=1795225300"></script>
 <script src="jux_habs.js?v=1795117438"></script>
 <script src="ecos.js?v=1795225300"></script>
@@ -42,11 +42,11 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_bino.js?v=1795117438"></script>
 <script src="sprites_batalha.js?v=1795117438"></script>
 <script src="ecos_sprites.js?v=1795117438"></script>
-<script src="inimigos_sprites.js?v=1795243000"></script>
+<script src="inimigos_sprites.js?v=1795251700"></script>
 <script src="efeitos_fx.js?v=1795117438"></script>
-<script src="fx_inimigos_sprites.js?v=1795243000"></script>
+<script src="fx_inimigos_sprites.js?v=1795251700"></script>
 <script src="fx_bino_sprites.js?v=1795117438"></script>
-<script src="efeitos_inimigos.js?v=1795247600"></script>
+<script src="efeitos_inimigos.js?v=1795251700"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
@@ -436,6 +436,11 @@ const DESENHO_INIM={ignarok:INIM.ignarok?[drawInimSprite('ignarok',1.6),2,{sprit
   sombra_ingrid:[drawInimSprite('sombra_ingrid',2.2),2,{sprite:1,sombra:52}],
   sombra_borin:[drawInimSprite('sombra_borin',1.8),2.4,{sprite:1,sombra:86}],
   skoll:[drawInimSprite('skoll',2.2),2,{sprite:1,sombra:130}],
+  // bichos do rio (Cap. 3): ficam na agua, do lado esquerdo do fundo do barco
+  agua_viva:[drawInimSprite('agua_viva',4,6),2.1,{sprite:1,sombra:1}],   // flutua (sobe e desce)
+  piranha:[drawInimSprite('piranha',6,4),2.6,{sprite:1,sombra:1}],
+  lontra:[drawInimSprite('lontra',5),2.4,{sprite:1,sombra:1}],
+  caranguejo:[drawInimSprite('caranguejo',4),2.3,{sprite:1,sombra:1}],
   fenrir_prova:[drawFenrirProva,1]};
 
 /* ---------- cenario ---------- */
@@ -461,9 +466,13 @@ const bg=document.createElement('canvas');bg.width=W;bg.height=H;
 })();
 const snow=Array.from({length:110},()=>({x:rnd(0,W),y:rnd(0,H),r:rnd(1,2.6),v:rnd(20,60),w:rnd(0,6)}));
 // fundos desenhados (imagem do usuario) para cada regiao; por cima o jogo anima aurora, brilho do cristal, lago, nevoa e neve
-const FUNDOS={ignarok:'assets/batalha/fundo_ignarok.jpg',ataque:'assets/batalha/fundo_ataque.jpg',trilha:'assets/batalha/fundo_trilha.jpg',trilha2:'assets/batalha/fundo_trilha2.jpg',garganta:'assets/batalha/fundo_garganta.jpg',vale:'assets/batalha/fundo_vale.jpg',caverna:'assets/batalha/fundo_caverna.jpg',skoll:'assets/batalha/fundo_skoll.jpg',santuario:'assets/batalha/fundo_santuario.jpg',pico:'assets/batalha/fundo_pico.jpg'},FUNDO_IMG={};
+const FUNDOS={rio:'assets/batalha/fundo_rio.jpg',ignarok:'assets/batalha/fundo_ignarok.jpg',ataque:'assets/batalha/fundo_ataque.jpg',trilha:'assets/batalha/fundo_trilha.jpg',trilha2:'assets/batalha/fundo_trilha2.jpg',garganta:'assets/batalha/fundo_garganta.jpg',vale:'assets/batalha/fundo_vale.jpg',caverna:'assets/batalha/fundo_caverna.jpg',skoll:'assets/batalha/fundo_skoll.jpg',santuario:'assets/batalha/fundo_santuario.jpg',pico:'assets/batalha/fundo_pico.jpg'},FUNDO_IMG={};
 for(const k in FUNDOS){const i=new Image();i.src=FUNDOS[k];FUNDO_IMG[k]=i;}
 const motesF=Array.from({length:26},()=>({x:rnd(0,W),y:rnd(160,520),v:rnd(0,6),s:rnd(.6,1.4)}));
+// o convés do barco no rio: a imagem + brilhos piscando na água (lado esquerdo) e o barco balançando de leve
+function fundoRio(c,t,fi){const b=Math.sin(t*1.3)*3;c.drawImage(fi,0,b-4,W,H+8);c.save();c.globalCompositeOperation='lighter';
+  for(let i=0;i<14;i++){const x=(i*97+Math.sin(t*.7+i)*40)%(W*.45),y=H*.42+(i*53)%(H*.5),a=Math.max(0,Math.sin(t*2.2+i*1.7));c.fillStyle=`rgba(200,240,255,${a*.35})`;c.fillRect(x,y,3,3);c.fillRect(x-4,y+1,11,1);}
+  c.restore();}
 function fundoTrilha(c,t,dt){const im=FUNDO_IMG.trilha;c.drawImage(im,0,0,W,H);
   const luz=(x,y,r,cor)=>{const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cor);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);};
   c.save();c.globalCompositeOperation='lighter';
@@ -571,7 +580,7 @@ function fundoSantuario(c,t,dt){c.drawImage(FUNDO_IMG.santuario,0,0,W,H);
 function drawBackdrop(c,t,dt,dim){
   const fi=G.fundo&&FUNDO_IMG[G.fundo];
   if(G.fundo==='santuario'&&fi&&fi.complete&&fi.naturalWidth){fundoSantuario(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}return;}
-  if(fi&&fi.complete&&fi.naturalWidth){if(G.fundo==='ataque'||G.fundo==='ignarok')c.drawImage(fi,0,0,W,H);else if(G.fundo==='trilha2')fundoTrilha2(c,t,dt);else if(G.fundo==='garganta')fundoGarganta(c,t,dt);else if(G.fundo==='vale')fundoVale(c,t,dt);else if(G.fundo==='caverna')fundoCaverna(c,t,dt);else if(G.fundo==='skoll')fundoSkoll(c,t,dt);else if(G.fundo==='pico')fundoPico(c,t,dt);else fundoTrilha(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}
+  if(fi&&fi.complete&&fi.naturalWidth){if(G.fundo==='ataque'||G.fundo==='ignarok')c.drawImage(fi,0,0,W,H);else if(G.fundo==='rio')fundoRio(c,t,fi);else if(G.fundo==='trilha2')fundoTrilha2(c,t,dt);else if(G.fundo==='garganta')fundoGarganta(c,t,dt);else if(G.fundo==='vale')fundoVale(c,t,dt);else if(G.fundo==='caverna')fundoCaverna(c,t,dt);else if(G.fundo==='skoll')fundoSkoll(c,t,dt);else if(G.fundo==='pico')fundoPico(c,t,dt);else fundoTrilha(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}
     for(const f of snow){f.y+=f.v*dt;f.x+=Math.sin(t+f.w)*12*dt;if(f.y>H){f.y=-4;f.x=rnd(0,W);}c.fillStyle='rgba(255,255,255,.8)';c.fillRect(Math.round(f.x),Math.round(f.y),f.r,f.r);}
     return;}
   c.drawImage(bg,0,0);
@@ -717,6 +726,7 @@ function inimigos(){return ENEMIES.filter(e=>!e.dead&&!e.morrendo);}
 const alvosCampo=()=>inimigos();
 // inimigos que zeraram a vida somem (todos juntos); devolve quando a animacao acaba
 async function mortes(){let caem=ENEMIES.filter(e=>e.hp<=0&&!e.dead&&!e.morrendo);if(!caem.length)return;
+  for(const e of caem)if(e.roubado&&!e.devolveu){e.devolveu=true;if(typeof daItem==='function'){daItem(e.roubado);salvaJogo();}pop(e.x,e.y-220,'Devolveu '+ITENS[e.roubado].nome+'!','#7dffa8');}
   {const sk=caem.find(e=>e.tipo==='skoll');if(sk){await skollCai(sk);if(clima.ativo&&!inimigos().some(e=>e.nevasca>0))climaFim();return;}}
   {const ig=caem.find(e=>e.tipo==='ignarok_chefe'||e.tipo==='ignarok_f2');if(ig){ig.morrendo=true;som('ignarok_rugido',1);som('ignarok_queda',1);shake=Math.max(shake,22);fxFlash('255,110,20',.35,600);
     for(let i=0;i<50;i++)spark(ig.x+rnd(-110,110),ig.y-rnd(10,300),1,'#ff9a3c',240,1.6,7);await wait(1800);await tween(ig,'alpha',0,1400);ig.dead=true;ig.morrendo=false;caem=caem.filter(e=>e!==ig);if(!caem.length)return;}}
@@ -816,6 +826,7 @@ function hitEnemy(n,weak,mudo){
   const r=danoNoInimigo(n,G.acao||'attack',st,sb,e.tipo||'ignarok',e.nv||prog.nivel,e.quebrado>0);
   if(GOLPES_JUX[G.acao]&&GOLPES_JUX[G.acao].t==='f'&&temEst(hero,'cego')&&Math.random()<.5){pop(e.x,e.y-170,'ERROU','#a9a9c8');return;}
   n=Math.max(1,Math.round(r.n*multDanoEst(hero)*((st.esp_&&st.esp_.sede&&e.hp<e.max*.5)?1+st.esp_.sede:1)));   // Sede de Caca
+  if(e.tipo==='caranguejo')n=Math.max(1,Math.round(n*(e.quebrado>0?1.35:e.casca>0?.35:1)));   // carapaca de pedra (o quebrado ja leva +50%: junto da o dobro)
   if(hero.quem!=='bino')fxHitJux(e,G.acao,weak);else if(!mudo&&typeof toqueBino==='function')toqueBino(e);   // cada golpe do Jux deixa a propria marca (jux_fx_golpes.js); o Bino tem os dele
   if(temEst(e,'sono'))delete e.est.sono;
   {const ge=GOLPE_EST[G.acao];if(ge&&!G.estFeito){G.estFeito=true;if(poeEstado(e,ge[0],ge[1],ge[2],e.tipo))setTimeout(()=>pop(e.x,e.y-235,ESTADOS[ge[0]].nome.toUpperCase(),ESTADOS[ge[0]].cor),250);}}
@@ -1438,7 +1449,7 @@ const ESP_LAB={'Sopro da Montanha':()=>presaSopro(),'Uivo do Bando':()=>presaUiv
   'Uivo da Matilha':async()=>{const e=enemy;e.fase2=false;e.turn=3;await skollEspecial();},
   'Mudança de fase':async()=>{const e=enemy,f={skoll:skollEspecial,capitao:capitaoEspecial,bolotao:bolotaoEspecial,presa:presaEspecial}[e.tipo];if(!f)return;const fo=e.forca,ve=e.vel,hp=e.hp;
     e.fase2=false;e.hp=Math.round(e.max*.45);e.turn=1;await f();e.fase2=false;e.forca=fo;e.vel=ve;e.hp=hp;}};   // volta ao normal para poder repetir
-const ROSNA_TIPO={sombra_oskar:'som_oskar_abraco',sombra_borin:'som_borin_lamento',sombra_ingrid:'som_ingrid_lamento',ignarok_chefe:'ignarok_rosna',ignarok_f2:'ignarok_rosna',presa:'presa_rosna',capitao:'capitao_rosna',bolotao:'bolotao_rosna',lobo:'lobo_rosna',skoll:'lobo_rosna',fenrir_prova:'fenrir_rosna'};
+const ROSNA_TIPO={agua_viva:'aguaviva_pulso',piranha:'piranha_salto',lontra:'lontra_risada',caranguejo:'caranguejo_pinca',sombra_oskar:'som_oskar_abraco',sombra_borin:'som_borin_lamento',sombra_ingrid:'som_ingrid_lamento',ignarok_chefe:'ignarok_rosna',ignarok_f2:'ignarok_rosna',presa:'presa_rosna',capitao:'capitao_rosna',bolotao:'bolotao_rosna',lobo:'lobo_rosna',skoll:'lobo_rosna',fenrir_prova:'fenrir_rosna'};
 const FALA_ABERTURA={presa:['…Fraco não entra na minha toca.','Presa-Antiga','#cfe6ff','presa_rosna'],capitao:['ALTO! Isto é território do Capitão Dente-de-Ferro!','Capitão','#c9e89a','capitao_bravata'],bolotao:['MEU. LAGO.','Bolotão','#9fd8ff','bolotao_rosna'],skoll:['Fuja… eu não consigo parar.','Skoll','#c9a6ff','fenrir_rosna'],fenrir_prova:['Mostre que é digno.','Fenrir','#9fe8ff','fenrir_rosna']};
 async function skollCai(sk){   // queda gentil: ele nao morre de raiva, e libertado
   musicaSome(1400);sk.morrendo=true;
@@ -1448,6 +1459,16 @@ async function skollCai(sk){   // queda gentil: ele nao morre de raiva, e libert
   await wait(900);ecoPensa('Obrigado… sem sombra.',3000,'Skoll','#9fe8ff');fxBrilho(sk.x+90,sk.y-30,{raio:120,ms:2200,cor:'150,200,255',a:.7});
   fxFaiscas(sk.x+90,sk.y-30,16,{cor:'160,210,255',vel:120,g:-60,vida:1.8,ang:-1.57,abre:1.2});await wait(3000);
   await tween(sk,'alpha',0,1200);sk.dead=true;sk.morrendo=false;}
+// ---------- BICHOS DO RIO (Cap. 3, FICHA_CAP3_RIO.md) ----------
+// Lontra: depois de roubar, na vez seguinte ela MERGULHA e foge com o item (vencendo antes, ela devolve; em mortes()).
+// Caranguejo: a cada 3 vezes fecha a CARAPACA por 2 vezes dele (leva so 35% do dano); quebrado, leva o dobro (hitEnemy).
+async function rioEspecial(){const e=enemy;
+  if(e.tipo==='lontra'&&e.roubado){banner('A Lontra mergulhou e fugiu com '+ITENS[e.roubado].nome+'!');som('lontra_mergulho',.9);
+    e.fugiu=true;e.morrendo=true;await tween(e,'alpha',0,700);e.dead=true;e.morrendo=false;await wait(250);return true;}
+  if(e.tipo==='caranguejo'){if(e.casca>0)e.casca--;
+    if(!(e.casca>0)&&!(e.quebrado>0)&&e.turn%3===0){banner('Carapaça de Pedra');som('caranguejo_carapaca',.9);e.casca=2;
+      fxiPlay('caranguejo_carapaca',e.x,e.y-60,1100,{escala:1.5});await wait(900);pop(e.x,e.y-200,'DEFESA ↑','#ffe27a');await wait(300);return true;}}
+  return false;}
 // ---------- SOMBRAS (Cap. 2, Parte B): falas em legenda (choram) e o golpe de cada uma ----------
 const SOMBRA_FALA={
   sombra_oskar:{nome:'Sombra do Oskar',abre:'Jux… o tambor… eu não sinto as mãos…',meio:'Me desculpa… o tambor não para…',fim:'…Eu ouvi você. Lá de dentro.'},
@@ -1510,6 +1531,7 @@ async function enemyTurn(e){
   if(enemy.tipo==='capitao'&&!(TESTE&&!G.lutaReal)){if(await capitaoEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo==='presa'&&!(TESTE&&!G.lutaReal)){if(await presaEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo==='bolotao'&&!(TESTE&&!G.lutaReal)){if(await bolotaoEspecial()){if(aliadoCaiu())return lose();return fim();}}
+  if(enemy.tipo==='lontra'||enemy.tipo==='caranguejo'){if(await rioEspecial()){if(!inimigos().length)return win();return fim();}}
   if((enemy.tipo==='ignarok_chefe'||enemy.tipo==='ignarok_f2')&&!(TESTE&&!G.lutaReal)){if(await ignarokEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(SOMBRA_FALA[enemy.tipo]&&!(TESTE&&!G.lutaReal)){if(await sombraEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo&&enemy.tipo!=='ignarok'){const esc=await golpeDoTipo();if(aliadoCaiu())return lose();
@@ -1593,6 +1615,9 @@ async function golpeDoTipo(){const T=TIPOS_INIMIGO[enemy.tipo],gs=T.golpes;let r
   if(enemy.tipo==='fenrir_prova')som(g.t==='f'?'fenrir_ataque':'fenrir_uivo',.8);
   if(g.rouba){tween(enemy,'ly',hero.y-enemy.y,240,easeIn);await tween(enemy,'lunge',hero.x-enemy.x-170,240,easeIn);som('whoosh',.7);
     {const ef=EFX_INIM[g.nome];if(ef&&ef.hit)ef.hit(enemy,g);}
+    if(g.rouba==='item'){const pode=['pocao','hipocao','eter','remedio','antidoto','colirio','fenix'].filter(k=>typeof qtd==='function'&&qtd(k)>0),id=pode[(Math.random()*pode.length)|0];
+      if(id&&!TESTE){tiraItem(id);salvaJogo();enemy.roubado=id;pop(hero.x,hero.y-200,'−1 '+ITENS[id].nome,'#ffe27a');som('lontra_risada',.8);}else pop(hero.x,hero.y-200,'BOLSA VAZIA!','#ffe27a');
+      await wait(300);tween(enemy,'ly',0,300,easeOut);await tween(enemy,'lunge',0,300,easeOut);return false;}
     const q=TESTE||typeof JOGO!=='object'?0:Math.min(JOGO.gil,Math.round((10+Math.round(Math.random()*25))*(g.rouba===true?1:g.rouba)));if(q){JOGO.gil-=q;salvaJogo();}
     if(g.cura){const ch=Math.round(enemy.max*g.cura);enemy.hp=Math.min(enemy.max,enemy.hp+ch);pop(enemy.x,enemy.y-250,'+'+ch,'#7dffa8');}
     pop(hero.x,hero.y-200,q?'−'+q+' gil':(TESTE?'−20 gil (lab)':'BOLSO VAZIO!'),'#ffe27a');await wait(300);
@@ -1613,7 +1638,7 @@ async function golpeDoTipo(){const T=TIPOS_INIMIGO[enemy.tipo],gs=T.golpes;let r
 async function win(){G.busy=true;hero=JUX;musicaSome(1600);climaFim();
   if(temBino()&&BINO.hp>0&&BINO_D){BINO.guard=false;BINO.anim='vitoria';BINO.at=0;BINO.hold=false;BINO.back=false;}
   if(BAT&&BAT.anims.vitoria){hero.guard=false;setAnim('vitoria');await wait(1400);}else await wait(700);   // folha nova: gira, crava a espada, ajeita os oculos e cruza os bracos
-  const si=(()=>{let exp=0,gil=0;for(const e of ENEMIES){const a=inimigoNv(e.nv||prog.nivel),T=TIPOS_INIMIGO[e.tipo]||{};
+  const si=(()=>{let exp=0,gil=0;for(const e of ENEMIES){if(e.fugiu)continue;const a=inimigoNv(e.nv||prog.nivel),T=TIPOS_INIMIGO[e.tipo]||{};
     // EXP (PLANO_PROGRESSAO.md): lutas por nivel F(L)=9*L^0,3 (2 inimigos em media) => nivel 10 em ~4 h, nivel 50 em ~32 h e nivel 100 em ~80 h de jogo; inimigo mais forte que voce paga um pouco mais, mais fraco paga bem menos
     // inicio mais rapido (pedido 2026-11-19): +40% de EXP ate o nivel 12, caindo aos poucos ate o 15 (sem degrau)
     const L=prog.nivel,inicio=L<=12?1.4:L<15?1.4-(L-12)*.4/3:1,base=inicio*expPara(L)/(9*Math.pow(L,.3))/2.2,dif=Math.max(.25,Math.min(1.5,1+((e.nv||L)-L)*.12));

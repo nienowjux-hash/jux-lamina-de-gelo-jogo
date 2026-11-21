@@ -85,3 +85,26 @@ O RIO (Capitulo 3, Parte A) - todos CC0 (dominio publico), 2026-11-21:
 - sfx/rio_passaros.mp3: "Bird chirping sounds", syncopika, CC0 - https://opengameart.org/content/bird-chirping-sounds
 - sfx/rio_gelo_1..3.mp3: mistura de "Impact Sounds" (impactSoft_medium + impactGlass_light), Kenney (www.kenney.nl), CC0 - https://kenney.nl/assets/impact-sounds
 - sfx/rio_empurra.mp3: "40 CC0 water splash / slime sfx" (splash_07, abafado), rubberduck, CC0 - https://opengameart.org/content/40-cc0-water-splash-slime-sfx
+
+BICHOS DO RIO (Capitulo 3) - sons em assets/sfx/novos/, todos CC0 (freesound.org), 2026-11-21:
+- aguaviva_choque: "Zap.ogg", egomassive - https://freesound.org/s/536741/
+- aguaviva_clarao: "Gem Sparkle", Qvantor - https://freesound.org/s/878614/
+- aguaviva_pulso: "BubbleNoise.wav", d4nhardt - https://freesound.org/s/688550/
+- piranha_mordida: "Bite 1.wav", HenKonen - https://freesound.org/s/682094/
+- piranha_salto: "Fish Splashing Release 1.wav", paulprit - https://freesound.org/s/507094/
+- lontra_roubo: "Puff of Smoke", qubodup (https://freesound.org/s/714257/) + "coin toss jingle cartoon", teffita (https://freesound.org/s/828251/)
+- lontra_risada: "Gremlin Giggle", griffinbelcourt - https://freesound.org/s/879602/
+- lontra_mergulho: "SPLASH (by blaukreuz)", qubodup - https://freesound.org/s/212143/
+- caranguejo_pinca: "Pincer.wav", Bitbeast - https://freesound.org/s/15277/
+- caranguejo_carapaca: "stone door close.wav", patchytherat - https://freesound.org/s/530987/
+- caranguejo_racha: "Kirkstall Rock Crumble", rokenjocu - https://freesound.org/s/262118/
+- serpente_rugido: "DRAGON_ROAR.wav", JoelAudio - https://freesound.org/s/85568/
+- serpente_onda: "Large Splash Into Concave Coral Reef", YouMightLikeThis - https://freesound.org/s/789889/
+- serpente_aperta: "spongesqueezeinsink.wav", j1987 - https://freesound.org/s/79390/
+- serpente_degelo: "cracking_ice.mp3", sunflora (https://freesound.org/s/665084/) + "Steam/hiss", wubitog (https://freesound.org/s/234782/)
+- serpente_sibilo: "Snake hissing.mp3", schreibsel - https://freesound.org/s/540162/
+- pato: "single quack from a duck", Mikes-MultiMedia - https://freesound.org/s/418509/
+- sapo: "Frog Croak", willcarpenter3 - https://freesound.org/s/716959/
+- garca: "Cranes - Demoiselle Crane", TheKingOfGeeks360 - https://freesound.org/s/874269/
+- cervo: "Deer_Bark_5_s", ferventtorpor - https://freesound.org/s/696776/
+- cachoeira: "Ambiance_Waterfall_Small_Close_Loop_02_Stereo", Nox_Sound - https://freesound.org/s/698306/
