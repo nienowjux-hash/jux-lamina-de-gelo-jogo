@@ -1012,10 +1012,22 @@ function desenhaAgua(){
   ctx.restore();
 }
 function desenhaBandeiras(){
-  if(!AG)return;AG.bandeiras.forEach((b,i)=>{const bw=b[2]-b[0];
+  if(!AG)return;if(emFestival()){desenhaVentoFesta();return;}AG.bandeiras.forEach((b,i)=>{const bw=b[2]-b[0];
     for(let y=b[1];y<b[3];y+=2){const f=(y-b[1])/(b[3]-b[1]),dx=(Math.sin(t*2.6+y*.13+i*1.9)*1.1+vento*2.2)*f;
       ctx.drawImage(MAPA,b[0]*K,y*K,bw*K,2*K,b[0]+dx,y,bw,2);}});
 }
+// VENTO NA FESTA (2026-11-20, pedido: 'as bandeiras e lanternas ficaram paradas'): o mapa da festa tem as proprias bandeiras e lanternas
+// desenhadas; aqui elas balancam no vento deslocando as linhas da imagem (o topo fica preso, a ponta balanca mais)
+const FEST_BAND=[[572,196,602,258],[918,196,950,258],[532,680,565,745],[906,680,940,745],[527,795,562,868],[910,795,946,868],
+  [138,435,175,512],[365,410,402,488],[1113,495,1142,552],[678,120,702,172]];
+const FEST_LANT=[[720,362,734,405],[665,415,681,460],[710,452,726,498],[760,452,776,500],[810,410,826,458],[864,360,879,400],[932,420,951,462],[550,450,571,490],
+  [586,455,614,510],[626,460,651,515],[801,460,826,515],[839,450,866,505],[916,445,941,503]];
+function desenhaVentoFesta(){
+  FEST_BAND.forEach((b,i)=>{const bw=b[2]-b[0];
+    for(let y=b[1];y<b[3];y+=2){const f=(y-b[1])/(b[3]-b[1]),dx=(Math.sin(t*2.8+y*.12+i*1.9)*2.2+vento*3)*f;
+      ctx.drawImage(MAPA,b[0]*K,y*K,bw*K,2*K,b[0]+dx,y,bw,2);}});
+  FEST_LANT.forEach((b,i)=>{const bw=b[2]-b[0],a=Math.sin(t*1.7+i*1.37)*.06+vento*.03;
+    for(let y=b[1];y<b[3];y+=1){const dx=(y-b[1])*a;ctx.drawImage(MAPA,b[0]*K,y*K,bw*K,K,b[0]+dx,y,bw,1);}});}
 function desenhaBrilhos(){
   ctx.save();ctx.globalCompositeOperation='lighter';
   for(const e of estrelas){const q=Math.sin(Math.PI*e.v/.7),s=e.s*q;ctx.fillStyle=`rgba(230,252,255,${.9*q})`;
@@ -1768,6 +1780,7 @@ function desenha(){
       ctx.fillStyle=g;ctx.fillRect(784,-40,18,130);ctx.restore();}}
   // na vila em ataque o desenho ja tem a agua, a forja e as lanternas apagadas (as animacoes azuis/laranja ficariam erradas)
   if(NA_VILA&&!emAtaque()){desenhaAgua();desenhaCascatas();desenhaPeixes();desenhaForja();}
+  if(NA_VILA&&emFestival())desenhaVentoFesta();   // bandeiras e lanternas do mapa da festa balancando
   // agua do riacho: brilhos correndo
   ctx.save();ctx.globalCompositeOperation='lighter';
   for(const b of brilhoRio){ctx.globalAlpha=Math.sin(Math.PI*b.v/1.4)*.55;ctx.fillStyle='#d8f6ff';ctx.fillRect(b.x,b.y,b.l,.8);}
