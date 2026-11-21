@@ -1666,6 +1666,8 @@ function passo(dt){
   for(const p of poeira){p.v+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;}while(poeira.length&&poeira[0].v>.6)poeira.shift();
   if(rioPx.length&&!(agTex&&agTex.complete))for(let i=0;i<3;i++)if(Math.random()<dt*20){const k=rioPx[(Math.random()*rioPx.length)|0];brilhoRio.push({x:k%V.w,y:(k/V.w)|0,v:0,l:rnd(3,9)});}
   if(NA_VILA&&emFestival()){festaPoe();festaCeu(dt);vivoPasso(dt);peixePasso(dt);}
+  // vila em ataque: os moradores se esconderam (nao aparecem), entao nao andam nem falam em balao (antes o Halvard 'falava' sozinho)
+  else if(NA_VILA&&emAtaque()){baloes.length=0;ignCalorPasso();}
   else if(NA_VILA){vivoPasso(dt);peixePasso(dt);if(!(emPreparo()&&caca.on))baconPasso(dt);ticoPasso(dt);vovoPasso(dt);if(!(emPreparo()&&!prepFeita('borin')))borinPasso(dt);prepPasso(dt);for(const n of ANDARILHOS)andarilhoPasso(n,dt);}
   seguidorPasso(dt);
   if(!NA_VILA&&typeof passoDescobertas==='function')passoDescobertas();
