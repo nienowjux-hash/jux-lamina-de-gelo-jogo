@@ -92,8 +92,9 @@ async function ecoFloresta(H) {
 // Ilha Viva (Nv 100, suprema): ela cresce ate virar a ilha gigante com cachoeiras; o time fica protegido (sem dano, 2 turnos) e cura tudo
 async function ecoIlha(H) {
   const A = 'tartarok_ilha', p = posEco();
-  cineMusica(true); fxCinema(true, '130,255,150'); tween(G, 'dim', .55, 500);
-  ecoPensa('Fui uma ilha por mil anos. Subam.', 2400);
+  // a cutscene toca primeiro (so a tartaruga, FICHA_CINE_ILHA_VIVA.md); depois a ilha em campo
+  cineMusica(true); if (CINES.ilha && CIN.cenas.ilha_1) await cinematica('ilha');
+  fxCinema(true, '130,255,150'); tween(G, 'dim', .55, 500);
   await quadroT(A, [
     [0, 500, () => som('tartarok_rosna', .9)],
     [1, 400, () => { som('tartarok_tremor', .7); shake = Math.max(shake, 6); }],

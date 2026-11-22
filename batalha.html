@@ -40,7 +40,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_lanca.js?v=1795117438"></script>
 <script src="sprites_nevasca.js?v=1795117438"></script>
 <script src="sprites_zero.js?v=1795117438"></script>
-<script src="sprites_cine.js?v=1795117438"></script>
+<script src="sprites_cine.js?v=1795265000"></script>
 <script src="sprites_bino.js?v=1795117438"></script>
 <script src="sprites_batalha.js?v=1795117438"></script>
 <script src="ecos_sprites.js?v=1795117438"></script>
@@ -1934,6 +1934,24 @@ CINES.ragnarok={nome:'RAGNARÖK',sub:'Fenrir',musica:'ragnarok',tomadas:[
       fx:[{t:'raios',x:.62,y:.55,n:22,L:1.1,giro:1.2,a:.24},{t:'anel',x:.62,y:.55,r:1,per:.3,ach:.5},{t:'brilho',pts:[[.62,.55,.2]],v:22},{t:'faiscas',area:[.5,.4,.75,.7],n:170,radial:640}]},
     {cena:'rag_7',som:['vento','coroa'],entra:'racha',d:3.0,z:[1,1.12],f:[[.5,.5],[.55,.4]],neve:true,
       fx:[{t:'brilho',pts:[[.84,.15,.18]],v:2,cor:'rgba(200,240,255,.4)'},{t:'onda',areas:[[0,0,1,.3]],a:1.6},{t:'faiscas',area:[.2,0,.8,.7],n:60,vy:-30,vx:-50,estrela:true},{t:'faiscas',area:[.35,.5,.75,.8],n:26,vy:-40,vx:-70,s:[3,6]}]}]};
+// Ilha Viva (suprema da Tartarok, cenas soltas ref/ilha_cine/ilha_1..7, FICHA_CINE_ILHA_VIVA.md): so a tartaruga, sem heroi.
+// Ela nao fala: telepatia (pensa = balao verde do ecoPensa por cima da cena). O chamado, os olhos, a terra cresce, a ilha,
+// o abrigo (domo de galhos), a cura (petalas) e a paz (a ilha se desfaz em folhas de luz)
+CINES.ilha={nome:'ILHA VIVA',sub:'Tartarok',tomadas:[
+    {cena:'ilha_1',som:['vento','t_rosna'],pensa:'Desperte, ilha antiga.',d:2.8,z:[1,1.1],f:[[.45,.55],[.42,.6]],
+      fx:[{t:'anel',x:.43,y:.72,r:.5,per:.9,ach:.22,cor:'190,255,140'},{t:'brilho',pts:[[.43,.72,.12]],v:4,cor:'rgba(170,255,120,.35)'},{t:'faiscas',area:[.15,.5,.8,.95],n:34,vy:-55,vx:12,s:[2,4],cor:'200,255,130'},{t:'faiscas',area:[0,.3,1,.9],n:10,vy:-20,vx:20,estrela:true,cor:'230,255,170'}]},
+    {cena:'ilha_2',som:['t_rosna','brilho'],entra:'chicote',d:1.7,z:[1,1.16],f:[[.62,.32],[.64,.3]],clarao:.45,
+      fx:[{t:'brilho',pts:[[.655,.27,.07]],v:10,cor:'rgba(255,225,120,.8)'},{t:'raios',x:.655,y:.27,n:8,L:.35,giro:.5,a:.1,cor:'255,230,140'},{t:'faiscas',area:[.3,.1,1,.9],n:45,vy:-40,vx:-30,s:[2,4],cor:'210,255,140'}]},
+    {cena:'ilha_3',som:['t_tremor','zumbido'],pensa:'Mil anos dormindo no rio…',entra:'chicote',d:2.6,z:[1.22,1.0],f:[[.5,.55],[.5,.45]],clarao:.7,tremor:[0,1,12],
+      fx:[{t:'raios',x:.5,y:.45,n:16,L:1,giro:.7,a:.13,cor:'170,255,120'},{t:'brilho',pts:[[.5,.45,.2]],v:10,cor:'rgba(170,255,120,.45)'},{t:'anel',x:.5,y:.82,r:.8,per:.45,ach:.3,cor:'200,255,150'},{t:'faiscas',area:[.1,.4,.9,1],n:90,vy:-190,vx:25,cor:'190,255,120'},{t:'faiscas',area:[0,.6,1,1],n:30,vy:-120,vx:40,s:[4,7],cor:'150,120,90'}]},
+    {cena:'ilha_4',som:['t_ilha'],d:2.8,z:[1.2,1.0],f:[[.5,.85],[.6,.35]],tremor:[.1,.8,9],
+      fx:[{t:'onda',areas:[[0,.2,.45,.85],[.78,.45,1,.8]],a:1.8},{t:'brilho',pts:[[.86,.12,.05]],v:6,cor:'rgba(255,220,120,.9)'},{t:'faiscas',area:[0,.6,1,1],n:40,vy:-70,vx:0,cor:'210,255,170'},{t:'faiscas',area:[0,0,1,.5],n:14,estrela:true,cor:'255,240,190'}]},
+    {cena:'ilha_5',som:['t_casco','t_folhas'],pensa:'Subam. Ninguém toca em vocês.',entra:'chicote',d:2.8,z:[1,1.1],f:[[.5,.5],[.5,.52]],tremor:[0,.4,8],clarao:.5,
+      fx:[{t:'anel',x:.5,y:.7,r:1,per:.6,ach:.35,cor:'190,255,130'},{t:'raios',x:.5,y:.4,n:14,L:.9,giro:.4,a:.1,cor:'200,255,140'},{t:'faiscas',area:[0,0,1,.6],n:50,vy:60,vx:-40,s:[3,5],cor:'190,255,120'},{t:'faiscas',area:[0,.6,.3,1],n:20,radial:420,cor:'150,120,90'}]},
+    {cena:'ilha_6',som:['t_cura'],d:2.6,z:[1,1.08],f:[[.5,.45],[.5,.5]],
+      fx:[{t:'brilho',pts:[[.8,.15,.15]],v:2,cor:'rgba(255,240,170,.35)'},{t:'onda',areas:[[.02,.42,.13,.72],[.9,.45,.98,.7]],a:1.4},{t:'faiscas',area:[0,0,1,.4],n:40,vy:55,vx:-20,s:[3,6],cor:'255,190,225'},{t:'faiscas',area:[0,.3,1,1],n:30,vy:-35,vx:10,s:[2,4],cor:'220,255,150'},{t:'faiscas',area:[0,0,1,.6],n:10,estrela:true,cor:'255,245,200'}]},
+    {cena:'ilha_7',som:['t_folhas','coroa'],pensa:'Descansem na minha sombra.',d:3.2,z:[1,1.1],f:[[.5,.5],[.55,.45]],
+      fx:[{t:'brilho',pts:[[.83,.58,.12]],v:2,cor:'rgba(255,220,150,.45)'},{t:'onda',areas:[[.6,.72,1,.95]],a:1.2},{t:'faiscas',area:[.15,.1,.85,.75],n:60,vy:-45,vx:-25,s:[3,6],cor:'200,255,130'},{t:'faiscas',area:[0,.4,.4,1],n:16,vy:-20,vx:8,s:[2,4],cor:'255,240,150'}]}]};
 let cine=null;
 // falas em japones (assets/voz, cortadas do audio que o usuario gerou): tocam quando a tomada com `voz` comeca
 const VOZES={};for(const n of ['fuyu_no_ou','kooritsuke','zettai_reido','final_1','final_3','final_5','final_7','bino_furia_1','bino_furia_2','bino_esmaga_1','bino_queda_1','bino_queda_2']){const a=new Audio();a.preload='auto';
@@ -1967,6 +1985,9 @@ const SONS={
   bino_urso:()=>som('bino_urso2',1),bino_rugido:()=>som('bino_rugido',1),bino_rugido_longo:()=>som('bino_rugido_longo',1),bino_rugido_queda:()=>som('bino_rugido_queda',1),
   bino_golpe:()=>{som('bino_golpe_forte',1);som('bino_rumble',.8);},bino_rumble:()=>som('bino_rumble',.9),bino_pedras:()=>som('bino_pedras',.9),
   mordida:()=>{som('fenrir_mordida',1);SONS.impacto();},
+  // Tartarok (Ilha Viva)
+  t_rosna:()=>{som('tartarok_rosna',1);grave(.5);},t_tremor:()=>{som('tartarok_tremor',1);grave(.9);},t_ilha:()=>{som('tartarok_ilha',1);grave(1);},
+  t_casco:()=>{som('tartarok_casco',1);grave(.6);},t_folhas:()=>som('tartarok_folhas',1),t_cura:()=>{som('tartarok_cura',1);SONS.brilho();},
 };
 // a musica da cinematica abaixa enquanto alguem fala e volta quando a fala acaba (a voz fica clara por cima da orquestra)
 function fala(n){const a=VOZES[n];if(!a)return;try{a.currentTime=0;a.volume=1;a.play().catch(()=>{});
@@ -2027,12 +2048,12 @@ function drawPensamento(c,dt){if(!PENS.txt)return;PENS.t+=dt;if(PENS.t>PENS.dur)
   const bh=22+lin.length*ls;
   c.globalAlpha=a*.92;c.fillStyle='rgba(6,16,44,.82)';c.strokeStyle=PENS.cor;c.lineWidth=2;c.beginPath();c.roundRect(bx,by,bw,bh,14);c.fill();c.stroke();
   c.shadowColor=PENS.cor;c.shadowBlur=14;c.globalAlpha=a;c.textAlign='center';c.fillStyle='#eaf8ff';lin.forEach((l,k)=>c.fillText(l,bx+bw/2,by+31+k*ls));
-  c.shadowBlur=0;c.font='bold 13px "Trebuchet MS"';c.textAlign='left';c.fillStyle=PENS.cor;c.fillText('\u2022 '+PENS.nome+(PENS.fala?'':' (pensamento)'),bx+16,by-6);c.restore();}
+  c.shadowBlur=0;c.font='bold 13px "Trebuchet MS"';c.textAlign='left';c.lineWidth=4;c.strokeStyle='rgba(4,10,26,.9)';c.strokeText('• '+PENS.nome+(PENS.fala?'':' (pensamento)'),bx+16,by-6);c.fillStyle=PENS.cor;c.fillText('\u2022 '+PENS.nome+(PENS.fala?'':' (pensamento)'),bx+16,by-6);c.restore();}
 function drawCine(c,dt){if(!cine)return;BARRA=(CINES[cine.id]&&CINES[cine.id].barra)||56;
   const C=CINES[cine.id];cine.t+=dt;
   let t=cine.t,i=0;while(i<C.tomadas.length&&t>C.tomadas[i].d){t-=C.tomadas[i].d;i++;}
   if(i>=C.tomadas.length){pulaCine();return;}
-  const s=C.tomadas[i];if((s.voz||s.legenda||s.som)&&!cine.vozes.has(i)){cine.vozes.add(i);if(s.voz)fala(s.voz);for(const n of s.som||[])SONS[n]&&SONS[n]();if(s.legenda)cine.leg={jp:s.legenda[0],pt:s.legenda[1],t0:cine.t};}
+  const s=C.tomadas[i];if((s.voz||s.legenda||s.som)&&!cine.vozes.has(i)){cine.vozes.add(i);if(s.voz)fala(s.voz);for(const n of s.som||[])SONS[n]&&SONS[n]();if(s.legenda)cine.leg={jp:s.legenda[0],pt:s.legenda[1],t0:cine.t};if(s.pensa)ecoPensa(s.pensa,Math.max(1800,(s.d||2)*1000-200),'Tartarok','#9dff8a');}
   const p=clamp(t/s.d,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;   // movimento suave
   // '_vel': tomada sem imagem, so fundo escuro com linhas de velocidade (o Jux recortado passa correndo)
   const AH=H-2*BARRA,vel=s.cena==='_vel',im=vel?null:CIMG[s.cena],info=vel?{w:W,h:AH}:CIN.cenas[s.cena];
@@ -2235,8 +2256,8 @@ function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return
   if(flash>.01){ctx.fillStyle=`rgba(255,255,255,${flash*(hero.quem==='bino'?1:0)})`;ctx.fillRect(0,0,W,H);flash*=.9;}
   if(G.scene!=='title')fxDesenhaTela(ctx,dt);   // clarao colorido, quadro de impacto, faixas de cinema
   drawBotoesAuto(ctx,t);
-  drawPensamento(ctx,dt);
   drawCine(ctx,dt);
+  drawPensamento(ctx,dt);   // depois da cena: a telepatia dos Ecos aparece por cima das cinematicas (Ilha Viva)
   requestAnimationFrame(frame);
 }
 function updateBattle(dt){
@@ -2541,6 +2562,7 @@ if(TESTE){
   mk('Cinemática Zero',()=>vendoCine('zero'),'#e8d4ff');
   mk('Cinemática Era do Gelo',()=>vendoCine('final'),'#e8d4ff');
   mk('Cinemática Ragnarök',()=>vendoCine('ragnarok'),'#e8d4ff');
+  mk('Cinemática Ilha Viva (Tartarok)',()=>vendoCine('ilha'),'#c8ffc0');
   mk('Cinemática Bino: Fúria Bárbara',()=>vendoCine('bfuria'),'#ffd0c0');mk('Cinemática Bino: Esmaga-Montanhas',()=>vendoCine('besmaga'),'#ffd0c0');mk('Cinemática Bino: Queda da Montanha',()=>vendoCine('bqueda'),'#ffd0c0');
   // troca a musica da cinematica (fica salva) e ja mostra a cena para ouvir
   const mb=mk('Música: '+musCine+' '+MUS_CINES[musCine],()=>{if(G.busy||cine)return;const n=trocaMusCine();mb.textContent='Música: '+musCine+' '+n;vendoCine('rei');},'#ffd9f0');
@@ -2592,7 +2614,7 @@ requestAnimationFrame(frame);
   if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='serpente'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_serpente.ogg':'assets/musica/chefe_serpente.mp3';}if(s.prova==='ignarok'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_ignarok.ogg':'assets/musica/chefe_ignarok.mp3';}if(s.prova&&s.prova.startsWith('atq_')){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/vila/musica_ataque.ogg':'assets/vila/musica_ataque.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
-<script src="eco_tartarok.js?v=1795262000"></script>
+<script src="eco_tartarok.js?v=1795265000"></script>
 <script src="pausa_batalha.js?v=1795255300"></script>
 <script src="tela_cheia.js?v=1795247600"></script>
 </body>
