@@ -108,7 +108,7 @@ function desenhaEcoDetalhe(cx, cy, w, h, y) { const id = UI.ecoVer, e = ECOS[id]
   // direita: o que ele da
   const rx = cx + lw + 16, rw = w - lw - 16;
   ctx.fillStyle = 'rgba(10,24,56,.85)'; ctx.beginPath(); ctx.roundRect(rx, cy - 8, rw, 58, 8); ctx.fill();
-  texto('O que ' + (BICHO_ECO_M[id] ? 'o ' + BICHO_ECO_M[id] : 'este Eco') + ' dá ao ' + NOME_QUEM[q], rx + 12, cy + 10, 12, '#9fb3d9');
+  texto('O que ' + (BICHO_ECO_M[id] ? (id === 'guardiao' ? 'a ' : 'o ') + BICHO_ECO_M[id] : 'este Eco') + ' dá ao ' + NOME_QUEM[q], rx + 12, cy + 10, 12, '#9fb3d9');
   texto(Object.entries(e.bonus).map(([k, v]) => (NOMES_ATRIB[k] || k) + ' +' + (v < 1 ? Math.round(v * 100) + '%' : v)).join(' · '), rx + 12, cy + 30, 16, '#7dffa8');
   textoCabe('Sobe de nível lutando junto: a cada nível ' + textoPorNivel(id), rx + 12, cy + 45, 11, '#c8d8f0', rw - 24);
   // o espaco de habilidades (o AP)
