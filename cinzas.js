@@ -4,51 +4,76 @@
    história do mapa. Carrega ANTES do vila_motor.js (como o vida_pico.js); usa as coisas do motor só quando é chamado.
    Ganchos no vila_motor.js: regiaoInit() (fim do motor), regiaoChega() (ao abrir o mapa), regiaoFala(id) (começo do abreFala),
    vidaPasso(dt), vidaDesenha('chao'|'ar'), vidaNpcs() (desenhos na ordem do Jux) e c.extra(t) nas cenas das cutscenes.
-   - vida: lava pulsando, brasas subindo das rachaduras, vapor das fontes, fogo dos braseiros do portão e da fogueira (a cinza
-     caindo é a "neve" do motor pintada de cinza)
-   - GÊISERES (coisa nova): borbulham ~1 s (aviso) e soltam um jato de vapor, desencontrados; quem está no jato é empurrado e
-     perde um pouquinho de HP
+   - vida (TRILHA VIVA, FICHA_CINZAS_VIVA.md, 2026-11-22): o mapa é o LIMPO (sem fumaça nem chamas pintadas) e tudo o que mexe
+     vem de folhas (cinzas_vivo.js, tools/cinzas_vivo.py): a lava escorre/ondula dentro da máscara e as cascatas de lava caem
+     animadas, bolhas de lava estouram; a água do cais ondula com ondinhas e espuma nos pilares; as 3 poças turquesa borbulham
+     com vapor em loop; a fogueira e os braseiros do portão têm o fogo da vila; as chaminés de Brasária soltam fumaça; brasas
+     sobem das rachaduras (a cinza caindo é a "neve" do motor pintada de cinza)
+   - GÊISERES: fiapo de vapor parado; borbulham ~1 s (aviso, quadros 1-2), soltam o jato (quadros 3-6: quem está no buraco é
+     empurrado e perde um pouquinho de HP) e o vapor se desfaz (quadros 7-8); desencontrados
    - o TIBÉRIO CARVÃO no banquinho (loja + 3 conversas), a fogueira (salvar), a caverna de lava (Mãe-Salamandra, chefes.js)
    - cutscenes "As carroças" (no meio do mapa, depois a luta com os Forjados) e "O portão de Brasária" (fim da Parte A2)
    Estado: JOGO.cap3 = {..., chegou, carrocas, forjados, parteA2, tib (conversa), fase:'cinzas'|'brasaria'} */
 'use strict';
 const CZ_F = window.JUX_CINZAS || {};
+// a trilha VIVA (FICHA_CINZAS_VIVA.md; tools/cinzas_vivo.py -> cinzas_vivo.js): as folhas que animam o mapa limpo e onde cada coisa fica
+const CZ_V = window.JUX_CINZAS_VIVO || {};
 const czC3 = () => { JOGO.cap3 = JOGO.cap3 || {}; return JOGO.cap3; };
 const czRnd = (a, b) => a + Math.random() * (b - a);
 const czImg = src => { const i = new Image(); if (src) i.src = src; return i; };
 const CZ_TIB = czImg(CZ_F.tiberio && CZ_F.tiberio.atlas), CZ_TIBR = czImg(CZ_F.tiberio_ret && CZ_F.tiberio_ret.atlas), CZ_LAVAM = czImg(CZ_F.lava && CZ_F.lava.img);
-let czLava = null;   // a lava do mapa recortada pela máscara (feita uma vez, quando o mapa e a máscara chegam)
+let czLava = null, czAgua = null;   // a lava e a água do mapa recortadas pelas máscaras (feitas uma vez, quando o mapa chega)
+const CZ_I = {};
+for (const k of ['jato', 'vapor', 'poca', 'bolhas', 'ondas', 'espuma', 'cascata', 'lbolha', 'fogo', 'forja', 'fumaca']) if (CZ_V[k]) CZ_I[k] = czImg(CZ_V[k].atlas);
+const czPronta = k => !!(CZ_I[k] && CZ_I[k].complete && CZ_I[k].naturalWidth);
+// máscara em PNG cinza (branco = dentro) -> canvas com alfa (para 'destination-in' / 'source-in')
+function czMascara(src, w, h) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; c.pronta = false; const i = new Image();
+  i.onload = () => { const g = c.getContext('2d'); g.drawImage(i, 0, 0, w, h); const id = g.getImageData(0, 0, w, h), d = id.data;
+    for (let k = 0; k < d.length; k += 4) { d[k + 3] = d[k]; d[k] = d[k + 1] = d[k + 2] = 255; } g.putImageData(id, 0, 0); c.pronta = true; };
+  i.src = src; return c;
+}
+const CZ_CASC = (CZ_V.cascatas || []).map(c => Object.assign({}, c, { mc: czMascara(c.m, c.w, c.h) }));
+const CZ_POCAS = (CZ_V.pocas || []).map(p => Object.assign({}, p, { mc: czMascara(p.m, p.w, p.h) }));
+const CZ_AGUAM = CZ_V.agua ? czMascara(CZ_V.agua.m, CZ_V.agua.w, CZ_V.agua.h) : null;
 
 // ---------- lugares (coordenadas do mapa 1448x1086) ----------
 const CZ_TIBERIO = { x: 434, y: 618 };
-const CZ_FOGOS = [[346, 624, 1.2], [656, 158, .8], [886, 158, .8]];   // fogueira do acampamento e braseiros do portão: x, y (base da chama), tamanho
-const CZ_LUZES = [[346, 618, 70, 'rgba(255,140,40,.40)'], [656, 160, 55, 'rgba(255,150,50,.36)'], [886, 160, 55, 'rgba(255,150,50,.36)'],
+// fogo vivo: a fogueira do acampamento (folha da fogueira da vila) e os 2 braseiros do portão (folha da forja): x, y da base, largura
+const CZ_FOGOS = [{ k: 'fogo', x: 348, y: 641, l: 46, f: 0 }, { k: 'forja', x: 658, y: 180, l: 40, f: 3 }, { k: 'forja', x: 885, y: 180, l: 40, f: 5 }];
+const CZ_LUZES = [[348, 626, 72, 'rgba(255,140,40,.42)'], [658, 166, 55, 'rgba(255,150,50,.36)'], [885, 166, 55, 'rgba(255,150,50,.36)'],
   [558, 856, 30, 'rgba(255,190,90,.34)'], [818, 856, 30, 'rgba(255,190,90,.34)'], [408, 512, 22, 'rgba(255,180,80,.30)'],
   [240, 190, 70, 'rgba(255,110,30,.30)'], [1140, 486, 40, 'rgba(255,120,40,.30)'], [1286, 488, 34, 'rgba(255,120,40,.28)']];
-const CZ_VAPOR = [[1240, 712, 1], [1150, 790, 1], [1262, 862, 1], [1330, 700, .8], [1060, 742, .6]];   // fontes quentes (só vapor, não é chão)
-const CZ_GEISERES = [{ x: 812, y: 736, fase: 'calmo', t: 0, prox: 1.5 }, { x: 906, y: 691, fase: 'calmo', t: 0, prox: 4.2 }, { x: 1031, y: 651, fase: 'calmo', t: 0, prox: 2.8 }];
+// vapor das 3 poças turquesa (folha ref/rio/vapor.png em loop): x, y da base (na água), tamanho; desencontrados
+const CZ_VAPORES = [[1205, 720, .9], [1272, 714, 1.25], [1325, 722, .75], [1090, 790, 1.1], [1160, 786, .8], [1230, 868, 1.25], [1298, 860, .95], [1342, 874, .7]]
+  .map(([x, y, e], i) => ({ x, y, e, f: i * 1.7, v: czRnd(4.5, 6.5), flip: i % 2 === 1 }));
+const CZ_ESPUMAS = (CZ_V.espumas || []).map(([x, y], i) => ({ x, y, f: (i * 2.3) % 8, v: czRnd(5, 8), e: czRnd(.75, 1), flip: i % 2 === 1 }));
+const CZ_ONDAS = []; for (let k = 0; k < 12; k++) CZ_ONDAS.push({ x: 0, y: 0, t: czRnd(0, 3), vida: 0 });
+const CZ_LBOL = []; for (let k = 0; k < 6; k++) CZ_LBOL.push({ x: 0, y: 0, t: czRnd(0, 2), vida: 0, espera: 0 });   // bolhas de lava estourando
+const CZ_PBOL = []; for (let k = 0; k < 4; k++) CZ_PBOL.push({ x: 0, y: 0, t: czRnd(0, 2), vida: 0, espera: 0 });   // bolhas nas poças turquesa
+// GÊISERES: calmo (fiapo de vapor) -> aviso (quadros 1-2, borbulha ~1 s) -> jato (quadros 3-6: é quando empurra) -> fim (quadros 7-8)
+const CZ_GEISERES = [{ x: 812, y: 734, fase: 'calmo', t: 0, prox: 1.5 }, { x: 906, y: 689, fase: 'calmo', t: 0, prox: 4.2 }, { x: 1031, y: 649, fase: 'calmo', t: 0, prox: 2.8 }];
 const CZ_GATILHO = (x, y) => y < 505 && x < 960;   // "As carroças": o time chega no alto do caminho do meio (todo caminho para o portão passa aqui)
 
 // ---------- partículas ----------
-const czBrasas = [], czVapor = [], czChamas = [], czPops = [];
-let czEmpurra = null, czDorT = 0, czBrasaT = 0, czVaporT = 0;
+const czBrasas = [], czPops = [];
+let czEmpurra = null, czDorT = 0, czBrasaT = 0;
 const czSom = (nome, vol) => { try { if (typeof som === 'function' && typeof arq === 'function') { CZ_SONS[nome] = CZ_SONS[nome] || arq('assets/sfx/novos/' + nome); som(CZ_SONS[nome], vol); } } catch (e) {} };
 const CZ_SONS = {};
 const czPerto = (x, y, r) => Math.hypot(hero.x - x, hero.y - y) < r;
 const czVolDist = (x, y, alc) => Math.max(0, 1 - Math.hypot(hero.x - x, hero.y - y) / alc);
+const czNaTela = (x, y, m) => x > VIS.x0 - m && x < VIS.x1 + m && y > VIS.y0 - m && y < VIS.y1 + m;
 
 function czGeiserPasso(g, dt) {
   g.t += dt;
   if (g.fase === 'calmo') { g.prox -= dt; if (g.prox <= 0) { g.fase = 'aviso'; g.t = 0; const v = czVolDist(g.x, g.y, 260); if (v > 0) czSom('sapo_borbulha', .55 * v); } }
   else if (g.fase === 'aviso') {
-    if (Math.random() < dt * 30) czVapor.push({ x: g.x + czRnd(-10, 10), y: g.y - 2, vx: czRnd(-6, 6), vy: czRnd(-30, -14), v: 0, d: czRnd(.4, .7), s: czRnd(2, 4), a: .5, bolha: true });
     if (g.t >= 1.05) { g.fase = 'jato'; g.t = 0; const v = czVolDist(g.x, g.y, 300); if (v > 0) czSom('caramujo_vapor', .85 * v); }
   } else if (g.fase === 'jato') {
-    for (let k = 0; k < 3; k++) if (Math.random() < dt * 40) czVapor.push({ x: g.x + czRnd(-6, 6), y: g.y - czRnd(0, 6), vx: czRnd(-10, 10), vy: czRnd(-170, -110), v: 0, d: czRnd(.6, 1), s: czRnd(5, 9), a: .75, jato: true });
     // quem está em cima do buraco na hora do jato é empurrado para longe dele e perde um pouquinho de HP
     if (!czEmpurra && czDorT <= 0 && !fala && !ab.on && !transicao && ((hero.x - g.x) / 32) ** 2 + ((hero.y - g.y) / 18) ** 2 <= 1) czQueima(g);
-    if (g.t >= 1.4) { g.fase = 'calmo'; g.t = 0; g.prox = czRnd(3.2, 5.6); }
-  }
+    if (g.t >= 1.4) { g.fase = 'fim'; g.t = 0; }
+  } else if (g.fase === 'fim' && g.t >= .6) { g.fase = 'calmo'; g.t = 0; g.prox = czRnd(2.6, 5); }
 }
 function czQueima(g) {
   let dx = hero.x - g.x, dy = hero.y - g.y, d = Math.hypot(dx, dy);
@@ -78,54 +103,128 @@ function vidaPasso(dt) {
   for (const b of czBrasas) { b.v += dt; b.x += (b.vx + Math.sin(t * 2 + b.f) * 6) * dt; b.y += b.vy * dt; }
   for (let i = czBrasas.length - 1; i >= 0; i--) if (czBrasas[i].v > czBrasas[i].d) czBrasas.splice(i, 1);
   if (czBrasas.length > 260) czBrasas.splice(0, czBrasas.length - 260);
-  // vapor das fontes quentes
-  czVaporT += dt * 5;
-  while (czVaporT >= 1) { czVaporT--; const [x, y, k] = CZ_VAPOR[(Math.random() * CZ_VAPOR.length) | 0]; if (Math.random() < k) czVapor.push({ x: x + czRnd(-14, 14), y, vx: czRnd(4, 10), vy: czRnd(-22, -12), v: 0, d: czRnd(2.2, 3.4), s: czRnd(5, 9), a: .32 }); }
-  for (const p of czVapor) { p.v += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy *= p.jato ? Math.pow(.25, dt) : 1; p.s += dt * (p.jato ? 12 : 4); }
-  for (let i = czVapor.length - 1; i >= 0; i--) if (czVapor[i].v > czVapor[i].d) czVapor.splice(i, 1);
-  // chamas dos braseiros e da fogueira
-  for (const [x, y, e] of CZ_FOGOS) if (Math.random() < dt * 18 * e) czChamas.push({ x: x + czRnd(-7, 7) * e, y: y + czRnd(-2, 2), vx: czRnd(-5, 5), s: czRnd(2.2, 3.6) * e, v: 0, d: czRnd(.45, .8), q: Math.random() < .22 });
-  for (const c of czChamas) { c.v += dt; c.y -= dt * (c.q ? 34 : 24); c.x += c.vx * dt; c.s *= 1 - dt * 1.4; }
-  for (let i = czChamas.length - 1; i >= 0; i--) if (czChamas[i].v > czChamas[i].d * (czChamas[i].q ? 1.8 : 1)) czChamas.splice(i, 1);
+  // água do cais: ondinhas nascem num ponto de água visível, andam devagar com a correnteza e somem
+  for (const o of CZ_ONDAS) { o.t += dt; if (o.t >= o.vida || !o.x) { const p = czPonto(CZ_V.aguaPts, 20);
+      if (p) { o.x = p[0] + czRnd(-5, 5); o.y = p[1]; o.t = 0; o.vida = czRnd(2.2, 3.6); o.esc = czRnd(.5, .8); o.q0 = (Math.random() * 8) | 0; o.flip = Math.random() < .5; } else o.t = 0; continue; }
+    o.x += 5 * dt; }
+  // bolhas de lava estourando de vez em quando (fundo da rachadura e boca da caverna)
+  for (const o of CZ_LBOL) { o.t += dt; if (o.t >= o.vida || !o.x) { const p = czPonto(CZ_V.lbolhas, 10);
+      if (p) { o.x = p[0]; o.y = p[1]; o.t = 0; o.espera = czRnd(.2, 2.2); o.vida = o.espera + czRnd(1, 1.4); o.esc = p[1] < 260 ? czRnd(.55, .75) : czRnd(.75, 1.15); o.flip = Math.random() < .5; } else o.t = 0; } }
+  // bolhas fervendo nas poças turquesa
+  for (const o of CZ_PBOL) { o.t += dt; if (o.t >= o.vida || !o.x) { const P = CZ_POCAS[(Math.random() * CZ_POCAS.length) | 0];
+      if (P && czNaTela(P.x + P.w / 2, P.y + P.h / 2, 40)) { o.x = P.x + P.w * (.5 + czRnd(-.28, .28)); o.y = P.y + P.h * (.5 + czRnd(-.18, .18)); o.t = 0; o.espera = czRnd(0, 1.2); o.vida = o.espera + czRnd(1.2, 1.6); o.esc = czRnd(.45, .7); o.flip = Math.random() < .5; } else o.t = 0; } }
   for (const p of czPops) p.v += dt; while (czPops.length && czPops[0].v > 1.1) czPops.shift();
   czTiberioPasso(dt);
   czHistoriaPasso(dt);
 }
+function czPonto(P, m) { if (!P || !P.length) return null;
+  for (let k = 0; k < 14; k++) { const p = P[(Math.random() * P.length) | 0]; if (p[0] > VIS.x0 + m && p[0] < VIS.x1 - m && p[1] > VIS.y0 + m && p[1] < VIS.y1 - m) return p; }
+  return null; }
 
-// lava pulsando: a lava do próprio mapa por cima, em modo "luz", subindo e descendo devagar
-function czFazLava() {
-  if (czLava || !CZ_F.lava || !CZ_LAVAM.complete || !CZ_LAVAM.naturalWidth || !MAPA.complete || !MAPA.naturalWidth) return;
-  const L = CZ_F.lava, c = document.createElement('canvas'); c.width = L.w; c.height = L.h; const g = c.getContext('2d');
-  g.drawImage(CZ_LAVAM, 0, 0); const id = g.getImageData(0, 0, L.w, L.h), d = id.data;
-  for (let i = 0; i < d.length; i += 4) { d[i + 3] = d[i]; d[i] = d[i + 1] = d[i + 2] = 255; } g.putImageData(id, 0, 0);
-  g.globalCompositeOperation = 'source-in'; g.drawImage(MAPA, L.x * K, L.y * K, L.w * K, L.h * K, 0, 0, L.w, L.h); czLava = c;
+// a lava e a água do próprio mapa, recortadas pelas máscaras (o JS pinta com a cor do mapa)
+function czFazRecortes() {
+  if (!MAPA.complete || !MAPA.naturalWidth) return;
+  if (!czLava && CZ_F.lava && CZ_LAVAM.complete && CZ_LAVAM.naturalWidth) {
+    const L = CZ_F.lava, c = document.createElement('canvas'); c.width = L.w; c.height = L.h; const g = c.getContext('2d');
+    g.drawImage(CZ_LAVAM, 0, 0); const id = g.getImageData(0, 0, L.w, L.h), d = id.data;
+    for (let i = 0; i < d.length; i += 4) { d[i + 3] = d[i]; d[i] = d[i + 1] = d[i + 2] = 255; } g.putImageData(id, 0, 0);
+    czFaixas(c, d, L.w, L.h);
+    g.globalCompositeOperation = 'source-in'; g.drawImage(MAPA, L.x * K, L.y * K, L.w * K, L.h * K, 0, 0, L.w, L.h); czLava = c; }
+  if (!czAgua && CZ_AGUAM && CZ_AGUAM.pronta) {
+    const A = CZ_V.agua, c = document.createElement('canvas'); c.width = A.w; c.height = A.h; const g = c.getContext('2d');
+    g.drawImage(CZ_AGUAM, 0, 0); czFaixas(c, g.getImageData(0, 0, A.w, A.h).data, A.w, A.h); g.globalCompositeOperation = 'source-in'; g.drawImage(MAPA, A.x * K, A.y * K, A.w * K, A.h * K, 0, 0, A.w, A.h); czAgua = c; }
+}
+// em cada faixa de 2 linhas, de onde a onde tem lava/água (as faixas vazias não são desenhadas; as cheias só no pedaço com algo)
+function czFaixas(c, d, w, h) { c.faixas = [];
+  for (let y = 0; y < h; y += 2) { let a = w, b = -1; for (let yy = y; yy < Math.min(h, y + 2); yy++) { const o = yy * w * 4;
+      for (let x = 0; x < w; x++) if (d[o + x * 4 + 3] > 20) { if (x < a) a = x; if (x > b) b = x; } }
+    c.faixas.push(b >= a ? [a, b + 1] : null); } }
+// ONDA (como o efeito 'onda' das cinemáticas): a imagem recortada redesenhada em faixas de 2 px, cada faixa deslocada um
+// pouco para o lado (a onda desce devagar); só a parte que aparece na tela
+function czOndula(img, B, amp, vel) {
+  const x0 = Math.max(B.x, VIS.x0), x1 = Math.min(B.x + B.w, VIS.x1), y0 = Math.max(B.y, VIS.y0), y1 = Math.min(B.y + B.h, VIS.y1);
+  if (x1 <= x0 || y1 <= y0) return; const F = img.faixas;
+  for (let y = y0 - ((y0 - B.y) % 2); y < y1; y += 2) { const f = F && F[(y - B.y) >> 1]; if (F && !f) continue;
+    const a = Math.max(x0, B.x + (f ? f[0] : 0)), b = Math.min(x1, B.x + (f ? f[1] : B.w)); if (b <= a) continue;
+    const h = Math.min(2, B.y + B.h - y), dx = (Math.sin(y * .21 - t * vel) * .65 + Math.sin(y * .057 + t * vel * .43) * .45) * amp;
+    ctx.drawImage(img, a - B.x, y - B.y, b - a, h, a + dx, y, b - a, h); }
+}
+// folha (8 quadros numa fileira) esticada numa caixa do mapa e recortada pela máscara de lá (cascatas de lava, poças turquesa)
+function czMascarado(o, k, q, modo, al) {
+  if (!o.mc.pronta || o.x > VIS.x1 || o.x + o.w < VIS.x0 || o.y > VIS.y1 || o.y + o.h < VIS.y0) return;
+  const S = CZ_V[k]; if (!o.tmp) { o.tmp = document.createElement('canvas'); o.tmp.width = o.w; o.tmp.height = o.h; }
+  const g = o.tmp.getContext('2d'); g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, o.w, o.h);
+  g.drawImage(CZ_I[k], q * S.fw, 0, S.fw, S.fh, 0, 0, o.w, o.h);
+  g.globalCompositeOperation = 'destination-in'; g.drawImage(o.mc, 0, 0);
+  ctx.save(); ctx.globalCompositeOperation = modo; ctx.globalAlpha = al; ctx.drawImage(o.tmp, o.x, o.y); ctx.restore();
+}
+// um quadro de uma folha: base = (x, y) é o ponto de baixo (ax, ay da folha); senão (x, y) é o meio
+function czQuadro(k, q, x, y, e, flip, al, base) {
+  const S = CZ_V[k]; if (!S || !czPronta(k)) return; const ax = base ? S.ax : S.fw / 2, ay = base ? S.ay : S.fh / 2;
+  ctx.save(); ctx.globalAlpha = al; ctx.translate(x, y); if (flip) ctx.scale(-1, 1);
+  ctx.drawImage(CZ_I[k], q * S.fw, 0, S.fw, S.fh, -ax * e, -ay * e, S.fw * e, S.fh * e); ctx.restore();
 }
 function vidaDesenha(camada) {
   if (REGIAO !== 'cinzas') return;
   if (camada === 'chao') {
-    czFazLava();
+    czFazRecortes();
+    // ÁGUA do cais: a própria água do mapa ondulando + ondinhas com brilho + espuma no pé dos pilares e das pedras
+    if (czAgua) czOndula(czAgua, CZ_V.agua, 1.6, 1.7);
+    // LAVA: a superfície escorre (a imagem da lava ondulando dentro da máscara) e pulsa de leve
+    if (czLava) { const L = CZ_F.lava; czOndula(czLava, L, 2, 2.3);
+      const x0 = Math.max(L.x, VIS.x0), y0 = Math.max(L.y, VIS.y0), x1 = Math.min(L.x + L.w, VIS.x1), y1 = Math.min(L.y + L.h, VIS.y1);
+      if (x1 > x0 && y1 > y0) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = .12 + .09 * Math.sin(t * 1.5) + .03 * Math.sin(t * 4.3);
+        ctx.drawImage(czLava, x0 - L.x, y0 - L.y, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0); ctx.restore(); } }
+    // cascatas de lava (ref/cinzas/lava_cascata.png) por cima das quedas pintadas, cada uma num quadro diferente
+    if (czPronta('cascata')) for (const c of CZ_CASC) czMascarado(c, 'cascata', Math.floor(t * 9 + c.f) % 8, 'source-over', .95);
+    // bolhas de lava estourando
+    for (const o of CZ_LBOL) if (o.x && o.t > o.espera) { const k = (o.t - o.espera) / (o.vida - o.espera || 1); czQuadro('lbolha', Math.min(7, Math.floor(k * 8)), o.x, o.y, o.esc, o.flip, 1, true); }
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
-    if (czLava) { const L = CZ_F.lava, x0 = Math.max(L.x, VIS.x0), y0 = Math.max(L.y, VIS.y0), x1 = Math.min(L.x + L.w, VIS.x1), y1 = Math.min(L.y + L.h, VIS.y1);
-      if (x1 > x0 && y1 > y0) { ctx.globalAlpha = .16 + .12 * Math.sin(t * 1.5) + .04 * Math.sin(t * 4.3); ctx.drawImage(czLava, x0 - L.x, y0 - L.y, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0); ctx.globalAlpha = 1; } }
+    // poças turquesa: ondinhas e bolhas no formato de cada poça + bolhas fervendo aqui e ali
+    if (czPronta('poca')) for (const p of CZ_POCAS) czMascarado(p, 'poca', Math.floor(p.f + t * 5) % 8, 'lighter', .38);
+    for (const o of CZ_PBOL) if (o.x && o.t > o.espera) { const k = (o.t - o.espera) / (o.vida - o.espera || 1); czQuadro('bolhas', Math.min(7, Math.floor(k * 8)), o.x, o.y, o.esc, o.flip, .9); }
+    ctx.restore();
+    // quedinhas de água entre as poças: a água pintada desce ondulando, com espuma no pé
+    if (MAPA.complete) for (const [x0, y0, x1, y1] of CZ_V.quedas || []) { if (!czNaTela((x0 + x1) / 2, (y0 + y1) / 2, 40)) continue;
+      for (let y = y0; y < y1; y++) ctx.drawImage(MAPA, x0 * K, y * K, (x1 - x0) * K, K, x0 + Math.sin(y * .7 - t * 11) * .8, y, x1 - x0, 1); }
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const [x0, y0, x1, y1] of CZ_V.quedas || []) if (czNaTela(x0, y1, 40)) czQuadro('espuma', Math.floor(t * 7 + x0) % 8, (x0 + x1) / 2, y1 + 2, .55, x0 % 2 === 1, .7, true);
+    for (const p of CZ_ESPUMAS) if (czNaTela(p.x, p.y, 40)) czQuadro('espuma', Math.floor(p.f + t * p.v) % 8, p.x, p.y, p.e, p.flip, .6, true);
+    for (const o of CZ_ONDAS) if (o.x) { const k = o.t / o.vida; czQuadro('ondas', (o.q0 + Math.floor(o.t * 6)) % 8, o.x, o.y, o.esc, o.flip, Math.min(1, k * 4, (1 - k) * 4) * .8); }
+    // luz que pisca em volta do fogo, dos lampiões e da caverna
     for (const [x, y, r, cor] of CZ_LUZES) { if (x + r < VIS.x0 || x - r > VIS.x1 || y + r < VIS.y0 || y - r > VIS.y1) continue;
       const rr = r + Math.sin(t * 6 + x) * 2 + Math.sin(t * 17 + y) * 1, g = ctx.createRadialGradient(x, y, 0, x, y, rr); g.addColorStop(0, cor); g.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = g; ctx.fillRect(x - rr, y - rr, rr * 2, rr * 2); }
-    // gêiser borbulhando: o buraco acende e treme (o aviso de ~1 s)
-    for (const g of CZ_GEISERES) if (g.fase !== 'calmo') { const k = g.fase === 'aviso' ? .35 + .3 * Math.abs(Math.sin(g.t * 18)) : .5, gr = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, 26);
-      gr.addColorStop(0, `rgba(255,240,220,${k})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gr; ctx.fillRect(g.x - 26, g.y - 26, 52, 52); }
+    // gêiser borbulhando: o buraco clareia e treme (o aviso de ~1 s)
+    for (const g of CZ_GEISERES) if (g.fase === 'aviso') { const k = .2 + .2 * Math.abs(Math.sin(g.t * 18)), gr = ctx.createRadialGradient(g.x, g.y, 0, g.x, g.y, 22);
+      gr.addColorStop(0, `rgba(255,245,230,${k})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = gr; ctx.fillRect(g.x - 22, g.y - 22, 44, 44); }
     ctx.restore();
     return;
   }
-  // 'ar': vapor, brasas, chamas e o "-HP" do gêiser (por cima de todos)
-  ctx.save();
-  for (const p of czVapor) { const q = Math.sin(Math.PI * Math.min(1, p.v / p.d)), a = p.a * q;
-    if (p.bolha) { ctx.strokeStyle = `rgba(255,255,255,${a})`; ctx.lineWidth = .8; ctx.beginPath(); ctx.arc(p.x, p.y, p.s * .6, 0, 6.283); ctx.stroke(); continue; }
-    const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.s); g.addColorStop(0, `rgba(235,235,240,${a})`); g.addColorStop(1, 'rgba(235,235,240,0)'); ctx.fillStyle = g; ctx.fillRect(p.x - p.s, p.y - p.s, p.s * 2, p.s * 2); }
-  ctx.globalCompositeOperation = 'lighter';
-  for (const c of czChamas) { const a = 1 - c.v / (c.d * (c.q ? 1.8 : 1)); ctx.fillStyle = c.q ? `rgba(255,210,110,${a})` : `rgba(255,${(110 + (1 - a) * 90) | 0},40,${a * .9})`; ctx.beginPath(); ctx.arc(c.x, c.y, Math.max(.4, c.s), 0, 6.283); ctx.fill(); }
+  // 'ar': vapor das poças, fumaça das chaminés, brasas e o "-HP" do gêiser (por cima de todos)
+  for (const v of CZ_VAPORES) if (czNaTela(v.x, v.y - 40, 70)) czQuadro('vapor', Math.floor(v.f + t * v.v) % 8, v.x, v.y, v.e, v.flip, .62, true);
+  const FM = CZ_V.fumaca;
+  if (FM && czPronta('fumaca')) (CZ_V.chamines || []).forEach(([x, y, h], i) => { if (y + 10 < VIS.y0 || x < VIS.x0 - 60 || x > VIS.x1 + 60) return;
+    const s = h / FM.alt, q = Math.floor(t * 5 + i * 2.7) % 8; ctx.save(); ctx.globalAlpha = .8; ctx.translate(x, y); ctx.transform(1, 0, -.22, 1, 0, 0);
+    ctx.drawImage(CZ_I.fumaca, q * FM.w, 0, FM.w, FM.h, -FM.saida[0] * s, -FM.saida[1] * s, FM.w * s, FM.h * s); ctx.restore(); });
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
   for (const b of czBrasas) { const a = Math.sin(Math.PI * b.v / b.d) * (.6 + .4 * Math.sin(t * 13 + b.f)); ctx.fillStyle = `rgba(255,${(150 + 60 * Math.sin(b.f)) | 0},60,${Math.max(0, a)})`; ctx.fillRect(b.x, b.y, b.s, b.s); }
   ctx.restore();
   for (const p of czPops) { ctx.save(); ctx.globalAlpha = Math.min(1, (1.1 - p.v) * 2); ctx.font = 'bold 13px "Trebuchet MS"'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(40,0,0,.9)';
     ctx.strokeText(p.txt, p.x, p.y - p.v * 18); ctx.fillStyle = '#ff5a4a'; ctx.fillText(p.txt, p.x, p.y - p.v * 18); ctx.restore(); }
+}
+// o gêiser (na ordem do Jux): o jato da folha nos quadros da fase; parado, um fiapo de vapor em loop saindo do buraco
+function czGeiserDesenha(g) {
+  let q = -1;
+  if (g.fase === 'aviso') q = Math.min(1, Math.floor(g.t / .525));
+  else if (g.fase === 'jato') q = 2 + Math.min(3, Math.floor(g.t / .35));
+  else if (g.fase === 'fim') q = 6 + Math.min(1, Math.floor(g.t / .3));
+  if (q >= 0) czQuadro('jato', q, g.x, g.y + 1, 1, false, .95, true);
+  else czQuadro('vapor', Math.floor(t * 6 + g.x * .013) % 8, g.x, g.y, .6, g.x % 2 === 1, .7, true);
+}
+// o fogo (na ordem do Jux): a folha da fogueira / da forja com a base na lenha / no carvão
+function czFogoDesenha(o) {
+  const D = CZ_V[o.k]; if (!D || !czPronta(o.k)) return; const s = o.l / D.larg, q = Math.floor(t * (o.k === 'fogo' ? 11 : 10) + o.f) % 8;
+  ctx.drawImage(CZ_I[o.k], q * D.w, 0, D.w, D.h, o.x - D.base[0] * s, o.y - D.base[1] * s, D.w * s, D.h * s);
 }
 
 // ---------- o TIBÉRIO CARVÃO (ref/cinzas/tiberio.png, 3x4, cortado como a Marta) ----------
@@ -155,7 +254,14 @@ function czTiberioDesenha() {
   ctx.drawImage(CZ_TIB, (q % 4) * T.fw, Math.floor(q / 4) * T.fh, T.fw, T.fh, -T.fw / 2, -T.fh, T.fw, T.fh); ctx.restore();
   if (czPerto(X, Y, 110) && !fala) { ctx.save(); ctx.font = 'bold 11px "Trebuchet MS"'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText('Tibério', X, Y - T.fh - 6); ctx.fillStyle = '#ffd0a0'; ctx.fillText('Tibério', X, Y - T.fh - 6); ctx.restore(); }
 }
-function vidaNpcs() { return REGIAO === 'cinzas' ? [[CZ_TIBERIO.y, czTiberioDesenha]] : []; }
+// na ordem do Jux: o Tibério, os gêiseres (o jato alto passa na frente de quem está atrás) e o fogo
+function vidaNpcs() {
+  if (REGIAO !== 'cinzas') return [];
+  const L = [[CZ_TIBERIO.y, czTiberioDesenha]];
+  for (const g of CZ_GEISERES) if (czNaTela(g.x, g.y - 60, 80)) L.push([g.y, () => czGeiserDesenha(g)]);
+  for (const o of CZ_FOGOS) if (czNaTela(o.x, o.y - 20, 60)) L.push([o.y, () => czFogoDesenha(o)]);
+  return L;
+}
 // a boca da caverna de lava (chefes.js chama): bafo quente e dois olhos amarelos piscando lá no fundo enquanto ela não foi vencida
 function cinzasCaverna(c) {
   const feito = typeof chefeFeito === 'function' && chefeFeito(c.id), ox = 240, oy = 182, a = .7 + .3 * Math.sin(t * 1.7);
