@@ -56,7 +56,17 @@
       if (a === 0 || a === 2 || a === 3) { UI.quem = 'bino'; await espera(100); await cap('aba ' + ABAS[a] + ' (Bino)'); } }
     UI.home = true; UI.menu = false;
     if (typeof abreSaves === 'function') for (const m of ['salvar', 'carregar', 'caps']) { abreSaves(m); await espera(120); await cap('janela ' + m); UI.saves = null; }
+    // nos mapas do motor (cinzas.html) a loja so abre sem fala na tela: fecha qualquer fala que tenha ficado aberta
+    if (typeof REGIAO !== 'undefined' && REGIAO === 'cinzas') { console.log('layout: fala aberta antes da loja', fala && JSON.stringify(fala.linhas)); fala = null; }
     if (typeof uiFala === 'function') { uiFala('marta'); await espera(120); await cap('Marta: escolha'); UI.escolha = null; UI.loja = { id: 'marta', sel: 0, modo: 'comprar' }; await espera(120); await cap('Marta: loja'); UI.loja = null; }
+    // TRILHA DAS CINZAS (cinzas.html?layout): a loja do Tiberio e a caixa de fala com o retrato dele (as falas mais compridas)
+    if (typeof REGIAO !== 'undefined' && REGIAO === 'cinzas' && typeof uiFala === 'function') {
+      uiFala('tiberio'); await espera(120); await cap('Tibério: escolha'); UI.escolha = null;
+      UI.loja = { id: 'tiberio', sel: 0, modo: 'comprar' }; await espera(120); await cap('Tibério: loja');
+      UI.loja.sel = LOJAS.tiberio.itens.indexOf('unguento_frio'); await espera(80); await cap('Tibério: loja (Unguento Frio)'); UI.loja = null;
+      const todas = [].concat(...CZ_TIB_CONVERSAS, CZ_TIB_DEPOIS, CZ_TIB_VIU, ...Object.values(CZ_FALAS)), maior = (q) => todas.filter(l => l[0] === q).sort((a, b) => b[1].length - a[1].length)[0];
+      for (const q of ['Tibério', 'Jux', '✦']) { const l = maior(q); if (!l) continue; fala = { linhas: [l], i: 0, letras: 9999 }; await espera(250); await cap('fala: ' + q + ' (a mais comprida)'); }
+      fala = null; }
     const pre = document.createElement('pre'); pre.id = 'layout_relatorio'; pre.textContent = JSON.stringify(R.map(r => ({ tela: r.tela, textos: r.textos, problemas: r.problemas })), null, 1); document.body.appendChild(pre);
     for (const r of R) { const im = document.createElement('img'); im.dataset.tela = r.tela; im.src = r.img; document.body.appendChild(im); }
     document.title = 'LAYOUT PRONTO';

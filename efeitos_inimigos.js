@@ -12,7 +12,7 @@ const FXI = window.JUX_FXI || {}, FXI_IMG = {};
 for (const k in FXI) { const im = new Image(); im.src = FXI[k].atlas; FXI_IMG[k] = im; }
 function fxiPlay(nome, x, y, ms, o) {
   const I = FXI[nome], im = FXI_IMG[nome]; if (!I || !im) return false; o = o || {}; const esc = o.escala || 1;
-  fxAdd(FX.mundo, ms, (c, k) => { if (!im.complete) return; const q = Math.min(I.n - 1, Math.floor(k * I.n));
+  fxAdd(FX.mundo, ms, (c, k) => { if (!im.complete) return; const de = o.de || 0, q = Math.min(I.n - 1, de + Math.floor(k * (I.n - de)));   // de = primeiro quadro (toca so o fim da folha)
     const kv = o.fim ? Math.min(1, k / o.fim) : k;   // fim = parte do tempo gasta viajando; depois fica parado
     c.save(); c.translate(o.x1 != null ? x + (o.x1 - x) * kv : x, o.y1 != null ? y + (o.y1 - y) * kv : y); if (o.rot) c.rotate(o.rot); c.scale((o.flip ? -1 : 1) * esc, esc);
     c.globalAlpha = o.alpha == null ? 1 : o.alpha; c.imageSmoothingEnabled = false;
@@ -156,6 +156,36 @@ const EFX_INIM = {
     glow: 650,
     prep(e) { som('morcego_guincho', .6); fxBrilho(e.x + 30, e.y - 80, {raio: 110, ms: 650, cor: '255,110,70', cresce: true}); },
     async cast(e) { const a = alvoHeroi(); som('morcego_suga', .9); const esc = Math.max(1.3, (a.x - e.x) / 360); fxiPlay('morcego_suga', (a.x + e.x) / 2, a.y - 20, 1100, {escala: esc}); await wait(700); }},
+
+  // ---------------- Trilha das cinzas (Cap. 3, Parte A2, FICHA_CAP3_CINZAS.md) ----------------
+  'Cuspe de Brasa': {   // Salamandra: enche o peito, cospe a brasa (voa ate o heroi e explode) e depois se esconde no vapor (index.html)
+    glow: 650,
+    prep(e) { som('salamandra_sibilo', .6); fxBrilho(e.x + 90, e.y - 50, {raio: 90, ms: 650, cor: '255,140,40', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('salamandra_cuspe', .95); fxiPlay('salamandra_brasa', e.x + 140, e.y - 60, 1300, {escala: 1.3, x1: a.x - 10, y1: a.y, fim: .5});
+      await wait(620); som('salamandra_brasa', .9); fxFlash('255,120,30', .14, 220); shake = Math.max(shake, 8); await wait(150);
+      setTimeout(() => { if (e.hp > 0 && !e.dead && !e.morrendo && typeof salamandraVapor === 'function') salamandraVapor(e); }, 700); }},
+  'Mordida Quente': {
+    prep(e) { som('salamandra_sibilo', .7); },
+    hit() { const a = alvoHeroi(); som('salamandra_dor', .35); som('salamandra_brasa', .6); fxiPlay('salamandra_brasa', a.x, a.y + 10, 700, {escala: .9, de: 3}); shake = Math.max(shake, 7); }},
+  'Espirro de Fumaça': {   // Fuligem: enche as bochechas e espirra uma nuvem de fuligem (Cego)
+    glow: 600,
+    prep(e) { som('fuligem_risinho', .7); },
+    async cast(e) { const a = alvoHeroi(); som('fuligem_espirro', 1); fxiPlay('fuligem_fumaca', e.x + 90, e.y - 60, 1300, {escala: 1.2, x1: a.x - 10, y1: a.y - 10, fim: .5});
+      await wait(650); shake = Math.max(shake, 4); await wait(150); }},
+  'Cabeçada Fofa': {
+    prep(e) { som('fuligem_risinho', .6); },
+    hit() { const a = alvoHeroi(); som('fuligem_dor', .5); som('neve_pancada', .5); fxiPlay('fuligem_fumaca', a.x, a.y, 700, {escala: .7, de: 5}); shake = Math.max(shake, 5); }},
+  'Martelada': {   // Forjado: ergue o martelo e esmaga o chao
+    prep(e) { som('forjado_ergue', .9); fxBrilho(e.x + 20, e.y - 200, {raio: 100, ms: 500, cor: '200,120,255', cresce: true}); },
+    hit() { const a = alvoHeroi(); som('forjado_martelo', 1); fxiPlay('forjado_martelada', a.x - 20, a.y - 25, 1000, {escala: 1.6}); fxFlash('255,150,60', .16, 240); shake = Math.max(shake, 14); }},
+  'Mordida de Brasa': {   // Mae-Salamandra
+    prep(e) { som('mae_rugido', .5); },
+    hit() { const a = alvoHeroi(); som('mae_dor', .3); som('salamandra_brasa', 1); fxiPlay('salamandra_brasa', a.x, a.y, 900, {escala: 1.5, de: 3}); fxFlash('255,120,30', .18, 240); shake = Math.max(shake, 12); }},
+  'Cuspe da Mãe': {
+    glow: 700,
+    prep(e) { som('mae_acende', .8); fxBrilho(e.x + 160, e.y - 90, {raio: 140, ms: 700, cor: '255,140,40', cresce: true}); },
+    async cast(e) { const a = alvoHeroi(); som('salamandra_cuspe', 1); som('mae_onda', .4); fxiPlay('salamandra_brasa', e.x + 230, e.y - 110, 1300, {escala: 2, x1: a.x - 10, y1: a.y, fim: .5});
+      await wait(620); som('salamandra_brasa', 1); fxFlash('255,120,30', .2, 260); shake = Math.max(shake, 11); await wait(150); }},
 
   // ---------------- Ignarok (Cap. 2, Parte C): efeitos desenhados (ref/inimigos_fx/ignarok_*.png) ----------------
   'Punho de Magma': {

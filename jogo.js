@@ -22,6 +22,7 @@ const ITENS={
   ecoervas:{nome:'Eco-Ervas',      tipo:'consumivel',preco:40, cor:'#7fbf7a',desc:'Cura Silêncio.',curaEst:['silencio']},
   remedio: {nome:'Remédio',        tipo:'consumivel',preco:120,cor:'#ffd36a',desc:'Cura todos os estados ruins.',curaEst:'todos'},
   fenix:   {nome:'Pena de Fênix',  tipo:'consumivel',preco:300,cor:'#ff9a4a',desc:'Revive um aliado caído com 25% do HP.',revive:.25},
+  unguento_frio:{nome:'Unguento Frio',tipo:'consumivel',preco:45,cor:'#9fe0ff',desc:'Pomada gelada do Tibério. Cura Queimadura.',curaEst:['queimadura']},   // Cap. 3, trilha das cinzas
   // --- comidas (Ingrid): efeito por algumas batalhas
   pao_mel: {nome:'Pão de Mel',          tipo:'comida',preco:40, cor:'#f2c45a',desc:'+10% de ATQ por 3 batalhas.',buff:{atk:.10},lutas:3},
   ensopado:{nome:'Ensopado de Raiz-de-Neve',tipo:'comida',preco:70,cor:'#c98a4a',desc:'+15% de HP máximo por 3 batalhas.',buff:{hp:.15},lutas:3},
@@ -49,6 +50,9 @@ const ITENS={
   lanterna_halvard:{nome:'Lanterna do Halvard',tipo:'acessorio',preco:0,venda:0,cor:'#9fe8ff',desc:'A lanterna do caçador, dada pelo Tico. HP +30, MP +10 e Regen no começo de cada luta.',bonus:{hp:30,mp:10}},
   presa_anciao:{nome:'Presa do Ancião',   tipo:'acessorio',preco:0,venda:120, cor:'#cfe6ff',desc:'Um dente do Lobo Ancião, dado por respeito. ATQ +5, Crítico +2%.',bonus:{atk:5,crit:2}},
   amuleto_vida:{nome:'Amuleto da Vida',    tipo:'acessorio',preco:420,req:{nivel:8}, cor:'#ff7a8a',desc:'HP +40.',bonus:{hp:40}},
+  // --- trilha das cinzas (Cap. 3, Parte A2): as luvas do baú das ruínas e o prêmio da Mãe-Salamandra
+  luvas_brasa:{nome:'Luvas de Brasa',      tipo:'luvas',preco:0,venda:180, cor:'#ff8a3c',desc:'Couro de salamandra que nunca esfria. ATQ +7, ATQ.M +5.',bonus:{atk:7,atkm:5}},
+  coracao_brasa:{nome:'Coração de Brasa',  tipo:'acessorio',preco:0,venda:240, cor:'#ff6a2a',desc:'Uma escama da Mãe-Salamandra, ainda quente. HP +60, ATQ +6, DEF.M +6.',bonus:{hp:60,atk:6,defm:6}},
   // --- coisas de missão (missoes.js): não vendem, somem ao entregar
   fruta:   {nome:'Fruta Silvestre',tipo:'missao',preco:0,cor:'#d8406a',desc:'Fruta vermelha e azedinha. A Ingrid quer para a torta.'},
   erva:    {nome:'Erva-de-Neve',  tipo:'missao',preco:0,cor:'#7fe0b0',desc:'Folha gelada que a Vovó Hilda usa nos remédios.'},
@@ -86,6 +90,7 @@ const LOJAS={
   borin: {nome:'Forja do Borin',quem:'Borin',itens:['esp_ferro','esp_runica','esp_aco','esp_boreal','mar_ferro','mar_runica','mar_aco','mar_glaciar','gorro_la','casaco_pele','luvas_ferr','botas_neve','anel_gelo','elmo_ferro','amuleto_vida','cota_malha'],ola:'HA! Ferro bom, preço justo! ...Quase justo!',compra:true},
   capitao:{nome:'Comércio Honesto do Capitão',quem:'Capitão',itens:['pocao','hipocao','eter','antidoto','colirio','pao_mel','botas_neve','amuleto_vida'],ola:'Capitão Dente-de-Ferro, Comércio Honesto. Nunca mais roubei. (Quase.)'},
   marta: {nome:'Peixaria da Marta',quem:'Marta',itens:['pocao','hipocao','eter','remedio','antidoto','colirio','fenix','repelente'],ola:'Peixe fresco não tenho pra vender. Poção, tenho. Vai querer?'},   // a pescadora do cais do meio do rio (Cap. 3)
+  tiberio:{nome:'Carvão & Cia. do Tibério',quem:'Tibério',itens:['pocao','hipocao','eter','unguento_frio','remedio','repelente','fenix'],ola:'Carvão acabou. Poção, tenho. Não pechincha.'},   // o carvoeiro do acampamento da trilha das cinzas (Cap. 3)
   ingrid:{nome:'Padaria da Ingrid',quem:'Ingrid',itens:['cha','pao_mel','ensopado','torta'],ola:'Pão quentinho dá força pra aventura! Literalmente!'},
 };
 const NIVEL_MAX_J=100;

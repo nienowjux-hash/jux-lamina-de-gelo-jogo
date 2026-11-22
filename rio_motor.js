@@ -155,7 +155,7 @@ function usa() {
   else if (perto.tipo === 'cais' && CAIS.tipo === 'porto') {
     if (!serpVencida()) { avisa('A Serpente do Degelo bloqueia o porto!', 3); return; }
     if (!C3().tartarok) { avisa('Antes, a tartaruga da ilhota…', 3); return; }
-    if (C3().parteA) { guardaRio(); som('novos/ui_vez', .6); avisa('Porto de Cinzas. A trilha das cinzas chega na próxima atualização. Jogo salvo!', 5); return; }
+    if (C3().parteA) { vaiCinzas(); return; }   // a Parte A ja acabou: desce no cais e segue a pe (cinzas.html)
     chegaPorto(); }
   else if (perto.tipo === 'cais') { guardaRio(); if (typeof uiFala === 'function') uiFala('marta'); }   // a Marta pescando na pontezinha: a loja dela
 }
@@ -235,9 +235,14 @@ function libertaTartarok() {   // voltou da luta vencida: o gelo da ilhota quebr
 }
 function chegaPorto() {
   evento = 'porto'; guardaRio();
-  filmeRio('porto', () => { const c = C3(); c.fase = 'porto'; c.parteA = true; salvaJogo(); evento = null;
-    avisa('Fim da Parte A! A trilha das cinzas chega na próxima atualização. Jogo salvo!', 8); });
+  filmeRio('porto', () => { const c = C3(); c.fase = 'porto'; c.parteA = true; salvaJogo(); evento = null; vaiCinzas(); });
 }
+// PARTE A2 (FICHA_CAP3_CINZAS.md): depois do "Fim da Parte A" o time desce no cais do Porto de Cinzas e segue a pe pela trilha
+function vaiCinzas() {
+  guardaRio(); const c = C3(); if (c.fase !== 'brasaria') c.fase = 'cinzas';
+  if (!JOGO.cinzas) JOGO.cinzas = { x: 686, y: 985 };   // no cais, ao lado do barco
+  JOGO.local = 'cinzas'; salvaJogo(); avisa('Porto de Cinzas: a trilha das cinzas…', 3);
+  setTimeout(() => { location.href = 'cinzas.html?t=' + Date.now(); }, 700); }
 function aoCarregarFimRio() {   // voltou da batalha (ou abriu o jogo) no trecho 3
   if (TR !== 2) return;
   if (!serpVencida() && ZONA_SERP()) { let y = 470; while (y > 360 && !barcoCabe(barco.x, y, 'cima')) y -= 6; if (!barcoCabe(barco.x, y, 'cima')) barco.x = 760; barco.y = y; barco.dir = 'cima'; cam.y = y; serpArmada = true;

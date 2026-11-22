@@ -24,10 +24,10 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <div id="carregando"><div class="floco">❄</div><div>CARREGANDO…</div><div class="barra"><i></i></div></div>
 <script src="carrega.js?v=1795225800"></script>
 <script src="itens_icones.js?v=1795245000"></script>
-<script src="jogo.js?v=1795257600"></script>
+<script src="jogo.js?v=1795319786"></script>
 <script src="formacao.js?v=1795262000"></script>
 <script src="tutorial.js?v=1795226200"></script>
-<script src="combate.js?v=1795262000"></script>
+<script src="combate.js?v=1795270000"></script>
 <script src="bino_habs.js?v=1795225300"></script>
 <script src="jux_habs.js?v=1795117438"></script>
 <script src="ecos.js?v=1795262000"></script>
@@ -44,12 +44,12 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_bino.js?v=1795117438"></script>
 <script src="sprites_batalha.js?v=1795117438"></script>
 <script src="ecos_sprites.js?v=1795117438"></script>
-<script src="inimigos_sprites.js?v=1795257400"></script>
+<script src="inimigos_sprites.js?v=1795270000"></script>
 <script src="efeitos_fx.js?v=1795117438"></script>
-<script src="fx_inimigos_sprites.js?v=1795257400"></script>
+<script src="fx_inimigos_sprites.js?v=1795270000"></script>
 <script src="fx_bino_sprites.js?v=1795117438"></script>
 <script src="ecos_tartarok.js?v=1795262000"></script>
-<script src="efeitos_inimigos.js?v=1795254900"></script>
+<script src="efeitos_inimigos.js?v=1795270000"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
@@ -82,7 +82,7 @@ let AC=null;
 // nao repete em menos de 50 ms (cacos caindo juntos nao viram um estouro)
 const SOM={},somUlt={};
 for(const n of ['ui_mover','ui_ok','ui_voltar','ui_erro','ui_vez','ui_inicio','magia_gelo','carga_gelo','pocao','defender','recompensa','nivel',
-  'inimigo_ataca','inimigo_morre','inimigo_rosna','fenrir_rosna','fenrir_latido','fenrir_ataque','fenrir_mordida','fenrir_uivo','presa_rosna','presa_uivo','presa_mordida','presa_investida','som_oskar_lamento','som_oskar_abraco','som_oskar_tambor','som_borin_lamento','som_borin_martelada','som_borin_abraco','som_ingrid_lamento','som_ingrid_sopa','som_ingrid_lagrima','ignarok_rugido','ignarok_rosna','ignarok_punho','ignarok_derreter','ignarok_erupcao','ignarok_queda','caco_pequeno','gelo_quebra','gelo_quebra2','whoosh','whoosh2','magia_brilho','magia_raio','pedras','neve_pancada','bolota_espirro','goblin_facada','goblin_moedas','goblin_pedrada','acolito_esfera','acolito_explode','acolito_drenar','acolito_vazio','skoll_mordida','skoll_correntes','telepatia_gelo','telepatia_natureza','tartarok_rosna','tartarok_casco','tartarok_tremor','tartarok_folhas','tartarok_raizes','tartarok_cura','tartarok_ilha','aguaviva_choque','aguaviva_clarao','aguaviva_pulso','caramujo_gosma','caramujo_vapor','caranguejo_pinca','enguia_chicote','enguia_fogo','enguia_sibilo','lontra_mergulho','lontra_risada','lontra_roubo','morcego_asas','morcego_guincho','morcego_suga','piranha_mordida','piranha_salto','sapo_borbulha','sapo_cuspe','sapo_incha','serpente_degelo','serpente_onda','serpente_rugido','serpente_sibilo','serpente_aperta','rio_splash_grande','rio_splash_peq','skoll_rosna','skoll_ataque','skoll_uivo','bolotao_pancada','bolotao_espirro','bolotao_rosna','bolotao_bruf','bolotao_rolo','bolotao_avalanche','bolotao_abraco','bolotao_bola','capitao_rosna','capitao_bravata','capitao_risada','capitao_machado','capitao_clank','capitao_apito','lobo_rosna','lobo_ataque','lobo_mordida','lobo_uivo','lobo_latido','bino_whoosh','bino_golpe','bino_golpe_forte','bino_quebra','bino_rumble','bino_pedras','bino_pedra_forma','bino_muralha','bino_cura','bino_investida','bino_peito','bino_urso1','bino_urso2','bino_rugido','bino_rugido2','bino_rugido_longo','bino_rugido_queda']){
+  'inimigo_ataca','inimigo_morre','inimigo_rosna','fenrir_rosna','fenrir_latido','fenrir_ataque','fenrir_mordida','fenrir_uivo','presa_rosna','presa_uivo','presa_mordida','presa_investida','som_oskar_lamento','som_oskar_abraco','som_oskar_tambor','som_borin_lamento','som_borin_martelada','som_borin_abraco','som_ingrid_lamento','som_ingrid_sopa','som_ingrid_lagrima','ignarok_rugido','ignarok_rosna','ignarok_punho','ignarok_derreter','ignarok_erupcao','ignarok_queda','caco_pequeno','gelo_quebra','gelo_quebra2','whoosh','whoosh2','magia_brilho','magia_raio','pedras','neve_pancada','bolota_espirro','goblin_facada','goblin_moedas','goblin_pedrada','acolito_esfera','acolito_explode','acolito_drenar','acolito_vazio','skoll_mordida','skoll_correntes','telepatia_gelo','telepatia_natureza','tartarok_rosna','tartarok_casco','tartarok_tremor','tartarok_folhas','tartarok_raizes','tartarok_cura','tartarok_ilha','aguaviva_choque','aguaviva_clarao','aguaviva_pulso','caramujo_gosma','caramujo_vapor','caranguejo_pinca','enguia_chicote','enguia_fogo','enguia_sibilo','lontra_mergulho','lontra_risada','lontra_roubo','morcego_asas','morcego_guincho','morcego_suga','piranha_mordida','piranha_salto','sapo_borbulha','sapo_cuspe','sapo_incha','serpente_degelo','serpente_onda','serpente_rugido','serpente_sibilo','serpente_aperta','rio_splash_grande','rio_splash_peq','salamandra_sibilo','salamandra_cuspe','salamandra_brasa','salamandra_vapor','salamandra_dor','fuligem_risinho','fuligem_espirro','fuligem_foge','fuligem_dor','forjado_ranger','forjado_ergue','forjado_martelo','forjado_dor','forjado_racha','mae_rugido','mae_acende','mae_onda','mae_lava','mae_dor','skoll_rosna','skoll_ataque','skoll_uivo','bolotao_pancada','bolotao_espirro','bolotao_rosna','bolotao_bruf','bolotao_rolo','bolotao_avalanche','bolotao_abraco','bolotao_bola','capitao_rosna','capitao_bravata','capitao_risada','capitao_machado','capitao_clank','capitao_apito','lobo_rosna','lobo_ataque','lobo_mordida','lobo_uivo','lobo_latido','bino_whoosh','bino_golpe','bino_golpe_forte','bino_quebra','bino_rumble','bino_pedras','bino_pedra_forma','bino_muralha','bino_cura','bino_investida','bino_peito','bino_urso1','bino_urso2','bino_rugido','bino_rugido2','bino_rugido_longo','bino_rugido_queda']){
   const a=new Audio();a.preload='auto';a.src='assets/sfx/novos/'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3')+(n.startsWith('bino_')?'?v=2':'');SOM[n]=a;}
 function som(n,vol){const a=SOM[n],now=performance.now();if(!a||now-(somUlt[n]||0)<50)return;somUlt[n]=now;
   try{const c=a.cloneNode();c.volume=clamp(vol??.8,0,1);c.play().catch(()=>{});}catch(e){}}
@@ -422,7 +422,7 @@ function drawGoblin(c,x,y,s,o){const t=o.t,b=Math.round(Math.abs(Math.sin(t*4))*
 const INIM=window.JUX_INIM||{},INIM_IMG={};for(const k in INIM){const im=new Image();im.src=INIM[k].atlas;INIM_IMG[k]=im;}
 function drawInimSprite(nome,fps,flut){return (c,x,y,sc,o)=>{const I=INIM[nome],im=INIM_IMG[nome];if(!I||!im||!im.complete)return;
   let q=Math.floor((o.t||0)*(fps||5))%4;   // parado
-  if(o.morre)q=7;else if(o.hurt)q=6;else if(o.glow>.9||(o.lg||0)>70)q=5;else if(o.glow>.15||(o.lg||0)>12)q=4;
+  if(o.morre)q=7;else if(o.hurt)q=6;else if(o.q!=null&&o.q<I.n)q=o.q;else if(o.glow>.9||(o.lg||0)>70)q=5;else if(o.glow>.15||(o.lg||0)>12)q=4;   // o.q: quadro escolhido (Mae-Salamandra rugindo = 8)
   const dy=flut&&q<5?Math.sin((o.t||0)*2.4)*flut:0;
   c.save();c.translate(Math.round(x),Math.round(y+dy));c.scale(sc,sc);c.imageSmoothingEnabled=false;if(o.filter)c.filter=o.filter;
   c.drawImage(im,q*I.w,0,I.w,I.h,-I.ancora[0],-I.ancora[1],I.w,I.h);
@@ -466,6 +466,11 @@ const DESENHO_INIM={ignarok:INIM.ignarok?[drawInimSprite('ignarok',1.6),2,{sprit
   sapo_fervente:[drawInimSprite('sapo_fervente',4),2.5,{sprite:1,sombra:1}],
   caramujo:[drawInimSprite('caramujo',3),2.4,{sprite:1,sombra:1}],
   morcego:[drawInimSprite('morcego',8,8),3,{sprite:1,sombra:1}],   // voa (sobe e desce)
+  // trilha das cinzas (Cap. 3, Parte A2, FICHA_CAP3_CINZAS.md): em terra, com sombra
+  salamandra:[drawInimSprite('salamandra',5),2.4,{sprite:1,sombra:100}],
+  fuligem:[drawInimSprite('fuligem',6),2.3,{sprite:1,sombra:46}],   // pula parada (quadros 2 e 3 no ar)
+  forjado:[drawInimSprite('forjado',3),2.3,{sprite:1,sombra:92}],
+  mae_salamandra:[drawInimSprite('mae_salamandra',3),3.3,{sprite:1,sombra:210}],   // mini-chefe: bem maior que as filhotes
   fenrir_prova:[drawFenrirProva,1]};
 
 /* ---------- cenario ---------- */
@@ -491,7 +496,7 @@ const bg=document.createElement('canvas');bg.width=W;bg.height=H;
 })();
 const snow=Array.from({length:110},()=>({x:rnd(0,W),y:rnd(0,H),r:rnd(1,2.6),v:rnd(20,60),w:rnd(0,6)}));
 // fundos desenhados (imagem do usuario) para cada regiao; por cima o jogo anima aurora, brilho do cristal, lago, nevoa e neve
-const FUNDOS={rio:'assets/batalha/fundo_rio.jpg',rio_quente:'assets/batalha/fundo_rio_quente.jpg',ignarok:'assets/batalha/fundo_ignarok.jpg',ataque:'assets/batalha/fundo_ataque.jpg',trilha:'assets/batalha/fundo_trilha.jpg',trilha2:'assets/batalha/fundo_trilha2.jpg',garganta:'assets/batalha/fundo_garganta.jpg',vale:'assets/batalha/fundo_vale.jpg',caverna:'assets/batalha/fundo_caverna.jpg',skoll:'assets/batalha/fundo_skoll.jpg',santuario:'assets/batalha/fundo_santuario.jpg',pico:'assets/batalha/fundo_pico.jpg'},FUNDO_IMG={};
+const FUNDOS={rio:'assets/batalha/fundo_rio.jpg',rio_quente:'assets/batalha/fundo_rio_quente.jpg',ignarok:'assets/batalha/fundo_ignarok.jpg',ataque:'assets/batalha/fundo_ataque.jpg',trilha:'assets/batalha/fundo_trilha.jpg',trilha2:'assets/batalha/fundo_trilha2.jpg',garganta:'assets/batalha/fundo_garganta.jpg',vale:'assets/batalha/fundo_vale.jpg',caverna:'assets/batalha/fundo_caverna.jpg',skoll:'assets/batalha/fundo_skoll.jpg',santuario:'assets/batalha/fundo_santuario.jpg',pico:'assets/batalha/fundo_pico.jpg',cinzas:'assets/batalha/fundo_cinzas.jpg',ninho:'assets/batalha/fundo_ninho.jpg'},FUNDO_IMG={};
 for(const k in FUNDOS){const i=new Image();i.src=FUNDOS[k];FUNDO_IMG[k]=i;}
 const motesF=Array.from({length:26},()=>({x:rnd(0,W),y:rnd(160,520),v:rnd(0,6),s:rnd(.6,1.4)}));
 // o convés do barco no rio: a imagem + brilhos piscando na água (lado esquerdo) e o barco balançando de leve
@@ -571,6 +576,12 @@ function fundoPico(c,t,dt){c.drawImage(FUNDO_IMG.pico,0,0,W,H);
       const q=Math.floor(e.v*8)%VTB.n;c.save();c.globalAlpha=Math.min(1,e.v/.3)*(e.l?.7:.55);c.drawImage(VTBI,q*T,e.l*T,T,T,e.x-e.s/2,e.y-e.s/2,e.s,e.s);c.restore();}}
 }
 // interior da caverna do lobo (PROMPTS_TRILHA.md 12): cristais azuis e roxos pulsando, brilho no lago, poeira de gelo e nevoa baixa escura
+// trilha das cinzas e ninho da Mae-Salamandra (imagens do usuario): por cima so brasas subindo e o brilho da lava pulsando (sem neve)
+const brasasF=Array.from({length:44},()=>({x:rnd(0,W),y:rnd(0,H),v:rnd(18,46),w:rnd(0,6),r:rnd(1,2.4)}));
+function fundoCinzas(c,t,dt,fi){c.drawImage(fi,0,0,W,H);const ninho=G.fundo==='ninho';
+  c.save();c.globalCompositeOperation='lighter';{const p=.5+.5*Math.sin(t*1.3),g=c.createLinearGradient(0,H*.55,0,H);g.addColorStop(0,'rgba(255,90,20,0)');g.addColorStop(1,`rgba(255,90,20,${(ninho?.10:.06)+.06*p})`);c.fillStyle=g;c.fillRect(0,H*.55,W,H*.45);}
+  for(const b of brasasF){b.y-=b.v*dt;b.x+=Math.sin(t*1.4+b.w)*14*dt;if(b.y<-4){b.y=H+rnd(0,40);b.x=rnd(0,W);}c.globalAlpha=.45+.35*Math.sin(t*5+b.w*3);c.fillStyle=b.w>3?'#ffb347':'#ff6a2a';c.fillRect(Math.round(b.x),Math.round(b.y),b.r,b.r);}
+  c.restore();c.globalAlpha=1;}
 function fundoCaverna(c,t,dt){c.drawImage(FUNDO_IMG.caverna,0,0,W,H);
   const luz=(x,y,r,cor)=>{const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cor);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);};
   c.save();c.globalCompositeOperation='lighter';
@@ -605,7 +616,8 @@ function fundoSantuario(c,t,dt){c.drawImage(FUNDO_IMG.santuario,0,0,W,H);
 function drawBackdrop(c,t,dt,dim){
   const fi=G.fundo&&FUNDO_IMG[G.fundo];
   if(G.fundo==='santuario'&&fi&&fi.complete&&fi.naturalWidth){fundoSantuario(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}return;}
-  if(fi&&fi.complete&&fi.naturalWidth){if(G.fundo==='ataque'||G.fundo==='ignarok')c.drawImage(fi,0,0,W,H);else if(G.fundo==='rio'||G.fundo==='rio_quente')fundoRio(c,t,fi);else if(G.fundo==='trilha2')fundoTrilha2(c,t,dt);else if(G.fundo==='garganta')fundoGarganta(c,t,dt);else if(G.fundo==='vale')fundoVale(c,t,dt);else if(G.fundo==='caverna')fundoCaverna(c,t,dt);else if(G.fundo==='skoll')fundoSkoll(c,t,dt);else if(G.fundo==='pico')fundoPico(c,t,dt);else fundoTrilha(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}
+  if(fi&&fi.complete&&fi.naturalWidth){if(G.fundo==='cinzas'||G.fundo==='ninho'){fundoCinzas(c,t,dt,fi);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}return;}
+    if(G.fundo==='ataque'||G.fundo==='ignarok')c.drawImage(fi,0,0,W,H);else if(G.fundo==='rio'||G.fundo==='rio_quente')fundoRio(c,t,fi);else if(G.fundo==='trilha2')fundoTrilha2(c,t,dt);else if(G.fundo==='garganta')fundoGarganta(c,t,dt);else if(G.fundo==='vale')fundoVale(c,t,dt);else if(G.fundo==='caverna')fundoCaverna(c,t,dt);else if(G.fundo==='skoll')fundoSkoll(c,t,dt);else if(G.fundo==='pico')fundoPico(c,t,dt);else fundoTrilha(c,t,dt);if(dim>0){c.fillStyle=`rgba(5,8,30,${dim})`;c.fillRect(0,0,W,H);}
     for(const f of snow){f.y+=f.v*dt;f.x+=Math.sin(t+f.w)*12*dt;if(f.y>H){f.y=-4;f.x=rnd(0,W);}c.fillStyle='rgba(255,255,255,.8)';c.fillRect(Math.round(f.x),Math.round(f.y),f.r,f.r);}
     return;}
   c.drawImage(bg,0,0);
@@ -763,6 +775,9 @@ async function mortes(){let caem=ENEMIES.filter(e=>e.hp<=0&&!e.dead&&!e.morrendo
   {const sb=caem.filter(e=>SOMBRA_FALA[e.tipo]);if(sb.length){for(const e of sb){e.morrendo=true;e.desmaio=true;som('magia_brilho',.6);
       for(let i=0;i<30;i++)spark(e.x+rnd(-60,60),e.y-rnd(20,160),1,'#b070ff',260,1.4,6);ecoPensa(SOMBRA_FALA[e.tipo].fim,3000,SOMBRA_FALA[e.tipo].nome.replace('Sombra d','').replace(/^[oa] /,''),'#ffe9a8',true);tween(e,'alpha',.9,600);}
     caem=caem.filter(e=>!SOMBRA_FALA[e.tipo]);if(!caem.length)return;}}
+  {const ma=caem.find(e=>e.tipo==='mae_salamandra');if(ma){ma.morrendo=true;som('mae_dor',1);som('mae_lava',.8);shake=Math.max(shake,20);fxFlash('255,110,20',.3,600);
+    for(let i=0;i<40;i++)spark(ma.x+rnd(-160,160),ma.y-rnd(10,220),1,'#ff9a3c',240,1.5,7);await wait(1600);await tween(ma,'alpha',0,1300);ma.dead=true;ma.morrendo=false;caem=caem.filter(e=>e!==ma);if(!caem.length)return;}}
+  {const MT={salamandra:'salamandra_dor',fuligem:'fuligem_foge',forjado:'forjado_racha'};for(const k of new Set(caem.map(e=>MT[e.tipo]).filter(Boolean)))som(k,.8);}
   som('inimigo_morre',.8);som('pedras',.5);
   await Promise.all(caem.map(async e=>{e.morrendo=true;for(let i=0;i<24;i++)spark(e.x+rnd(-80,80),e.y-rnd(20,180),1,'#ff9a3c',200,1.2,6);
     await tween(e,'alpha',0,700);e.dead=true;e.morrendo=false;}));
@@ -825,7 +840,7 @@ function newBattle(){
   // laboratorio: 1 inimigo imortal (ou 4 no campo cheio); "luta de verdade" usa as regras normais do nivel escolhido
   const vitrine=TESTE&&!G.lutaReal;
   const enc=G.encontro,tl=G.tipoLab&&G.tipoLab!=='misto'?G.tipoLab:null;
-  G.fundo=enc?(enc.regiao==='rio'&&enc.trecho===2)?'rio_quente':(enc.prova==='ignarok'?'ignarok':(enc.prova&&enc.prova.startsWith('atq_'))?'ataque':(enc.prova==='acolito'&&FUNDOS.santuario)?'santuario':enc.prova==='skoll'?'skoll':(enc.regiao==='trilha'?(Math.random()<.5?'trilha':'trilha2'):FUNDOS[enc.regiao]?enc.regiao:(enc.regiao==='garganta'?'garganta':enc.regiao==='caverna'?'caverna':null))):(G.fundoLab||null);
+  G.fundo=enc?(enc.fundo&&FUNDOS[enc.fundo])?enc.fundo:(enc.tipos&&enc.tipos[0]==='mae_salamandra')?'ninho':(enc.regiao==='rio'&&enc.trecho===2)?'rio_quente':(enc.prova==='ignarok'?'ignarok':(enc.prova&&enc.prova.startsWith('atq_'))?'ataque':(enc.prova==='acolito'&&FUNDOS.santuario)?'santuario':enc.prova==='skoll'?'skoll':(enc.regiao==='trilha'?(Math.random()<.5?'trilha':'trilha2'):FUNDOS[enc.regiao]?enc.regiao:(enc.regiao==='garganta'?'garganta':enc.regiao==='caverna'?'caverna':null))):(G.fundoLab||null);
   const tipos=enc?enc.tipos:G.campoCheio?[0,1,2,3].map(i=>tl||(G.tipoLab==='misto'?['lobo','bolota','goblin','ignarok'][i]:'ignarok')):vitrine?[tl||(G.tipoLab==='misto'?'lobo':'ignarok')]:G.tipoLab==='misto'?['lobo','bolota','goblin'].slice(0,Math.max(2,qtdInimigos(prog.nivel))):Array(qtdInimigos(prog.nivel)).fill(tl||'ignarok');
   const n=tipos.length;ENEMIES=[];for(let i=0;i<n;i++)ENEMIES.push(novoInimigo(i,enc?enc.nv:prog.nivel,n,tipos[i]));enemy=ENEMIES[0];
   if(enc&&enc.chefe){const C=enc.chefe,A=ENEMIES[0];A.chefe=true;A.hp=A.max=Math.round(A.max*C.hp);A.forca*=C.forca;A.name=C.nome;}   // mini-chefe opcional do mapa
@@ -842,6 +857,7 @@ function newBattle(){
   if(vitrine){ENEMIES.forEach(e=>e.max=e.hp=99999);hero.res=100;}
   {const nv=ENEMIES[0].nv,nomes={};for(const e of ENEMIES){const nm=(TIPOS_INIMIGO[e.tipo]||{}).nome||'Ignarok';nomes[nm]=(nomes[nm]||0)+1;}
    if(ENEMIES[0].tipo==='capitao'&&!vitrine){setTimeout(()=>{ecoPensa('ALTO! Isto é território do Capitão Dente-de-Ferro!',3000,'Capitão','#c9e89a');som('capitao_bravata',.9);},1400);}
+   if(ENEMIES[0].tipo==='mae_salamandra'&&!vitrine){setTimeout(()=>{som('mae_rugido',1);shake=Math.max(shake,14);fxFlash('255,120,30',.25,500);},1200);}
    if(ENEMIES[0].tipo==='serpente'&&!vitrine){setTimeout(()=>{som('serpente_rugido',1);shake=Math.max(shake,12);},1200);}
    if(ENEMIES[0].tipo==='bolotao'&&!vitrine){setTimeout(()=>{ecoPensa('MEU. LAGO.',2600,'Bolotão','#9fd8ff');som('bolotao_rosna',.95);},1400);}
    if(ENEMIES[0].tipo==='skoll'&&!vitrine){setTimeout(()=>{ecoPensa('Fuja… eu não consigo parar.',3000,'Skoll','#c9a6ff');som('skoll_rosna',.9);},1500);}
@@ -858,6 +874,8 @@ function hitEnemy(n,weak,mudo){
   if(GOLPES_JUX[G.acao]&&GOLPES_JUX[G.acao].t==='f'&&temEst(hero,'cego')&&Math.random()<.5){pop(e.x,e.y-170,'ERROU','#a9a9c8');return;}
   n=Math.max(1,Math.round(r.n*multDanoEst(hero)*((st.esp_&&st.esp_.sede&&e.hp<e.max*.5)?1+st.esp_.sede:1)));   // Sede de Caca
   if(typeof linhaDe==='function'&&linhaDe(hero.quem)==='tras'&&(G.acao==='attack'||((typeof GOLPES_JUX!=='undefined'&&GOLPES_JUX[G.acao])||{}).t==='f'))n=Math.max(1,Math.round(n*.75));   // ATRAS: golpe fisico de perto -25%
+  if(e.vapor>0&&Math.random()<.5){pop(e.x,e.y-170,'ESQUIVOU!','#d8d0c4');som('salamandra_vapor',.5);e.kx=-30;tween(e,'kx',0,300,easeOut);return;}   // Salamandra escondida no vapor (cinzasEspecial)
+  if(e.tipo==='forjado'){n=Math.max(1,Math.round(n*(hero.quem==='bino'?1.6:1)*(e.rachado?1.25:.6)));}   // Forjado: BLINDADO ate a 1a Quebra (depois rachado); a marreta do Bino entra
   if(e.tipo==='caranguejo'||e.tipo==='caramujo')n=Math.max(1,Math.round(n*(e.quebrado>0?1.35:e.casca>0?.35:1)));   // carapaca de pedra (o quebrado ja leva +50%: junto da o dobro)
   if(hero.quem!=='bino')fxHitJux(e,G.acao,weak);else if(!mudo&&typeof toqueBino==='function')toqueBino(e);   // cada golpe do Jux deixa a propria marca (jux_fx_golpes.js); o Bino tem os dele
   if(temEst(e,'sono'))delete e.est.sono;
@@ -870,9 +888,11 @@ function hitEnemy(n,weak,mudo){
   const sub=r.imune?'IMUNE':r.crit&&r.fraco?'CRÍTICO! FRAQUEZA!':r.crit?'CRÍTICO!':r.fraco?'FRAQUEZA!':r.resiste?'RESISTE':'';
   pop(e.x+rnd(-30,30),e.y-170,n,r.crit?'#ffe27a':r.fraco?'#8fe9ff':r.resiste?'#a9a9c8':'#fff',sub);
   addRes(r.fraco?5:3);if(!mudo)hitSfx();
+  if(DOR_TIPO[e.tipo]&&e.hp>0&&!mudo)som(DOR_TIPO[e.tipo],.55);   // cada bicho da trilha das cinzas tem o proprio som de dor
   // barra de Quebra: enche com o dano (muito mais no ponto fraco); cheia = QUEBRADO por 1 turno, toma +50% e o Jux age de novo
-  if(e.hp>0&&!(e.quebrado>0)){e.qb=Math.min(100,(e.qb||0)+Math.max(2,Math.min(30,n/e.max*100*.9))*r.quebra*(1+((st.esp_||{}).quebra||0)));
+  if(e.hp>0&&!(e.quebrado>0)){e.qb=Math.min(100,(e.qb||0)+Math.max(2,Math.min(30,n/e.max*100*.9))*r.quebra*(1+((st.esp_||{}).quebra||0))*(e.tipo==='forjado'&&hero.quem==='bino'?2:1));
     if(e.qb>=100){e.qb=0;e.quebrado=1;pop(e.x,e.y-260,'QUEBRA!','#ffb400');shake=Math.max(shake,16);som('gelo_quebra',.8);
+      if(e.tipo==='forjado'&&!e.rachado){e.rachado=true;som('forjado_racha',1);fxiPlay('forjado_martelada',e.x,e.y-80,900,{escala:1.2,de:3});setTimeout(()=>pop(e.x,e.y-290,'A BLINDAGEM RACHOU!','#c9a6ff'),500);}
       if(e.tipo==='bolotao'&&e.acumulo){e.forca/=Math.pow(1.1,e.acumulo);e.acumulo=0;setTimeout(()=>pop(e.x,e.y-290,'A NEVE CAIU!','#9fe8ff'),500);}
       hero.atb=1;G.bonus=true;
       if(inimigos().every(x=>x.quebrado>0)){addRes(35);setTimeout(()=>banner('FASE BÔNUS! Ressonância +35'),300);}}}
@@ -1135,7 +1155,7 @@ async function actNevasca(){
 // o gelo (bloco partido) e da dano dobrado, mas o congelamento acaba
 // Prisão de Gelo (nível 36, folhas ref/batalha/prisao.png e fx_prisao.png): a jaula de gelo sobe em volta do inimigo e
 // ele perde 2 turnos; a jaula fica desenhada em volta dele enquanto prende e explode quando solta
-const ALT_INIM={serpente:330,serpente_f2:330,ignarok_chefe:330,ignarok_f2:330,ignarok:182,lobo:120,bolota:112,goblin:144,capitao:268,bolotao:200,presa:290};
+const ALT_INIM={salamandra:120,fuligem:110,forjado:240,mae_salamandra:300,serpente:330,serpente_f2:330,ignarok_chefe:330,ignarok_f2:330,ignarok:182,lobo:120,bolota:112,goblin:144,capitao:268,bolotao:200,presa:290};
 function caixaFx(name){const S=FXSRC[name];if(!S||!S.D.caixas)return null;const an=S.D.anims[name];return {S,cx:S.D.caixas[an.quadros[an.quadros.length-1]]};}
 function escJaula(e){const k=caixaFx('prisao_jaula');return k?((ALT_INIM[e.tipo]||182)*1.45)/k.cx[3]:2.8;}
 function yJaula(name,e,s){const k=caixaFx(name);if(!k)return e.y-60;return e.y+10-((k.cx[1]+k.cx[3])-(k.S.D.ancora[1]+1))*s;}
@@ -1484,13 +1504,16 @@ async function bolotaoEspecial(){const e=enemy;
   if(e.turn%2===0){e.ciclo=(e.ciclo||0)+1;const k=e.ciclo%3;if(k===0)await bolotaoAvalanche();else if(k===1)await bolotaoAbraco();else await bolotaoRolo();return true;}
   return false;}
 // ---------- LABORATORIO: golpes especiais dos chefes, um por um (lista em golpesLab, execucao em espLab) ----------
-const ESP_LAB_EXTRA={presa:['Sopro da Montanha','Uivo do Bando','Investida do Ancião','Mudança de fase'],capitao:['Apito Goblin','Couraça Estourada','Mudança de fase'],bolotao:['Rolo Compressor','Avalanche de Neve','Abraço Gelado','Bola de Neve','Mudança de fase'],skoll:['Uivo da Matilha','Mudança de fase']};
+const ESP_LAB_EXTRA={presa:['Sopro da Montanha','Uivo do Bando','Investida do Ancião','Mudança de fase'],capitao:['Apito Goblin','Couraça Estourada','Mudança de fase'],bolotao:['Rolo Compressor','Avalanche de Neve','Abraço Gelado','Bola de Neve','Mudança de fase'],skoll:['Uivo da Matilha','Mudança de fase'],salamandra:['Nuvem de Vapor'],fuligem:['Fugir'],forjado:['Blindagem Racha'],mae_salamandra:['Chamar as Filhotes','Onda de Brasa','Pele Rachada']};
 const golpesLab=tp=>{const T=TIPOS_INIMIGO[tp||'ignarok']||{};return [...(T.golpes||[]).map(g=>g.nome),...(ESP_LAB_EXTRA[tp]||[])];};
 const ESP_LAB={'Sopro da Montanha':()=>presaSopro(),'Uivo do Bando':()=>presaUivo(),'Investida do Ancião':()=>presaInvestida(),'Apito Goblin':()=>capitaoApito(),'Couraça Estourada':()=>capitaoCouraca(),'Rolo Compressor':()=>bolotaoRolo(),'Avalanche de Neve':()=>bolotaoAvalanche(),'Abraço Gelado':()=>bolotaoAbraco(),'Bola de Neve':()=>bolotaoBola(),
+  'Nuvem de Vapor':()=>salamandraVapor(enemy),'Fugir':async()=>{const e=enemy,x0=e.x;await fuligemFoge(e);await wait(900);e.dead=false;e.fugiu=false;e.morrendo=false;e.x=x0;tween(e,'alpha',1,400);},
+  'Blindagem Racha':async()=>{const e=enemy,h0=hero;e.rachado=false;e.qb=99;G.acao='attack';hero=temBino()?BINO:JUX;hitEnemy(dmg(40,.1),false);hero=h0;await wait(1200);e.quebrado=0;e.rachado=false;},
+  'Chamar as Filhotes':()=>maeFilhotes(enemy),'Onda de Brasa':()=>maeOnda(enemy),'Pele Rachada':async()=>{const e=enemy,fo=e.forca,ve=e.vel;e.lava=false;await maePele(e);await wait(600);e.lava=false;e.forca=fo;e.vel=ve;},
   'Uivo da Matilha':async()=>{const e=enemy;e.fase2=false;e.turn=3;await skollEspecial();},
   'Mudança de fase':async()=>{const e=enemy,f={skoll:skollEspecial,capitao:capitaoEspecial,bolotao:bolotaoEspecial,presa:presaEspecial}[e.tipo];if(!f)return;const fo=e.forca,ve=e.vel,hp=e.hp;
     e.fase2=false;e.hp=Math.round(e.max*.45);e.turn=1;await f();e.fase2=false;e.forca=fo;e.vel=ve;e.hp=hp;}};   // volta ao normal para poder repetir
-const ROSNA_TIPO={enguia:'enguia_sibilo',sapo_fervente:'sapo_borbulha',caramujo:'caramujo_gosma',morcego:'morcego_guincho',agua_viva:'aguaviva_pulso',piranha:'piranha_salto',lontra:'lontra_risada',caranguejo:'caranguejo_pinca',sombra_oskar:'som_oskar_abraco',sombra_borin:'som_borin_lamento',sombra_ingrid:'som_ingrid_lamento',ignarok_chefe:'ignarok_rosna',ignarok_f2:'ignarok_rosna',presa:'presa_rosna',capitao:'capitao_rosna',bolotao:'bolotao_rosna',lobo:'lobo_rosna',skoll:'skoll_rosna',serpente:'serpente_sibilo',serpente_f2:'serpente_sibilo',fenrir_prova:'fenrir_rosna'};
+const ROSNA_TIPO={salamandra:'salamandra_sibilo',fuligem:'fuligem_risinho',forjado:'forjado_ranger',mae_salamandra:'mae_rugido',enguia:'enguia_sibilo',sapo_fervente:'sapo_borbulha',caramujo:'caramujo_gosma',morcego:'morcego_guincho',agua_viva:'aguaviva_pulso',piranha:'piranha_salto',lontra:'lontra_risada',caranguejo:'caranguejo_pinca',sombra_oskar:'som_oskar_abraco',sombra_borin:'som_borin_lamento',sombra_ingrid:'som_ingrid_lamento',ignarok_chefe:'ignarok_rosna',ignarok_f2:'ignarok_rosna',presa:'presa_rosna',capitao:'capitao_rosna',bolotao:'bolotao_rosna',lobo:'lobo_rosna',skoll:'skoll_rosna',serpente:'serpente_sibilo',serpente_f2:'serpente_sibilo',fenrir_prova:'fenrir_rosna'};
 const FALA_ABERTURA={presa:['…Fraco não entra na minha toca.','Presa-Antiga','#cfe6ff','presa_rosna'],capitao:['ALTO! Isto é território do Capitão Dente-de-Ferro!','Capitão','#c9e89a','capitao_bravata'],bolotao:['MEU. LAGO.','Bolotão','#9fd8ff','bolotao_rosna'],skoll:['Fuja… eu não consigo parar.','Skoll','#c9a6ff','fenrir_rosna'],fenrir_prova:['Mostre que é digno.','Fenrir','#9fe8ff','fenrir_rosna']};
 async function skollCai(sk){   // queda gentil: ele nao morre de raiva, e libertado
   musicaSome(1400);sk.morrendo=true;
@@ -1537,6 +1560,41 @@ async function sombraEspecial(){const e=enemy;
   return false;}
 // ---------- IGNAROK (Cap. 2, Parte C): Erupcao a cada 3 vezes (acerta todos) e a FASE 2 (o coracao exposto) abaixo de metade ----------
 // SERPENTE DO DEGELO (chefe do rio): abaixo da metade o gelo derrete (fase 2); a Onda acerta todo mundo a cada 3 turnos (2 na fase 2)
+// ---------- TRILHA DAS CINZAS (Cap. 3, Parte A2, FICHA_CAP3_CINZAS.md) ----------
+// Salamandra: depois do Cuspe de Brasa se esconde no VAPOR (efeitos_inimigos.js chama salamandraVapor): ate a proxima vez dela, 50% de esquiva (hitEnemy).
+// Fuligem: a partir da 2a vez, com menos de 60% de vida, pode FUGIR (sem EXP dela). Forjado: blindagem em hitEnemy.
+// Mae-Salamandra: abaixo da metade a PELE RACHA (lava: +25% velocidade e +15% forca, so uma vez); chama as filhotes (Salamandras de Cinza)
+// se houver lugar; Onda de Brasa em todos a cada 3 vezes (2 com a pele rachada).
+const DOR_TIPO={salamandra:'salamandra_dor',fuligem:'fuligem_dor',forjado:'forjado_dor',mae_salamandra:'mae_dor'};
+async function salamandraVapor(e){e.vapor=1;som('salamandra_vapor',.8);fxiPlay('salamandra_brasa',e.x+10,e.y-60,1100,{escala:1.3,de:5,alpha:.85});tween(e,'alpha',.55,500);await wait(500);pop(e.x,e.y-200,'VAPOR: ESQUIVA ↑','#d8d0c4');await wait(300);}
+async function fuligemFoge(e){banner('A Fuligem fugiu!');som('fuligem_foge',.9);fxiPlay('fuligem_fumaca',e.x+20,e.y-50,900,{escala:.9,de:4});
+  e.fugiu=true;e.morrendo=true;tween(e,'x',e.x-260,700,easeIn);await tween(e,'alpha',0,700);e.dead=true;e.morrendo=false;await wait(200);return true;}
+async function maePele(e){e.lava=true;alerta('PELE RACHADA!','A Mãe-Salamandra solta lava: fica mais forte e mais rápida. O gelo ainda é a arma!','#ff9a40');
+  som('mae_lava',1);som('mae_rugido',.7);tween(G,'dim',.3,300);shake=Math.max(shake,16);fxFlash('255,120,30',.35,500);
+  fxiPlay('salamandra_brasa',e.x+20,e.y-150,1400,{escala:2.6,de:4});await tween(e,'glow',1,600);e.vel*=1.25;e.forca*=1.15;e.turn=0;
+  for(let i=0;i<30;i++)spark(e.x+rnd(-170,170),e.y-rnd(10,200),1,'#ff8a2a',220,1.4,6);
+  ecoPensa('A pele dela rachou… agora é a hora do gelo!',2600,'Jux','#8fe9ff',true);await wait(900);tween(e,'glow',0,400);await tween(G,'dim',0,400);return true;}
+async function maeFilhotes(e){const livres=[1,2,3].filter(i=>!ENEMIES.some(x=>!x.dead&&!x.morrendo&&x.x===SLOTS.inimigos[i][0]&&x.y===SLOTS.inimigos[i][1]));
+  const q=Math.min(2,livres.length,4-(e.filhotes||0));if(q<=0)return false;
+  banner('Chamar as Filhotes');e.quadro=8;som('mae_rugido',1);shake=Math.max(shake,12);await tween(e,'glow',.6,500);await wait(500);
+  for(let k=0;k<q;k++){const i=livres[k],f=novoInimigo(i,Math.max(1,(e.nv||prog.nivel)-2),2,'salamandra');f.alpha=0;f.filhote=true;f.atb=0;
+    if(TESTE&&!G.lutaReal)f.max=f.hp=99999;
+    const j=ENEMIES.findIndex(x=>x.dead&&x.letra===f.letra);if(j>=0)ENEMIES[j]=f;else ENEMIES.push(f);
+    fxiPlay('salamandra_brasa',f.x,f.y-70,900,{escala:1.2,de:4});som('salamandra_sibilo',.7);tween(f,'alpha',1,600);await wait(350);}
+  e.filhotes=(e.filhotes||0)+q;pop(e.x,e.y-300,q>1?q+' FILHOTES!':'UMA FILHOTE!','#ffb347');await wait(500);e.quadro=null;tween(e,'glow',0,300);return true;}
+async function maeOnda(e){const g={nome:'Onda de Brasa',t:'m',el:'fogo',poder:e.lava?36:30};banner(g.nome);
+  som('mae_acende',.9);await tween(e,'glow',1,700);som('mae_onda',1);
+  {const vv=aliados().filter(x=>x.hp>0),xs=vv.map(a=>a.x),cx=xs.reduce((s,x)=>s+x,0)/Math.max(1,xs.length);fxiPlay('mae_onda_brasa',cx-60,Math.max(...vv.map(a=>a.y))-200,1500,{escala:2.4});}
+  shake=Math.max(shake,14);await wait(520);fxFlash('255,120,30',.25,400);
+  await sombraTodos(g,['queimadura',3,.4]);tween(e,'glow',0,300);await wait(300);return true;}
+async function cinzasEspecial(){const e=enemy,lab=TESTE&&!G.lutaReal;
+  if(e.tipo==='salamandra'&&e.vapor>0){e.vapor=0;tween(e,'alpha',1,400);}   // saiu do vapor: volta a levar golpe normal
+  if(e.tipo==='fuligem'&&!lab&&e.turn>=2&&e.hp<e.max*.6&&Math.random()<.35)return fuligemFoge(e);
+  if(e.tipo!=='mae_salamandra'||lab)return false;
+  if(!e.lava&&e.hp<e.max*.5)return maePele(e);
+  if(e.turn%4===2&&(e.filhotes||0)<4&&inimigos().length<3&&await maeFilhotes(e))return true;
+  if(e.turn%(e.lava?2:3)===0)return maeOnda(e);
+  return false;}
 async function serpenteEspecial(){const e=enemy;
   if(e.tipo==='serpente'&&e.hp<e.max*.5){alerta('DEGELO!','A água quente derreteu a armadura: o gelo agora acerta normal nela','#9fe8ff');som('serpente_degelo',1);som('serpente_rugido',.8);tween(G,'dim',.35,300);shake=Math.max(shake,16);
     fxiPlay('serpente_degelo',e.x+40,e.y-170,1400,{escala:2.6});fxFlash('220,240,255',.4,500);await tween(e,'glow',1,600);e.tipo='serpente_f2';e.vel*=1.2;e.turn=0;
@@ -1590,6 +1648,7 @@ async function enemyTurn(e){
   if(enemy.tipo==='bolotao'&&!(TESTE&&!G.lutaReal)){if(await bolotaoEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(['lontra','caranguejo','caramujo','sapo_fervente'].includes(enemy.tipo)){const r=await rioEspecial();if(r){if(aliadoCaiu())return lose();if(!inimigos().length)return win();return fim();}}
   if((enemy.tipo==='ignarok_chefe'||enemy.tipo==='ignarok_f2')&&!(TESTE&&!G.lutaReal)){if(await ignarokEspecial()){if(aliadoCaiu())return lose();return fim();}}
+  if(['salamandra','fuligem','mae_salamandra'].includes(enemy.tipo)){const r=await cinzasEspecial();if(r){if(aliadoCaiu())return lose();if(!inimigos().length)return win();return fim();}}
   if((enemy.tipo==='serpente'||enemy.tipo==='serpente_f2')&&!(TESTE&&!G.lutaReal)){if(await serpenteEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(SOMBRA_FALA[enemy.tipo]&&!(TESTE&&!G.lutaReal)){if(await sombraEspecial()){if(aliadoCaiu())return lose();return fim();}}
   if(enemy.tipo&&enemy.tipo!=='ignarok'){const esc=await golpeDoTipo();if(aliadoCaiu())return lose();
@@ -2284,7 +2343,7 @@ function drawInimigo(c,e,t){if(e.dead)return;
   c.save();c.globalAlpha=e.alpha*fa;
   c.fillStyle='rgba(10,20,60,.35)';c.beginPath();c.ellipse(x,y+4,((DESENHO_INIM[e.tipo]||[])[2]||{}).sombra||100,16,0,0,7);c.fill();
   const f=[];if(e.flash>0)f.push(`brightness(${1+e.flash*2.5})`);
-  {const [fn,sc,cfg]=DESENHO_INIM[e.tipo]||DESENHO_INIM.ignarok,o={t:t+e.x*.01,glow:e.glow,flash:e.flash,lg:e.lunge,hurt:e.flash>.04,morre:!!e.morrendo,fa:e.fa,fq:e.fq,fesc:e.fesc,filter:f.join(' ')||null};
+  {const [fn,sc,cfg]=DESENHO_INIM[e.tipo]||DESENHO_INIM.ignarok,o={t:t+e.x*.01,glow:e.glow,flash:e.flash,lg:e.lunge,hurt:e.flash>.04,morre:!!e.morrendo,fa:e.fa,fq:e.fq,fesc:e.fesc,q:e.quadro,filter:f.join(' ')||null};
     if(e.tipo&&e.tipo!=='ignarok'&&!(cfg&&cfg.sprite)){const oc={...o,glow:0,contorno:true,filter:null};comFiltro(c,'brightness(.2) saturate(1.6)',k=>{for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]])fn(k,x+dx*sc,y+dy*sc,sc,oc);});}   // contorno escuro (bichos claros na neve)
     if(cfg&&cfg.sprite)fn(c,x,y,sc,o);else comFiltro(c,o.filter,k=>fn(k,x,y,sc,{...o,filter:null}));}
   if(e.preso>0&&!e.morrendo){c.restore();c.save();drawJaula(c,e,t);c.restore();c.save();}   // congelado = a jaula de gelo desenhada (a mesma da Prisao), nao mais os triangulos
@@ -2590,9 +2649,9 @@ if(TESTE){
   mk('Inimigo — ouvir rosnado',()=>{if(G.busy)return;som(ROSNA_TIPO[enemy.tipo]||'inimigo_rosna',.9);},'#ffb347');
   mk('Inimigo ataca',async()=>{if(G.busy)return;st.textContent=enemy.name+' ataca...';await enemyTurn(enemy);if(G.scene!=='lose'&&!G.lutaReal){hero.hp=Math.max(hero.hp,120);hero.res=100;}st.textContent='pronto';},'#ffb347');
   // campo cheio: 4 inimigos de verdade (clique num inimigo para ele virar o alvo dos botoes) e 3 aliados de enfeite
-  const TIPOS_LAB=[null,'lobo','bolota','goblin','acolito','bolotao','capitao','presa','skoll','misto','fenrir_prova'],NOME_LAB={presa:'Presa-Antiga (mini-chefe do Vale)',bolotao:'Bolotão (mini-chefe da Trilha)',capitao:'Capitão Dente-de-Ferro (mini-chefe da Garganta)',lobo:'Lobo da Geada',bolota:'Bolota',goblin:'Goblin',acolito:'Acólito do Eclipse',skoll:'Skoll, o Alfa',misto:'Misturado',fenrir_prova:'Espírito do Fenrir'};
+  const TIPOS_LAB=[null,'lobo','bolota','goblin','acolito','bolotao','capitao','presa','skoll','misto','fenrir_prova','salamandra','fuligem','forjado','mae_salamandra'],NOME_LAB={salamandra:'Salamandra de Cinza',fuligem:'Fuligem',forjado:'Forjado',mae_salamandra:'Mãe-Salamandra (mini-chefe das Cinzas)',presa:'Presa-Antiga (mini-chefe do Vale)',bolotao:'Bolotão (mini-chefe da Trilha)',capitao:'Capitão Dente-de-Ferro (mini-chefe da Garganta)',lobo:'Lobo da Geada',bolota:'Bolota',goblin:'Goblin',acolito:'Acólito do Eclipse',skoll:'Skoll, o Alfa',misto:'Misturado',fenrir_prova:'Espírito do Fenrir'};
   const ib=mk('Inimigo: Ignarok',()=>{if(G.busy)return;G.golpeLab=null;{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.startsWith('Golpe do inimigo'));if(b)b.textContent='Golpe do inimigo: aleatório';}G.tipoLab=TIPOS_LAB[(TIPOS_LAB.indexOf(G.tipoLab||null)+1)%TIPOS_LAB.length];ib.textContent='Inimigo: '+(NOME_LAB[G.tipoLab]||'Ignarok');newBattle();G.bannerT=0;},'#ffd0a0');
-  const fb=mk('Fundo: Gelo',()=>{const ord=[null,'trilha','trilha2','garganta','vale','caverna','skoll','pico'],nm={pico:'Pico do Uivo (Fenrir)',skoll:'Câmara do Alfa (Skoll)',caverna:'Caverna do lobo',trilha:'Trilha dos Pinheiros',trilha2:'Trilha: mata no pôr do sol',garganta:'Garganta Gelada',vale:'Vale dos Lobos'};G.fundoLab=ord[(ord.indexOf(G.fundoLab||null)+1)%ord.length];G.fundo=G.fundoLab;fb.textContent='Fundo: '+(nm[G.fundoLab]||'Gelo');},'#ffd0a0');
+  const fb=mk('Fundo: Gelo',()=>{const ord=[null,'trilha','trilha2','garganta','vale','caverna','skoll','pico','cinzas','ninho'],nm={cinzas:'Trilha das Cinzas',ninho:'Ninho da Mãe-Salamandra',pico:'Pico do Uivo (Fenrir)',skoll:'Câmara do Alfa (Skoll)',caverna:'Caverna do lobo',trilha:'Trilha dos Pinheiros',trilha2:'Trilha: mata no pôr do sol',garganta:'Garganta Gelada',vale:'Vale dos Lobos'};G.fundoLab=ord[(ord.indexOf(G.fundoLab||null)+1)%ord.length];G.fundo=G.fundoLab;fb.textContent='Fundo: '+(nm[G.fundoLab]||'Gelo');},'#ffd0a0');
   const cb=mk('Campo cheio: não',()=>{if(G.busy)return;G.campoCheio=!G.campoCheio;cb.textContent='Campo cheio: '+(G.campoCheio?'sim':'não');newBattle();G.bannerT=0;},'#d4dcff');
   // luta de verdade: menu na sua vez, alvo, inimigos atacando sozinhos e morrendo, EXP; nada e salvo
   const lb=mk('Luta de verdade: não',()=>{if(G.busy)return;G.lutaReal=!G.lutaReal;lb.textContent='Luta de verdade: '+(G.lutaReal?'sim':'não');
@@ -2611,7 +2670,9 @@ if(TESTE){
 }
 requestAnimationFrame(frame);
 (function(){if(TESTE)return;try{const s=JSON.parse(localStorage.getItem('jux_encontro')||'null');
-  if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='serpente'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_serpente.ogg':'assets/musica/chefe_serpente.mp3';}if(s.prova==='ignarok'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_ignarok.ogg':'assets/musica/chefe_ignarok.mp3';}if(s.prova&&s.prova.startsWith('atq_')){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/vila/musica_ataque.ogg':'assets/vila/musica_ataque.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
+  if(s&&s.tipos&&s.tipos.length){localStorage.removeItem('jux_encontro');G.encontro=s;if(s.prova==='chefe_presa'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_presa.ogg':'assets/musica/chefe_presa.mp3';}if(s.prova==='serpente'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_serpente.ogg':'assets/musica/chefe_serpente.mp3';}if(s.prova==='ignarok'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_ignarok.ogg':'assets/musica/chefe_ignarok.mp3';}if(s.prova&&s.prova.startsWith('atq_')){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/vila/musica_ataque.ogg':'assets/vila/musica_ataque.mp3';}if(s.prova==='skoll'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_skoll.ogg':'assets/musica/chefe_skoll.mp3';}if(s.prova==='fenrir'){MUSICA.src=MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'assets/musica/chefe_fenrir.ogg':'assets/musica/chefe_fenrir.mp3';}// musica pedida pelo mapa (enc.musica: nome em assets/musica ou caminho, sem extensao) ou a propria da Mae-Salamandra
+    {const mu=s.musica||((s.prova==='chefe_mae_salamandra'||s.tipos[0]==='mae_salamandra')?'chefe_mae_salamandra':null);if(mu){const b=(mu.includes('/')?mu:'assets/musica/'+mu).replace(/\.(ogg|mp3)$/,'');MUSICA.src=b+(MUSICA.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');}}
+    setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
 <script src="eco_tartarok.js?v=1795265000"></script>

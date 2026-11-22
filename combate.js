@@ -100,6 +100,27 @@ const TIPOS_INIMIGO={
     atk:n=>18+1.4*(n-1),atkm:n=>16+1.3*(n-1),def:n=>8+.8*(n-1),defm:n=>9+.9*(n-1),
     golpes:[{nome:'Rasante',t:'f',poder:24,peso:3},{nome:'Sugar Energia',t:'m',el:'trevas',poder:14,peso:2,sugaMp:true}],
     drops:[['eter',.3]]},
+  // ---- Capitulo 3, Parte A2 (FICHA_CAP3_CINZAS.md): a trilha das cinzas. Um pouco acima dos bichos do trecho 3 do rio (nv ~17-19).
+  // Regras especiais no index.html (cinzasEspecial): a Salamandra se esconde no VAPOR depois de cuspir (esquiva mais no turno
+  // seguinte); a Fuligem tenta FUGIR; o Forjado e BLINDADO ate a primeira Quebra (o Bino enche a barra rapido e bate mais forte nele);
+  // a Mae-Salamandra chama as filhotes, solta a Onda de Brasa em todos e, abaixo da metade, a pele racha (lava: mais forte e rapida).
+  salamandra:{nome:'Salamandra de Cinza',el:'fogo',reacao:{gelo:1.8,agua:1.5,fogo:.3},fisico:1,magico:1,quebra:70,hp:.55,exp:.72,gil:.55,vel:1.25,imuneEst:['veneno'],
+    atk:n=>23+1.8*(n-1),atkm:n=>21+1.6*(n-1),def:n=>10+1*(n-1),defm:n=>11+1*(n-1),
+    golpes:[{nome:'Cuspe de Brasa',t:'m',el:'fogo',poder:30,peso:3,est:['queimadura',3,.5],vapor:true},{nome:'Mordida Quente',t:'f',el:'fogo',poder:26,peso:2}],
+    drops:[['brasa',.45],['remedio',.15],['pocao',.15]]},
+  fuligem:{nome:'Fuligem',el:'fogo',reacao:{vento:1.7,gelo:1.6,trevas:.4},fisico:1,magico:1,quebra:45,hp:.3,exp:.42,gil:.7,vel:1.5,
+    atk:n=>17+1.4*(n-1),atkm:n=>18+1.4*(n-1),def:n=>7+.7*(n-1),defm:n=>8+.8*(n-1),
+    golpes:[{nome:'Espirro de Fumaça',t:'m',el:'trevas',poder:18,peso:3,est:['cego',2,.55]},{nome:'Cabeçada Fofa',t:'f',poder:18,peso:2}],
+    drops:[['colirio',.25],['pocao',.2],['brasa',.15]]},
+  forjado:{nome:'Forjado',el:'trevas',reacao:{gelo:1.6,luz:1.3,trevas:.5},fisico:.6,magico:1,quebra:85,hp:1.05,exp:1.05,gil:.9,vel:.75,imuneEst:['veneno','sono','medo'],
+    atk:n=>29+2.1*(n-1),atkm:n=>12+1*(n-1),def:n=>22+1.7*(n-1),defm:n=>13+1.1*(n-1),
+    golpes:[{nome:'Martelada',t:'f',poder:46,peso:1,est:['atordoado',1,.25]}],
+    drops:[['minerio',.5],['hipocao',.12],['cristal',.08,1]]},
+  // mini-chefe opcional (ninho, fora do caminho). Comparar: Serpente (hp 2.2 x 4,5 no mapa) e Presa/Capitao/Bolotao (chefes.js)
+  mae_salamandra:{nome:'Mãe-Salamandra',el:'fogo',reacao:{gelo:1.8,agua:1.4,fogo:.2},fisico:1,magico:1,quebra:320,hp:1.6,exp:3.5,gil:2,vel:1,imuneEst:['sono','atordoado','veneno'],
+    atk:n=>30+2.1*(n-1),atkm:n=>30+2.1*(n-1),def:n=>17+1.4*(n-1),defm:n=>15+1.3*(n-1),
+    golpes:[{nome:'Mordida de Brasa',t:'f',el:'fogo',poder:44,peso:4,est:['queimadura',3,.4]},{nome:'Cuspe da Mãe',t:'m',el:'fogo',poder:34,peso:3,est:['queimadura',3,.5]}],
+    drops:[['brasa',1],['hipocao',.7],['eter',.5],['fenix',.3,1]]},
   // ---- Capitulo 3, Parte A: a Serpente do Degelo, chefe do rio (FICHA_CAP3_RIO.md). Fase 1: as placas de gelo resistem ao gelo;
   // abaixo da metade o gelo DERRETE na agua quente (serpente_f2): mais rapida e forte, mas PERDE a resistencia ao gelo (dano normal, nao fraqueza: ela e de gelo). Onda (todos) e a troca de fase ficam no index.html.
   serpente:{nome:'Serpente do Degelo',el:'agua',reacao:{gelo:.5,agua:.3,fogo:1.4,terra:1.4},fisico:1,magico:1,quebra:380,hp:2.2,exp:4,gil:2,vel:1.1,imuneEst:['sono','atordoado'],

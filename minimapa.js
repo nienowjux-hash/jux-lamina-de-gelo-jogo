@@ -13,6 +13,7 @@ const PASSOS_DEST = {carroca_tombada: [() => {const f = PISTAS_PRESA.filter(id =
 const COR_P = '#ffd84a', COR_S = '#5fe3ff';
 
 function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg,x,y,txt} ou null
+  if (k === '_cinzas') return typeof cinzasDestino === 'function' ? cinzasDestino() : null;
   if (k === '_historia') return hero.espada ? null : {reg: 'vila', x: 790, y: 140, txt: 'Suba ao altar e pegue a lâmina'};
   // 2026-11-20 (pedido): depois do Skoll a estrela ja aponta a TRILHA DO FENRIR (o circulo do Pico); as pegadas so mostram o caminho
   if (k === '_pegadas') return {reg: 'pico', x: 655, y: 280, txt: 'Siga as pegadas até o Pico do Uivo'};
@@ -47,7 +48,8 @@ function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg
 }
 // 2026-11-20 (pedido: 'o jogador as vezes e noob, sempre deixar marcada a direcao da principal'): depois de Olhos Roxos,
 // a estrela segue para as pegadas do Fenrir na Garganta e, aceita a prova, para o circulo de pedras no Pico do Uivo
-const missaoPrincipalAtual = () => {if (!hero.espada) return '_historia'; if (estadoMissao('olhos_roxos') !== 'feita') return 'olhos_roxos';
+const missaoPrincipalAtual = () => {if (REGIAO === 'cinzas' && typeof cinzasDestino === 'function') return cinzasDestino() ? '_cinzas' : null;   // trilha das cinzas (cinzas.js)
+  if (!hero.espada) return '_historia'; if (estadoMissao('olhos_roxos') !== 'feita') return 'olhos_roxos';
   const pf = typeof provaFenrirEstado === 'function' ? provaFenrirEstado() : null;
   if (pf === 'pegadas') return '_pegadas'; if (estadoMissao('prova_fenrir') === 'ativa') return 'prova_fenrir';
   // CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): depois do Fenrir, a estrela leva de volta para a vila e, na festa, ate a Vovo
@@ -159,7 +161,7 @@ function desenhaMapa(x, y, w, h) {
   // coluna da direita
   const lx = px + pw + 14, lw = 248; let ly = py + 4;
   // nome da regiao certo em cada mapa (2026-11-20: antes todo mapa fora da vila dizia 'Trilha dos Pinheiros')
-  const NR = {vila: ['Invernália', 'Vila do Norte'], trilha: ['Trilha dos Pinheiros', 'Lobos, Bolotas e Goblins'], garganta: ['Garganta Gelada', 'Goblins e acampamentos'], vale: ['Vale dos Lobos', 'Lobos e a Presa-Antiga'], caverna: ['Caverna de Gelo', 'Onde a Ordem prendeu o Skoll'], pico: ['Pico do Uivo', 'O círculo de pedras · sem lutas aleatórias']}[REGIAO] || ['', ''];
+  const NR = {vila: ['Invernália', 'Vila do Norte'], trilha: ['Trilha dos Pinheiros', 'Lobos, Bolotas e Goblins'], garganta: ['Garganta Gelada', 'Goblins e acampamentos'], vale: ['Vale dos Lobos', 'Lobos e a Presa-Antiga'], caverna: ['Caverna de Gelo', 'Onde a Ordem prendeu o Skoll'], pico: ['Pico do Uivo', 'O círculo de pedras · sem lutas aleatórias'], cinzas: ['Trilha das Cinzas', 'Salamandras, Fuligens e Forjados']}[REGIAO] || ['', ''];
   const nvR = typeof ENCONTROS !== 'undefined' && ENCONTROS[REGIAO] && !ENCONTROS[REGIAO].semLutas && ENCONTROS[REGIAO].nv;
   texto(NR[0], lx, ly + 16, 20, '#ffe27a'); ly += 22; texto(NR[1] + (nvR ? ' · Nv ' + nvR[0] + '–' + nvR[1] : ''), lx, ly + 12, 12, '#9fb3d9'); ly += 28;
   ctx.fillStyle = 'rgba(127,214,245,.35)'; ctx.fillRect(lx, ly, lw - 6, 1); ly += 14;

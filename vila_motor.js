@@ -150,7 +150,7 @@ const SOM_DESL=[0,1,2,3].map(i=>arq('assets/vila/deslize_'+i));let tDesl=0;   //
 const PASSOS=[0,1,2,3].map(i=>arq('assets/vila/passo_'+i)),PASSOS_NEVE=[0,1,2,3].map(i=>arq('assets/vila/passo_neve_'+i)),PASSOS_MAD=[0,1,2,3].map(i=>arq('assets/vila/passo_madeira_'+i));
 const naPonte=(x,y)=>(REGIAO==='trilha'&&x>722&&x<894&&y>340&&y<402)||(REGIAO==='garganta'&&x>588&&x<872&&y>370&&y<436);   // tabuas da ponte: som de madeira
 const som=(a,v)=>{try{const c=a.cloneNode();c.volume=clamp(v,0,1);c.play().catch(()=>{});}catch(e){}};
-const MUSICAS=[REGIAO==='pico'?['Vento do Pico (sem música)','vento_pico']:REGIAO==='caverna'?['Escuridão','musica_caverna']:REGIAO==='vale'?['Sussurro da Floresta','musica_trilha']:REGIAO==='garganta'?['Catedral na Floresta','musica_garganta']:REGIAO==='trilha'?['Sussurro da Floresta','musica_trilha']:['Manhã Gelada','musica_vila_2']];   // cada regiao tem a sua musica (a trilha NAO usa a da vila)   // musica unica da vila (as outras foram removidas a pedido); o botao so liga/desliga
+const MUSICAS=[REGIAO==='cinzas'?['Trilha das Cinzas','../musica/cinzas']:REGIAO==='pico'?['Vento do Pico (sem música)','vento_pico']:REGIAO==='caverna'?['Escuridão','musica_caverna']:REGIAO==='vale'?['Sussurro da Floresta','musica_trilha']:REGIAO==='garganta'?['Catedral na Floresta','musica_garganta']:REGIAO==='trilha'?['Sussurro da Floresta','musica_trilha']:['Manhã Gelada','musica_vila_2']];   // cada regiao tem a sua musica (a trilha NAO usa a da vila)   // musica unica da vila (as outras foram removidas a pedido); o botao so liga/desliga
 let musI=0;try{const v=localStorage.getItem('jux_musica_vila3');if(v!==null)musI=+v;}catch(e){}
 let MUS=null;function pegaMus(){if(MUS)MUS.pause();MUS=musI<MUSICAS.length?arq('assets/vila/'+MUSICAS[musI][1]):null;if(MUS){MUS.loop=true;MUS.volume=.42;}}pegaMus();
 const BIGORNA=[0,1,2].map(i=>arq('assets/vila/bigorna_'+i)),OINC=[0,1,2,3].map(i=>arq('assets/vila/porco_'+i)),GUINCHO=arq('assets/vila/porco_guincho');
@@ -1093,6 +1093,7 @@ const POSE_FALA={inicio:'surpreso',fogueira:'sentado',bacon:'rindo',tico:'rindo'
 // passagem entre regioes: a fala so aparece na PRIMEIRA vez (pedido do usuario); depois o Jux ja passa direto
 function passa(id,acao){JOGO.passou=JOGO.passou||{};if(JOGO.passou[id]){acao();return;}abreFala(id,()=>{JOGO.passou[id]=true;acao();});}
 function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));return;}
+  if(!fim&&typeof regiaoFala==='function'&&regiaoFala(id))return;   // falas e pontos da regiao (cinzas.js)
   if(emManha()&&!fim){const px=partProximo();
     if(id==='tico_altar'){ticoAltar();return;}
     if(id==='vovo'&&px==='adeus'){tocaFilme(CENAS_ADEUS,IMG_ADEUS,()=>{partMarca('adeus');aviso('O Tico subiu sozinho para o altar…','#c8d8f0');});return;}
@@ -1105,7 +1106,7 @@ function abreFala(id,fim){if(id.startsWith('tes_')){pegaTesouro(id.slice(4));ret
   if(emAtaque()&&!fim){if(id==='altar'){if(atqFeitas()>=3)altarIgnarok();else aviso('Primeiro, a vila. As Sombras ainda estão lá embaixo.','#c8d8f0');return;}
     if((id==='portao'||id==='entrada_trilha')&&!(atqFeitas()>=3&&cap1Trava()))id='atq_portao';else if(ATQ_LUTAS.some(l=>l.id===id)){const lid=id;fim=()=>atqLuta(lid);}}
   if(!fim&&prepAbre(id))return;   // preparativos do festival (FICHA_PREPARATIVOS.md)
-  if(id.startsWith('chefe_')&&!fim){const c=MINICHEFES.find(q=>'chefe_'+q.id===id);if(c&&!chefeFeito(c.id)){fala={linhas:c.pre,i:0,letras:0,fim:()=>{UI.escolha={id:'prova',prova:id,ops:['Lutar','Ainda não'],sel:0};som(SOM.ui_vez,.5);}};}return;}
+  if(id.startsWith('chefe_')&&!fim){const c=MINICHEFES.find(q=>'chefe_'+q.id===id);if(c&&!chefeFeito(c.id)){fala={linhas:c.pre,i:0,letras:0,fim:()=>{UI.escolha={id:'prova',prova:id,ops:c.ops||['Lutar','Ainda não'],sel:0};som(SOM.ui_vez,.5);}};}return;}
   if(id==='saida_garganta'&&!fim){if((JOGO.provas||{}).acolito!=='feita'&&!JOGO.gargantaVista){abreFala('garganta_fechada');return;}   // trava: a Garganta abre depois do Acolito
     passa('saida_garganta',()=>{JOGO.garganta={x:150,y:650};vaiPara('garganta.html');});return;}
   if(id==='entrada_vale'&&!fim){passa('entrada_vale',()=>{JOGO.vale={x:735,y:985};vaiPara('vale.html');});return;}
@@ -1182,13 +1183,17 @@ const ENCONTROS={
   pico:{semLutas:true,nv:[9,11],volta:'pico.html',seguros:[[650,1000,120],[655,280,200]],
     grupos:[[['lobo','lobo'],4],[['lobo','lobo','lobo'],3],[['acolito','lobo'],2],[['acolito','acolito'],1]]},
   // VALE DOS LOBOS (VALE_DOS_LOBOS.md): lugar de upar antes do Skoll. Lutas mais frequentes (passos), mais lobos, Lobo Alfa 20% (elite) e EXP +30% (index.html win)
+  // TRILHA DAS CINZAS (Cap. 3, Parte A2, FICHA_CAP3_CINZAS.md): salamandras e fuligens (em dupla); os Forjados so depois da
+  // cutscene das carrocas (JOGO.cap3.carrocas). Seguro: o cais e o acampamento do Tiberio.
+  cinzas:{nv:[16,18],volta:'cinzas.html',seguros:[[686,960,110],[380,630,120],[776,250,80]],
+    grupos:[[['salamandra'],4],[['fuligem','fuligem'],4],[['salamandra','salamandra'],2],[['salamandra','fuligem','fuligem'],2],[['forjado'],3],[['forjado','salamandra'],2],[['forjado','fuligem','fuligem'],1]]},
   vale:{nv:[5,7],volta:'vale.html',passos:[60,120],alfa:.2,seguros:[[735,1000,120]],
     grupos:[[['lobo','lobo'],5],[['lobo','lobo','lobo'],4],[['lobo','goblin'],2],[['lobo','lobo','bolota'],2],[['goblin','goblin','lobo'],2],[['lobo'],1]]},
 };
 const ENC=ENCONTROS[REGIAO]||null;let encDist=0,encPassos=0,transicao=0;const sorteiaLimiar=()=>ENC&&ENC.passos?ENC.passos[0]+Math.floor(Math.random()*(ENC.passos[1]-ENC.passos[0]+1)):110+Math.floor(Math.random()*131);let encAlvo=sorteiaLimiar()+30;   // o primeiro vem um pouco mais tarde (da tempo de explorar)
 const lobosPendentes=()=>REGIAO!=='vila'&&typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='ativa'&&((JOGO.cap1||{}).lobos||0)<3;
 const acolitoLiberado=()=>['vencida','feita'].includes((JOGO.provas||{}).acolito);   // o Acolito so aparece nas lutas aleatorias DEPOIS de vencido no santuario
-function sorteiaGrupo(){const gs=lobosPendentes()?[[['lobo'],3],[['lobo','lobo'],3],[['lobo','lobo','goblin'],1]]:ENC.grupos.filter(g=>acolitoLiberado()||!g[0].includes('acolito'));let r=Math.random()*gs.reduce((s,g)=>s+g[1],0);for(const g of gs){r-=g[1];if(r<=0)return g[0];}return gs[0][0];}
+function sorteiaGrupo(){const gs=lobosPendentes()?[[['lobo'],3],[['lobo','lobo'],3],[['lobo','lobo','goblin'],1]]:ENC.grupos.filter(g=>(acolitoLiberado()||!g[0].includes('acolito'))&&(!g[0].includes('forjado')||!!(JOGO.cap3&&JOGO.cap3.carrocas)));let r=Math.random()*gs.reduce((s,g)=>s+g[1],0);for(const g of gs){r-=g[1];if(r<=0)return g[0];}return gs[0][0];}
 function passoEncontro(){if(ENC.semLutas)return;
   if((JOGO.repelente||0)>0){JOGO.repelente--;if(!JOGO.repelente)aviso('O Repelente acabou.','#c8b0ff');return;}
   if(ENC.seguros.some(([x,y,r])=>Math.hypot(hero.x-x,hero.y-y)<r))return;
@@ -1207,7 +1212,9 @@ const PROVAS={fenrir:{tipos:['fenrir_prova'],nv:12},skoll:{tipos:['skoll'],nv:9}
   atq_3:{tipos:['sombra_ingrid','acolito','acolito'],nv:14,chefe:{nome:'Sombra da Ingrid',hp:4.5,forca:1.7,exp:2.2}}};
 // a folha da Sombra do Borin ainda nao chegou como arquivo (ref/inimigos/sombra_borin.png): ate la a luta 2 espera
 const BORIN_FOLHA=true;   // lutas fixas: o nivel NAO acompanha o heroi
-for(const c of MINICHEFES)PROVAS['chefe_'+c.id]={tipos:[c.tipo],nv:c.nv,chefe:{nome:c.nome,hp:c.hp,forca:c.forca,exp:c.exp}};
+for(const c of MINICHEFES)PROVAS['chefe_'+c.id]={tipos:[c.tipo],nv:c.nv,chefe:{nome:c.nome,hp:c.hp,forca:c.forca,exp:c.exp},extra:c.fundo||c.musica?{fundo:c.fundo,musica:c.musica}:null};
+// lutas fixas da trilha das cinzas (cinzas.js): os Forjados depois da cutscene das carrocas
+PROVAS.forjados={tipos:['forjado','forjado'],nv:18,extra:{fundo:'cinzas'}};
 // luta da vila em ataque (as folhas das Sombras ainda estao chegando: por enquanto so avisa e nao conta)
 function atqLuta(id){if(id==='atq_2'&&!BORIN_FOLHA){aviso('Esta luta chega quando a folha da Sombra do Borin estiver pronta.','#ffe27a');return;}
   try{sessionStorage.setItem('jux_atq_luta',id);}catch(e){}iniciaProva(id);}
@@ -1219,7 +1226,7 @@ function iniciaProva(nome,semPerguntar){if(transicao)return;
     hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
     UI.escolha={id:'cura_luta',prova:nome,titulo:['Vocês estão feridos.','Curar antes de lutar?',...linhas],ops:['Curar com poções','Abrir a bolsa','Lutar assim'],sel:0};som(SOM.ui_vez,.5);return;}transicao=.001;hero.alvo=null;hero.pontoAlvo=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
-  try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+((window.__semSalvar||window.__modoTeste)&&['#ataque','#altar','#invasao'].includes(location.hash.split('?')[0])?location.hash.split('?')[0]:''),prova:nome,chefe:PROVAS[nome].chefe||null}));}catch(e){}
+  try{localStorage.setItem('jux_encontro',JSON.stringify({regiao:REGIAO,tipos:PROVAS[nome].tipos,nv:PROVAS[nome].nv,volta:REGIAO+'.html'+((window.__semSalvar||window.__modoTeste)&&['#ataque','#altar','#invasao'].includes(location.hash.split('?')[0])?location.hash.split('?')[0]:''),prova:nome,chefe:PROVAS[nome].chefe||null,...(PROVAS[nome].extra||{})}));}catch(e){}
   salvaVila();setTimeout(()=>{paraAudio();location.href=jp('batalha.html');},1100);}
 function iniciaEncontro(){if(transicao)return;transicao=.001;hero.alvo=null;hero.pontoAlvo=null;UI.menu=false;UI.loja=null;UI.escolha=null;for(const k in teclas)teclas[k]=false;
   som(SOM.whoosh,.8);if(MUS)MUS.pause();
@@ -1627,7 +1634,8 @@ function abDesenha(){
   if(c.fx==='escuro'){ctx.fillStyle=`rgba(120,0,0,${.06+.05*Math.sin(t*2.3)})`;ctx.fillRect(0,0,W,H);}
   if(ab.i===CENAS.length-1&&c.dur-ab.t<1.2){ctx.fillStyle=`rgba(0,0,0,${lis(Math.min(1,1-(c.dur-ab.t)/1.2))})`;ctx.fillRect(0,0,W,H);}
   if(c.flash&&ab.t<c.flash+.5){ctx.fillStyle=`rgba(255,255,255,${Math.max(0,1-(ab.t-c.flash)/.5)})`;ctx.fillRect(0,0,W,H);}
-  if(c.fx!=='escuro')for(const f of ab.neve){ctx.fillStyle='rgba(235,250,255,.75)';ctx.fillRect(f.x,f.y,f.s,f.s);}
+  if(typeof c.extra==='function')c.extra(ab.t,ab.i);   // efeitos desenhados por cima da imagem (cinzas.js: brasas, cinza, a flecha de vento)
+  if(c.fx!=='escuro'&&c.fx!=='cinzas')for(const f of ab.neve){ctx.fillStyle='rgba(235,250,255,.75)';ctx.fillRect(f.x,f.y,f.s,f.s);}
   // faixas de cinema
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,34);ctx.fillRect(0,H-34,W,34);
   // legenda: a fala atual digitando
@@ -1945,7 +1953,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna]]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -1992,7 +2000,7 @@ function desenha(){
   desenhaBaloes();if(!ab.on&&typeof marcasNoMundo==='function')marcasNoMundo();
   // neve caindo em camadas (perto cai mais rapido e e maior)
   for(const f of flocos){f.y+=f.v*f.z/60;f.x+=Math.sin(t+f.o)*.25*f.z-.15-vento*2.4*f.z;if(f.y>H){f.y=-4;f.x=rnd(0,W);}if(f.x<0)f.x=W;
-    ctx.fillStyle=`rgba(240,250,255,${.45+.4*f.z})`;ctx.fillRect(f.x,f.y,f.s*f.z,f.s*f.z);}
+    ctx.fillStyle=REGIAO==='cinzas'?`rgba(150,140,140,${.3+.3*f.z})`:`rgba(240,250,255,${.45+.4*f.z})`;ctx.fillRect(f.x,f.y,f.s*f.z,f.s*f.z);}   // trilha das cinzas: cinza caindo
   // vinheta leve
   const vg=ctx.createRadialGradient(W/2,H/2,H*.45,W/2,H/2,H*.95);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,4,16,.32)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   if(perto&&!fala&&!uiAberto())texto(nomePonto(perto.id)+'  ·  ENTER / toque para examinar',W/2,H-24,16,'#e8f6ff','center');
@@ -2114,6 +2122,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
     else if(REGIAO==='caverna'&&(JOGO.provas||{}).skoll==='vencida')setTimeout(()=>abreFala('caverna'),900);   // voltou do chefe (camara do Alfa): cena do Halvard
     else if(REGIAO==='caverna'&&!JOGO.cavernaVista){JOGO.cavernaVista=true;JOGO.auroraEscuro=true;setTimeout(()=>abreFala('caverna_chega'),600);}
     else if(provaFenrirEstado()==='vencida')setTimeout(()=>abreFala('prova_fenrir'),900);   // voltou da luta: cena da lealdade
+    if(typeof regiaoChega==='function')regiaoChega();   // a regiao decide o que acontece ao chegar (cinzas.js)
     // quem ja tinha passado do acampamento goblin antes desta cena existir (2026-11-19): ve a explicacao da Ordem uma vez, fora da vila
     if(!NA_VILA&&!JOGO.ordemSabe&&JOGO.cap1&&JOGO.cap1.acamp)setTimeout(()=>{if(!fala&&!ab.on&&!uiAberto())contaOrdem();},2600);
     salvaVila();}
@@ -2142,4 +2151,5 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
   abPasso(dt);passo(dt);desenha();
   if(ab.fim>0){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=`rgba(0,0,0,${ab.fim})`;ctx.fillRect(0,0,W,H);}
   requestAnimationFrame(quadro);}
+if(typeof regiaoInit==='function')regiaoInit();   // a regiao completa NOMES, FALAS, retratos, sons e filmes (cinzas.js)
 requestAnimationFrame(quadro);

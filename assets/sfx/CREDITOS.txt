@@ -59,3 +59,39 @@ tartarok_folhas: sintetizado do zero com ffmpeg (vento + folhas), sem material d
 tartarok_raizes: sintetizado do zero com ffmpeg (rangido e estalos de madeira), sem material de terceiros
 tartarok_cura: sinos sintetizados (ffmpeg) + magia_brilho ("RPG Sound Pack" - artisticdude, CC0) mais grave
 tartarok_ilha: bino_urso1 ("Bear Growls", CC0) muito grave + bino_rumble e bino_pedras (rubberduck / themightyglider, CC0) + rugido, ronco e agua caindo sintetizados (ffmpeg)
+
+Sons da trilha das cinzas (Cap. 3, Parte A2) - 2026-11-22
+Feitos com ffmpeg em tools/cria_sons_cinzas.py: sintese do zero (aevalsrc/anoisesrc) + trechos dos pacotes abaixo, todos CC0 (dominio publico, credito opcional), baixados do OpenGameArt.org.
+Fontes usadas:
+  [C1] "80 CC0 creature SFX" - rubberduck - CC0 - https://opengameart.org/content/80-cc0-creature-sfx
+  [C2] "80 CC0 creture SFX #2" - rubberduck - CC0 - https://opengameart.org/content/80-cc0-creture-sfx-2
+  [MW] "100 CC0 metal and wood SFX" - rubberduck - CC0 - https://opengameart.org/content/100-cc0-metal-and-wood-sfx
+  [SX] "100 CC0 SFX" - rubberduck - CC0 - https://opengameart.org/content/100-cc0-sfx
+  [BG] "25 CC0 bang / firework SFX" - rubberduck - CC0 - https://opengameart.org/content/25-cc0-bang-firework-sfx
+  [VP] "Steam release sounds" - bart - CC0 - https://opengameart.org/content/steam-release-sounds
+  [FB] "Fireball" (jm-fx-fireball-01, de Julien Matthey) - enviado por diligentcircle - CC0 - https://opengameart.org/content/fireball-1
+  [CR] "Fire Crackling" (fire-1) - AntumDeluge - CC0 - https://opengameart.org/content/fire-crackling
+  [SN] "Sneeze" - zarokima - CC0 - https://opengameart.org/content/sneeze
+Salamandra de Cinza:
+  salamandra_sibilo: chiado sintetizado (ffmpeg) + roar_03 [C1] mais grave + ronco sintetizado
+  salamandra_cuspe: inspirada sintetizada (ffmpeg) + fireball [FB] um pouco mais grave + attack_03 [C2] grave + baque sintetizado
+  salamandra_brasa: bang_03 [BG] mais grave + crepitar fire-1 [CR] + baque e fagulhas sintetizados
+  salamandra_vapor: steam hisses #2 [VP] filtrado + ronco e chiado sintetizados
+  salamandra_dor: hurt_02 [C1] mais grave e rouco + chiado sintetizado
+Fuligem:
+  fuligem_risinho: cute_03, cute_09 e nose [C1] bem mais agudos, um atras do outro
+  fuligem_espirro: sneeze [SN] mais agudo e rapido + "puf" de fumaca e fagulhas sintetizados
+  fuligem_foge: passinhos sintetizados (ffmpeg) + cute_07 [C1] agudo + "puf" sintetizado
+  fuligem_dor: cute_07 [C1] agudo + "puf" abafado sintetizado
+Forjado:
+  forjado_ranger: metal_open_01 [MW] mais grave + rangido de metal e zumbido sombrio (com phaser) sintetizados, eco
+  forjado_ergue: metal_close_01 [MW] bem mais grave + rangido subindo e zumbido sintetizados
+  forjado_martelo: baque grave sintetizado + hammer_01 [MW], metal_12 [SX], bang_05 [BG] e stomp_01 [C2], todos bem mais graves, eco
+  forjado_dor: metal_hit_02 e metal_sheet_03 [MW] mais graves + zumbido falhando sintetizado
+  forjado_racha: metal_sheet_06 e metal_falling_01 [MW] + glass_02 [SX] grave + energia escapando e estilhacos sintetizados
+Mae-Salamandra:
+  mae_rugido: roar_05 [C2] e monster_04 [C1] bem mais graves + rosnado e sopro de fogo sintetizados, eco de cratera
+  mae_acende: fogo crescendo sintetizado (ffmpeg) + fireball [FB] bem mais lento + crepitar fire-1 [CR]
+  mae_onda: fireball [FB] na metade da velocidade + cannon_02 [BG] e roar_04 [C2] graves + rugido de fogo sintetizado + fire-1 [CR]
+  mae_lava: estalos e bolhas de lava sintetizados (ffmpeg) + bang_07 [BG] e wood_cracking_02 [MW] bem mais graves + ronco
+  mae_dor: scream_01 [C1] e roar_06 [C2] bem mais graves, com eco

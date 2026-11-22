@@ -44,6 +44,18 @@ const MINICHEFES = [
      ['✦','O lobo recua para o escuro e empurra um baú pesado para fora da toca. Junto, um dente enorme rola na neve.'],
      ['Bino','…Ele te deu um dente.'], ['Aurora','É respeito, Portador. Entre lobos, não existe presente maior.']],
    rec:{exp:.5, gil:90, item:'presa_anciao', n:1, txt:'Presa do Ancião (acessório: ATQ +8, Crítico +4%), o Baú do Capitão, 90 gil e muita EXP'}},
+  // TRILHA DAS CINZAS (Cap. 3, Parte A2, FICHA_CAP3_CINZAS.md): a caverna de lava em cima a esquerda, fora do caminho. Sem pistas:
+  // chegar na boca da caverna ja pergunta se entra. Luta com fundo 'ninho' e musica propria (vao no jux_encontro: fundo, musica).
+  {id:'mae_salamandra', regiao:'cinzas', nome:'Mãe-Salamandra', tipo:'mae_salamandra', nv:20, hp:5, forca:1.35, exp:7, x:244, y:232, cor:'#ff8a4a',
+   fundo:'ninho', musica:'chefe_mae_salamandra', ops:['Entrar','Ainda não'], desenha:c => {if (typeof cinzasCaverna === 'function') cinzasCaverna(c);},
+   pre:[['✦','Um bafo quente sai da caverna. O chão está cheio de marcas de garra.'],
+     ['Bino','…É grande.'],
+     ['✦','Algo grande respira lá dentro… Entrar? (luta opcional e difícil · nível recomendado: 20)']],
+   pos:[['✦','A Mãe-Salamandra recua para o fundo do ninho, em cima dos ovos, e fica quieta.'],
+     ['Jux','Ela só estava protegendo os filhotes. A gente não volta para incomodar.'],
+     ['Bino','…Ela deixou isso.'],
+     ['✦','No chão, uma escama enorme, ainda quente, brilhando como brasa.']],
+   rec:{exp:.5, gil:300, item:'coracao_brasa', n:1, txt:'Coração de Brasa (acessório: HP +60, ATQ +6, DEF.M +6), 300 gil e muita EXP'}},
 ];
 const chefesRegiao = r => MINICHEFES.filter(c => c.regiao === r);
 const chefeFeito = id => !!((JOGO.chefes || {})[id]);
@@ -56,6 +68,7 @@ function desenhaChefes() {
     if (c.id === 'capitao') {desenhaCapitaoMapa(c); continue;}
     if (c.id === 'bolotao' && chefeFeito(c.id)) {desenhaFlocoMapa(c); continue;}
     if (c.id === 'presa') {desenhaOlhosToca(c); continue;}
+    if (c.desenha) {c.desenha(c); continue;}   // desenho proprio (a caverna de lava das cinzas)
     if (chefeFeito(c.id) || (c.req && !c.req())) continue;
     const p = .6 + .4 * Math.sin(t * 3), d = Math.hypot(hero.x - c.x, hero.y - c.y);
     ctx.save(); ctx.globalCompositeOperation = 'lighter';

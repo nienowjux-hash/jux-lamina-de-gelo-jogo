@@ -123,3 +123,6 @@ BICHOS DAS AGUAS QUENTES (Capitulo 3, trecho 3) - sons em assets/sfx/novos/, tod
 - morcego_guincho: "Cartoon - Bat / Mouse Squeak", Breviceps - https://freesound.org/s/445958/
 - morcego_suga: "Energy Drain", qubodup - https://freesound.org/s/742835/
 chefe_serpente.ogg/.mp3 — "Boss Battle #2 (Symphonic Metal)" (loop), nene (OpenGameArt.org), CC0 — https://opengameart.org/content/boss-battle-2-symphonic-metal. Luta contra a Serpente do Degelo (rio).
+
+cinzas.ogg/.mp3 — "Krakatoa", Kistol (OpenGameArt.org), CC0 (crédito não obrigatório) — https://opengameart.org/content/krakatoa. Música de exploração da Trilha das Cinzas (estrada vulcânica, Cap. 3, Parte A2); faixa em loop contínuo (72 s).
+chefe_mae_salamandra.ogg/.mp3 — "Heavy Boss Battle 2" (bpm 110, loop), MintoDog (OpenGameArt.org), CC0 — https://opengameart.org/content/heavy-boss-battle-2. Luta contra a Mãe-Salamandra (mini-chefe da Trilha das Cinzas).

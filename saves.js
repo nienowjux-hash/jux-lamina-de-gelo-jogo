@@ -8,9 +8,11 @@
    Usa o menu da vila (vila_menu.js): UI, painel, linhaSel, texto, aviso, som/SOM. Carregar depois do vila_menu.js. */
 'use strict';
 const SLOTS_SAVE = [1, 2, 3];
-const NOME_LUGAR = { vila: 'Invernália', trilha: 'A trilha', vale: 'O Vale dos Lobos', garganta: 'A Garganta', pico: 'O Pico do Uivo', caverna: 'A caverna', rio: 'O rio' };
+const NOME_LUGAR = { vila: 'Invernália', trilha: 'A trilha', vale: 'O Vale dos Lobos', garganta: 'A Garganta', pico: 'O Pico do Uivo', caverna: 'A caverna', rio: 'O rio', cinzas: 'A trilha das cinzas' };
 const lerJ = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 function capituloDe(J) {
+  if (J.cap3 && J.cap3.parteA2) return 'Cap. 3 — O portão de Brasária';
+  if (J.cap3 && J.local === 'cinzas') return 'Cap. 3 — A trilha das cinzas';
   if (J.cap3) return J.cap3.parteA ? 'Cap. 3 — O Porto de Cinzas' : J.cap3.fase === 'rio' ? 'Cap. 3 — O rio' : 'Cap. 3';
   if (J.cap2) return J.cap2.fase === 'fim' ? 'Fim do Cap. 2' : 'Cap. 2 — ' + ({ volta: 'A volta', preparo: 'O festival', noite: 'O festival', ataque: 'A invasão', manha: 'A manhã seguinte' }[J.cap2.fase] || 'A vila');
   return 'Cap. 1';
@@ -33,6 +35,10 @@ const C2 = J => (J.cap2 || {}).fase, PV = J => J.provas || {};
 const semEcoGuardiao = J => { const E = J.ecos; if (!E) return; E.tem = (E.tem || []).filter(x => x !== 'guardiao'); if (E.equip === 'guardiao') E.equip = null;
   for (const q in (E.grupo || {})) if (E.grupo[q].equip === 'guardiao') E.grupo[q].equip = null; };
 const noRio = (J, tr, x, y) => { J.cap3 = { fase: 'rio', barco: true }; J.rio = { trecho: tr, x, y }; J.local = 'rio'; delete (J.provas || {}).serpente; semEcoGuardiao(J); delete J.vida; };
+// trilha das cinzas (Cap. 3, Parte A2): o time a pe, depois do Porto de Cinzas (o rio inteiro ja feito)
+const naTrilhaCinzas = (J, x, y) => { J.cap3 = Object.assign(J.cap3 || {}, { fase: 'cinzas', barco: true, serpVista: true, tartarok: true, parteA: true }); J.provas = J.provas || {}; J.provas.serpente = 'feita';
+  J.ecos = J.ecos || { equip: null, tem: [], pe: {}, equipadas: [] }; if (!J.ecos.tem.includes('guardiao')) J.ecos.tem.push('guardiao');
+  for (const k of ['carrocas', 'forjados', 'parteA2', 'chegou']) delete J.cap3[k]; delete J.provas.forjados; J.cap3.chegou = true; J.local = 'cinzas'; J.cinzas = { x, y }; delete J.vida; };
 const PONTOS = [
   { id: 'inicio', cap: 1, nome: 'O começo (o chiqueiro)', ok: () => true, monta: null, novo: true },
   { id: 'espada', cap: 1, nome: 'A espada Aurora', ok: J => !!(J.vila && J.vila.espada) },
@@ -57,6 +63,11 @@ const PONTOS = [
   { id: 'porto', cap: 3, nome: 'A Tartarok e o Porto de Cinzas', ok: J => !!(J.cap3 && J.cap3.tartarok),
     monta: J => { noRio(J, 2, 725, 700); J.provas = J.provas || {}; J.provas.serpente = 'vencida'; J.cap3.serpVista = true; J.cap3.tartarok = true;
       J.ecos = J.ecos || { equip: null, tem: [], pe: {}, equipadas: [] }; if (!J.ecos.tem.includes('guardiao')) J.ecos.tem.push('guardiao'); } },
+  { id: 'cinzas_cais', cap: 3, nome: 'Trilha das cinzas: o cais', ok: J => !!(J.cap3 && J.cap3.parteA && (J.cinzas || J.local === 'cinzas')), monta: J => naTrilhaCinzas(J, 686, 985) },
+  { id: 'cinzas_carrocas', cap: 3, nome: 'Depois das carroças', ok: J => !!(J.cap3 && J.cap3.forjados),
+    monta: J => { naTrilhaCinzas(J, 482, 470); J.cap3.carrocas = true; J.cap3.forjados = true; J.provas.forjados = 'feita'; } },
+  { id: 'cinzas_portao', cap: 3, nome: 'O portão de Brasária', ok: J => !!(J.cap3 && J.cap3.parteA2),
+    monta: J => { naTrilhaCinzas(J, 776, 262); Object.assign(J.cap3, { carrocas: true, forjados: true, parteA2: true, fase: 'brasaria' }); J.provas.forjados = 'feita'; } },
 ];
 const fotoDe = id => lerJ('jux_foto_' + id);
 // tira a foto dos pontos alcancados agora (chamado a cada salvaJogo): so a PRIMEIRA vez de cada ponto
@@ -98,8 +109,8 @@ function desenhaSaves() { const S = UI.saves; if (!S) return; S.zonas = [];
   texto(tit, x + 24, y + 34, 22, '#ffe27a');
   if (S.modo === 'guardar') texto('Você vai para: ' + S.ponto.nome + '. Escolha um espaço para guardar o jogo de agora (ou não guardar).', x + 24, y + 58, 13, '#c8d8f0');
   const L = listaSaves();
-  if (S.modo === 'caps') {   // duas colunas: Cap. 1 a esquerda; Cap. 2 e 3 a direita
-    const col = p => p.cap === 1 ? 0 : 1, lin = [0, 0], lh = 37;
+  if (S.modo === 'caps') {   // duas colunas: Cap. 1 e 2 a esquerda; Cap. 3 a direita (2026-11-22: com a trilha das cinzas o Cap. 3 nao cabia junto do 2)
+    const col = p => p.cap <= 2 ? 0 : 1, lin = [0, 0], lh = 34;
     PONTOS.forEach((p, i) => { const c = col(p), cx = x + 24 + c * (w / 2), yy = y + 62 + lin[c] * lh; lin[c]++;
       const st = estadoPonto(p), on = S.sel === i, cw = w / 2 - 40;
       if (i === 0 || PONTOS[i - 1].cap !== p.cap) { }
