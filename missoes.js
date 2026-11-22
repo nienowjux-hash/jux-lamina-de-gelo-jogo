@@ -130,6 +130,40 @@ MISSOES.carroca_tombada = {nome:'A carroça tombada', quem:'capitao', quemNome:'
     ['Capitão','O MEU BAÚ! Ainda tem o garfo! Ainda tem o NABO!', 3],
     ['Capitão','Toma, toma: gil e Éter. Comércio Honesto sempre paga as dívidas!', 1],
     ['Jux','Quase sempre.'], ['Capitão','…Quase sempre.', 0]]};
+// BRASÁRIA (Cap. 3, Parte B, FICHA_CAP3_BRASARIA.md seção 5): as 3 missões secundárias do MURAL DE AVISOS da praça.
+// mural:true = só começam no mural (brasaria.js); o morador não oferece, só recebe a entrega. rec.exp: EXP para o time (ganhaExpMapa)
+const brasEst=()=>((JOGO.cap3||{}).bras)||{};
+MISSOES.gato_pipo={nome:'O gato no telhado',quem:'pipo',quemNome:'Pipo',mural:true,
+  desc:'O Brasinha, o gato do Pipo, subiu na chaminé de uma forja e não desce. Procure o "!" em cima dos telhados da rua das forjas, suba pelos caixotes e traga o gato.',
+  pede:{passos:true},rec:{gil:150,exp:900,itens:{eter:2}},
+  passos:[{txt:'Achar o gato no telhado das forjas',ok:()=>!!brasEst().gato},{txt:'Devolver o gato ao Pipo',ok:()=>estadoMissao('gato_pipo')==='feita'}],
+  oferta:[['✦','"PROCURA-SE GATO. Preto, pequeno, chamado Brasinha. Subiu na chaminé da forja e não desce. Recompensa: tudo o que eu tenho. Assinado: Pipo."'],
+    ['Jux','"Tudo o que eu tenho." Esse menino negocia mal.'],['Bino','…Gato.']],
+  lembra:[['Pipo','Achou o Brasinha? Ele é preto, cheira a carvão e mia em tom de pergunta!']],
+  entrega:[['Jux','Um gato preto, levemente chamuscado, pedindo comida. Confere?'],['Pipo','BRASINHA! Você voltou! Você está todo sujo! Eu também!'],
+    ['Pipo','Moço de óculos, você é o melhor! Toma: o gil do meu cofrinho e dois Éteres que a Dona Sálvia me deu.'],['Jux','Informante, aprendiz e criador de gatos. Você vai longe.']]};
+MISSOES.carvao_tiberio={nome:'Carvão do Tibério',quem:'tiberio',quemNome:'Tibério',mural:true,
+  desc:'A Úrsula separou um saco de carvão para o Tibério, o velho carvoeiro do acampamento da trilha das cinzas. Saia pelo portão sul e leve até ele. Ele vai reclamar. Mas paga.',
+  pede:{item:'saco_carvao',n:1},rec:{gil:200,exp:1100,itens:{hipocao:2}},
+  oferta:[['✦','"ENTREGA: um saco de carvão para o Tibério, lá embaixo na trilha. Quem levar ganha o que o velho pagar. — Úrsula"'],
+    ['✦','Embaixo do mural tem um saco de carvão com um bilhete: "ESTE". Você pega o saco.'],['Jux','Carvão para o carvoeiro. A economia daqui é estranha.']],
+  lembra:[['Tibério','Hmpf. Que foi agora?']],
+  entrega:[['Jux','Encomenda de Brasária. Um saco de carvão, da Úrsula.'],['Tibério','Carvão? Para MIM? Eu VENDO carvão!'],['Tibério','…Vendia. O meu acabou faz um mês. Hmpf.'],
+    ['Bino','…Pesado.'],['Tibério','Toma. Gil e duas Hi-Poções. E não contem para ninguém que o carvoeiro comprou carvão.']]};
+MISSOES.escamas_salvia={nome:'Escamas de cinza',quem:'salvia',quemNome:'Dona Sálvia',mural:true,
+  desc:'A Dona Sálvia quer 3 Escamas de Salamandra para um unguento especial. Elas caem das Salamandras de Cinza, na trilha das cinzas (saindo pelo portão sul).',
+  pede:{item:'escama_salamandra',n:3},rec:{gil:250,exp:1300,itens:{unguento_frio:3,remedio:2}},
+  oferta:[['✦','"PRECISA-SE: 3 escamas de salamandra, das cinzentas. Bem cheirosas. Pago bem. — Dona Sálvia, da botica."'],
+    ['Jux','"Bem cheirosas." Salamandra cheira a quê?'],['Bino','…Queimado.']],
+  lembra:[['Dona Sálvia','As escamas, meu bem? Três! Das cinzentas, que cheiram a fumaça e a briga.']],
+  entrega:[['Jux','Três escamas de salamandra. Ainda quentes.'],['Dona Sálvia','Ai, que cheiro bom de encrenca! *snif snif*'],
+    ['Dona Sálvia','Com isso eu faço o meu Unguento especial. Toma uns prontos e uns Remédios. E gil, que velha não leva gil para o túmulo.'],['Jux','A senhora vai viver mais que todos nós.'],['Dona Sálvia','Hihi. É o plano.']]};
+// para onde a seta aponta numa missão do mural (o morador fica em Brasária; o Tibério e as salamandras, na trilha das cinzas)
+function destinoMural(k){const st=estadoMissao(k);if(st!=='ativa')return null;const pr=missaoPronta(k);
+  if(k==='gato_pipo')return pr?{reg:'brasaria',x:575,y:432,txt:'Devolva o gato ao Pipo'}:{reg:'brasaria',x:472,y:330,txt:'Ache o gato no telhado das forjas'};
+  if(k==='carvao_tiberio')return {reg:'cinzas',x:434,y:618,txt:'Leve o carvão ao Tibério (trilha das cinzas)'};
+  if(k==='escamas_salvia')return pr?{reg:'brasaria',x:372,y:814,txt:'Volte à Dona Sálvia (botica)'}:{reg:'cinzas',x:1000,y:620,area:true,txt:'Escamas: '+progressoMissao(k)+'/3 (Salamandras, na trilha)'};
+  return null;}
 const ORDEM_MISSOES=Object.keys(MISSOES);
 // TRAVA DE CAPITULO (FICHA_TRAVA_CAPITULO.md, aprovada 2026-11-20): o capitulo seguinte so comeca com TODAS as missoes deste feitas.
 // Os mini-chefes estao dentro delas (Bolotao no amigo de neve, Capitao no machado, Presa-Antiga na carroca).
@@ -161,12 +195,12 @@ const missaoPronta=id=>estadoMissao(id)==='ativa'&&progressoMissao(id)>=alvoMiss
 // Tico -> Ingrid -> Vovo (ervas) -> Borin -> Oskar. req.apos = missao que precisa estar FEITA antes.
 const missaoLiberada=id=>{const r=MISSOES[id].req;if(!r)return true;if(r.espada&&!hero.espada)return false;if(r.apos&&estadoMissao(r.apos)!=='feita')return false;return true;};
 // a missão "da vez" de um morador (oferecer, lembrar ou entregar)
-function missaoDe(npc){const c=ORDEM_MISSOES.filter(k=>MISSOES[k].quem===npc&&estadoMissao(k)!=='feita'&&missaoLiberada(k));
+function missaoDe(npc){const c=ORDEM_MISSOES.filter(k=>MISSOES[k].quem===npc&&estadoMissao(k)!=='feita'&&missaoLiberada(k)&&(estadoMissao(k)||!MISSOES[k].mural));   // as do mural so depois de pegas no mural
   return c.find(k=>missaoPronta(k))||c.find(k=>!estadoMissao(k))||c[0]||null;}
 // marca em cima do morador: '!' oferece, '✔' pode entregar, '…' em andamento
 function marcaMissao(npc){const k=missaoDe(npc);if(!k)return '';const st=estadoMissao(k);return !st?'!':missaoPronta(k)?'✔':'…';}
 function textoRec(id){const r=MISSOES[id].rec,p=[];
-  if(r.eco)p.push(ECOS[r.eco].nome);if(r.gil)p.push(r.gil+' gil');
+  if(r.eco)p.push(ECOS[r.eco].nome);if(r.gil)p.push(r.gil+' gil');if(r.exp)p.push(r.exp+' EXP');
   if(r.itens)for(const k in r.itens)p.push(ITENS[k].nome+(r.itens[k]>1?' ×'+r.itens[k]:''));if(r.pe)p.push(r.pe+' PE no Eco equipado');return p.join(' + ');}
 // falas da missão (ou null: conversa normal)
 function missaoFala(npc){const k=missaoDe(npc);if(!k)return null;const M=MISSOES[k],st=estadoMissao(k);
@@ -188,6 +222,7 @@ function concluiMissao(k){const M=MISSOES[k],r=M.rec;
   if(r.gil)JOGO.gil+=r.gil;if(r.itens)for(const i in r.itens)daItem(i,r.itens[i]);
   if(r.eco){const E=estadoEcos();if(!E.tem.includes(r.eco))E.tem.push(r.eco);}
   if(r.pe)ganhaPE(r.pe);
+  if(r.exp&&typeof ganhaExpMapa==='function'&&ganhaExpMapa(r.exp))setTimeout(()=>aviso('Subiu de nível! Nv '+JOGO.nivel,'#7dffa8'),900);
   estMissoes()[k].st='feita';pontosColeta();som(SOM.ui_vez,.9);salvaJogo();
   if(k==='olhos_roxos'&&typeof halvardVila==='function')setTimeout(halvardVila,300);
   const premio=()=>{fala={linhas:[['✦','Missão concluída: '+M.nome+'!'],['✦','Recompensa: '+textoRec(k)+'.'+(r.eco?' Equipe o Eco no menu → Ecos.':'')]],i:0,letras:0};};

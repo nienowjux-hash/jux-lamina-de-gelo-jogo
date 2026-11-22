@@ -8,9 +8,10 @@
    Usa o menu da vila (vila_menu.js): UI, painel, linhaSel, texto, aviso, som/SOM. Carregar depois do vila_menu.js. */
 'use strict';
 const SLOTS_SAVE = [1, 2, 3];
-const NOME_LUGAR = { vila: 'Invernália', trilha: 'A trilha', vale: 'O Vale dos Lobos', garganta: 'A Garganta', pico: 'O Pico do Uivo', caverna: 'A caverna', rio: 'O rio', cinzas: 'A trilha das cinzas' };
+const NOME_LUGAR = { vila: 'Invernália', trilha: 'A trilha', vale: 'O Vale dos Lobos', garganta: 'A Garganta', pico: 'O Pico do Uivo', caverna: 'A caverna', rio: 'O rio', cinzas: 'A trilha das cinzas', brasaria: 'Brasária' };
 const lerJ = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 function capituloDe(J) {
+  if (J.cap3 && J.local === 'brasaria') return 'Cap. 3 — Brasária';
   if (J.cap3 && J.cap3.parteA2) return 'Cap. 3 — O portão de Brasária';
   if (J.cap3 && J.local === 'cinzas') return 'Cap. 3 — A trilha das cinzas';
   if (J.cap3) return J.cap3.parteA ? 'Cap. 3 — O Porto de Cinzas' : J.cap3.fase === 'rio' ? 'Cap. 3 — O rio' : 'Cap. 3';
@@ -67,7 +68,11 @@ const PONTOS = [
   { id: 'cinzas_carrocas', cap: 3, nome: 'Depois das carroças', ok: J => !!(J.cap3 && J.cap3.forjados),
     monta: J => { naTrilhaCinzas(J, 482, 470); J.cap3.carrocas = true; J.cap3.forjados = true; J.provas.forjados = 'feita'; } },
   { id: 'cinzas_portao', cap: 3, nome: 'O portão de Brasária', ok: J => !!(J.cap3 && J.cap3.parteA2),
-    monta: J => { naTrilhaCinzas(J, 776, 262); Object.assign(J.cap3, { carrocas: true, forjados: true, parteA2: true, fase: 'brasaria' }); J.provas.forjados = 'feita'; } },
+    monta: J => { naTrilhaCinzas(J, 776, 262); Object.assign(J.cap3, { carrocas: true, forjados: true, parteA2: true, fase: 'brasaria' }); J.provas.forjados = 'feita'; delete J.cap3.bras; delete J.cap3.bacon; } },
+  // Cap. 3, Parte B: Brasaria (brasaria.js). Depois da cutscene "O porco abriu o portao": o time no meio da praca
+  { id: 'brasaria_chegada', cap: 3, nome: 'Brasária: a chegada', ok: J => !!(J.cap3 && J.cap3.bras && J.cap3.bras.chegou),
+    monta: J => { naTrilhaCinzas(J, 776, 262); Object.assign(J.cap3, { carrocas: true, forjados: true, parteA2: true, fase: 'brasaria', bacon: true, bras: { chegou: true } }); J.provas.forjados = 'feita';
+      J.local = 'brasaria'; J.brasaria = { x: 745, y: 700 }; } },
 ];
 const fotoDe = id => lerJ('jux_foto_' + id);
 // tira a foto dos pontos alcancados agora (chamado a cada salvaJogo): so a PRIMEIRA vez de cada ponto

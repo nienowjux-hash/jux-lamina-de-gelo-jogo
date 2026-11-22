@@ -53,7 +53,23 @@ const ITENS={
   // --- trilha das cinzas (Cap. 3, Parte A2): as luvas do baú das ruínas e o prêmio da Mãe-Salamandra
   luvas_brasa:{nome:'Luvas de Brasa',      tipo:'luvas',preco:0,venda:180, cor:'#ff8a3c',desc:'Couro de salamandra que nunca esfria. ATQ +7, ATQ.M +5.',bonus:{atk:7,atkm:5}},
   coracao_brasa:{nome:'Coração de Brasa',  tipo:'acessorio',preco:0,venda:240, cor:'#ff6a2a',desc:'Uma escama da Mãe-Salamandra, ainda quente. HP +60, ATQ +6, DEF.M +6.',bonus:{hp:60,atk:6,defm:6}},
+  // --- BRASÁRIA (Cap. 3, Parte B, FICHA_CAP3_BRASARIA.md): a Ferraria da Úrsula, um degrau acima da Forja do Borin.
+  // As peças "de ferreiro" protegem do fogo: resQueima = % de chance de NÃO pegar Queimadura (somam; no máximo 75%, resistQueima)
+  esp_temperada:{nome:'Espada Temperada', tipo:'arma',preco:4600,req:{nivel:20}, cor:'#9fc4e8',desc:'Aço de Brasária temperado na lava. ATQ +34, Crítico +2%.',bonus:{atk:34,crit:2}},
+  esp_obsidiana:{nome:'Espada de Obsidiana',tipo:'arma',preco:6300,req:{nivel:23}, cor:'#8a6ad8',desc:'Vidro de vulcão com fio de navalha. ATQ +40, ATQ.M +14.',bonus:{atk:40,atkm:14}},
+  mar_forja:    {nome:'Marreta de Forja',  tipo:'arma',para:'bino',preco:4700,req:{nivel:20}, cor:'#a08a7a',desc:'Só o Bino. A marreta de bater ferro da Úrsula. ATQ +36, DEF +8.',bonus:{atk:36,def:8}},
+  mar_vulcanica:{nome:'Marreta Vulcânica', tipo:'arma',para:'bino',preco:6500,req:{nivel:23}, cor:'#ff7a3a',desc:'Só o Bino. Pedra de vulcão ainda quente. ATQ +44, DEF +10, HP +40.',bonus:{atk:44,def:10,hp:40}},
+  avental_ferreiro:{nome:'Avental de Ferreiro',tipo:'armadura',preco:1900,req:{nivel:18}, cor:'#a0683a',desc:'DEF +14, DEF.M +6, HP +30. Resiste a Queimadura (25%).',bonus:{def:14,defm:6,hp:30},resQueima:25},
+  elmo_fornalha:{nome:'Elmo de Fornalha',  tipo:'elmo',preco:1300,req:{nivel:18}, cor:'#b0604a',desc:'DEF +8, DEF.M +5, HP +20. Resiste a Queimadura (15%).',bonus:{def:8,defm:5,hp:20},resQueima:15},
+  luvas_forja:  {nome:'Luvas de Forja',    tipo:'luvas',preco:1200,req:{nivel:18}, cor:'#9a6a40',desc:'ATQ +5, DEF +4. Resiste a Queimadura (10%).',bonus:{atk:5,def:4},resQueima:10},
+  botas_ferreiro:{nome:'Botas de Ferreiro',tipo:'botas',preco:1100,req:{nivel:18}, cor:'#8a5a3a',desc:'DEF +5, VEL +1. Resiste a Queimadura (10%).',bonus:{def:5,vel:1},resQueima:10},
+  // comidas do Mercado de Brasária (como as da Ingrid: efeito por algumas batalhas)
+  pao_forno:   {nome:'Pão de Forno',  tipo:'comida',preco:80, cor:'#e0a050',desc:'+12% de ATQ e +5% de HP máximo por 3 batalhas.',buff:{atk:.12,hp:.05},lutas:3},
+  espeto_brasa:{nome:'Espeto de Brasa',tipo:'comida',preco:120,cor:'#d8603a',desc:'+15% de ATQ e +10% de DEF por 3 batalhas.',buff:{atk:.15,def:.10},lutas:3},
+  // material das Salamandras de Cinza (missão "Escamas de cinza" da Dona Sálvia; o Mercado compra)
+  escama_salamandra:{nome:'Escama de Salamandra',tipo:'material',preco:0,venda:30,cor:'#8a7a7a',desc:'Cinza-chumbo com rachaduras de brasa. Cai das Salamandras de Cinza. A Dona Sálvia quer.'},
   // --- coisas de missão (missoes.js): não vendem, somem ao entregar
+  saco_carvao:{nome:'Saco de Carvão',tipo:'missao',preco:0,cor:'#4a4a4a',desc:'Carvão da Úrsula para o Tibério, na trilha das cinzas. Pesa e suja tudo.'},
   fruta:   {nome:'Fruta Silvestre',tipo:'missao',preco:0,cor:'#d8406a',desc:'Fruta vermelha e azedinha. A Ingrid quer para a torta.'},
   erva:    {nome:'Erva-de-Neve',  tipo:'missao',preco:0,cor:'#7fe0b0',desc:'Folha gelada que a Vovó Hilda usa nos remédios.'},
   bau_capitao:{nome:'Baú do Capitão',tipo:'missao',preco:0,cor:'#c9a060',desc:'Pesado, trancado e cheirando a nabo. As economias "honestas" do Capitão.'},
@@ -82,6 +98,8 @@ function equipDe(q){if(!q||q==='jux')return JOGO.equip;JOGO.equipDe=JOGO.equipDe
 const donoItem=it=>(it&&it.tipo==='arma')?(it.para||'jux'):'jux';
 const serveEm=(it,q)=>!!it&&(it.tipo!=='arma'||(it.para||'jux')===(q||'jux'));
 function equipadoEmAlguem(id){if(Object.values(JOGO.equip).includes(id))return true;for(const k in (JOGO.equipDe||{}))if(Object.values(JOGO.equipDe[k]).includes(id))return true;return false;}
+// RESISTÊNCIA A QUEIMADURA (Brasária): soma o resQueima de tudo o que o personagem veste, até 75%; devolve de 0 a 0,75
+function resistQueima(q){const E=equipDe(q);let r=0;for(const [s] of SLOTS_EQ){const it=ITENS[E[s]];if(it&&it.resQueima)r+=it.resQueima;}return Math.min(75,r)/100;}
 function bonusEquipDe(q){const eq={},E=equipDe(q);for(const [s] of SLOTS_EQ){const it=ITENS[E[s]];if(it&&it.bonus)for(const k in it.bonus)eq[k]=(eq[k]||0)+it.bonus[k];}return eq;}
 const ARMA_BASE={jux:'Aurora Gélida',bino:'Marreta de Pedra'};
 function nomeArmaDe(q){const a=ITENS[equipDe(q).arma];return a?a.nome:(ARMA_BASE[q||'jux']||'Nenhuma arma');}
@@ -91,6 +109,10 @@ const LOJAS={
   capitao:{nome:'Comércio Honesto do Capitão',quem:'Capitão',itens:['pocao','hipocao','eter','antidoto','colirio','pao_mel','botas_neve','amuleto_vida'],ola:'Capitão Dente-de-Ferro, Comércio Honesto. Nunca mais roubei. (Quase.)'},
   marta: {nome:'Peixaria da Marta',quem:'Marta',itens:['pocao','hipocao','eter','remedio','antidoto','colirio','fenix','repelente'],ola:'Peixe fresco não tenho pra vender. Poção, tenho. Vai querer?'},   // a pescadora do cais do meio do rio (Cap. 3)
   tiberio:{nome:'Carvão & Cia. do Tibério',quem:'Tibério',itens:['pocao','hipocao','eter','unguento_frio','remedio','repelente','fenix'],ola:'Carvão acabou. Poção, tenho. Não pechincha.'},   // o carvoeiro do acampamento da trilha das cinzas (Cap. 3)
+  // BRASÁRIA (Cap. 3, Parte B): a ferraria (armas e armaduras de ferreiro), a botica e o mercado (sem morador: o balcão)
+  ursula:{nome:'Ferraria da Úrsula',quem:'Úrsula',itens:['esp_temperada','esp_obsidiana','mar_forja','mar_vulcanica','avental_ferreiro','elmo_fornalha','luvas_forja','botas_ferreiro'],ola:'HA! Ferro de Brasária! O melhor do mundo. E o mais caro!',compra:true,vende:'A Úrsula compra o que você achar.'},
+  salvia:{nome:'Botica da Dona Sálvia',quem:'Dona Sálvia',itens:['pocao','hipocao','eter','unguento_frio','remedio','fenix'],ola:'Cheira! Cheira! Tudo fresquinho. Menos eu.'},
+  mercado:{nome:'Mercado de Brasária',quem:'Mercado',itens:['pao_forno','espeto_brasa','repelente','cha'],ola:'Pão quente, espeto na brasa e repelente. Paga no balcão.',compra:true,vende:'O mercado compra escamas e coisas achadas.'},
   ingrid:{nome:'Padaria da Ingrid',quem:'Ingrid',itens:['cha','pao_mel','ensopado','torta'],ola:'Pão quentinho dá força pra aventura! Literalmente!'},
 };
 const NIVEL_MAX_J=100;

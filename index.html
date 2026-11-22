@@ -6,7 +6,7 @@
 <script>
 // MOLDURA (2026-11-20): o jogo roda aqui dentro; a tela cheia e desta pagina, entao nao sai quando o mapa ou a luta trocam
 window.JUX_MOLDURA=true;
-var REG=['vila','trilha','garganta','vale','caverna','pico','rio','cinzas'];   // todo mapa novo entra aqui (2026-11-22: o rio e a trilha das cinzas abriam na vila)
+var REG=['vila','trilha','garganta','vale','caverna','pico','rio','cinzas','brasaria'];   // todo mapa novo entra aqui (2026-11-22: o rio e a trilha das cinzas abriam na vila)
 var ir=new URLSearchParams(location.search).get('ir');
 if(!ir||!/^[a-z_]+[.]html([?#].*)?$/.test(ir)){var r='vila';
   try{var s=JSON.parse(localStorage.getItem('jux_save')||'null');if(s&&REG.indexOf(s.local)>=0)r=s.local;}catch(e){}

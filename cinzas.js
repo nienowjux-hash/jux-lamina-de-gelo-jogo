@@ -13,6 +13,7 @@
      empurrado e perde um pouquinho de HP) e o vapor se desfaz (quadros 7-8); desencontrados
    - o TIBÉRIO CARVÃO no banquinho (loja + 3 conversas), a fogueira (salvar), a caverna de lava (Mãe-Salamandra, chefes.js)
    - cutscenes "As carroças" (no meio do mapa, depois a luta com os Forjados) e "O portão de Brasária" (fim da Parte A2)
+   - depois da Parte A2 o portão leva para Brasária (brasaria.html, Parte B); o Sir Bacon do time (bacon_time.js) segue o time aqui também
    Estado: JOGO.cap3 = {..., chegou, carrocas, forjados, parteA2, tib (conversa), fase:'cinzas'|'brasaria'} */
 'use strict';
 const CZ_F = window.JUX_CINZAS || {};
@@ -116,6 +117,7 @@ function vidaPasso(dt) {
   for (const p of czPops) p.v += dt; while (czPops.length && czPops[0].v > 1.1) czPops.shift();
   czTiberioPasso(dt);
   czHistoriaPasso(dt);
+  if (typeof baconTimePasso === 'function') baconTimePasso(dt);
 }
 function czPonto(P, m) { if (!P || !P.length) return null;
   for (let k = 0; k < 14; k++) { const p = P[(Math.random() * P.length) | 0]; if (p[0] > VIS.x0 + m && p[0] < VIS.x1 - m && p[1] > VIS.y0 + m && p[1] < VIS.y1 - m) return p; }
@@ -260,6 +262,7 @@ function vidaNpcs() {
   const L = [[CZ_TIBERIO.y, czTiberioDesenha]];
   for (const g of CZ_GEISERES) if (czNaTela(g.x, g.y - 60, 80)) L.push([g.y, () => czGeiserDesenha(g)]);
   for (const o of CZ_FOGOS) if (czNaTela(o.x, o.y - 20, 60)) L.push([o.y, () => czFogoDesenha(o)]);
+  if (typeof baconTimeNpcs === 'function') L.push(...baconTimeNpcs());   // o Sir Bacon do time (depois de Brasária)
   return L;
 }
 // a boca da caverna de lava (chefes.js chama): bafo quente e dois olhos amarelos piscando lá no fundo enquanto ela não foi vencida
@@ -283,8 +286,6 @@ const CZ_FALAS = {
   cz_forjados_bloqueiam: [['✦', 'Os Forjados ainda vigiam a estrada lá em cima, de martelo na mão.'], ['Jux', 'Sem desviar. Bino, de novo.'], ['Bino', '…Vou quebrar.']],
   cz_forjados_fim: [['Bino', '…Quebrou.'], ['Jux', 'Armadura vazia, olhos roxos… a Ordem está metida nisso até o pescoço.'],
     ['✦', 'Daqui em diante os Forjados também andam pela trilha. Siga até o portão de Brasária.']],
-  cz_portao_fechado: [['✦', 'O portão de ferro de Brasária continua fechado. Lá dentro, os martelos não param.'],
-    ['✦', 'Brasária (a Parte B) chega na próxima atualização. O jogo fica salvo aqui.']],
   cz_portao_cedo: [['Jux', 'O portão… e tem gente lá em cima.'], ['✦', 'Antes, a estrada do meio da trilha.']],
 };
 // as 3 conversas do Tibério, em ordem (ficha, seção 3): as forjas e o "rei", as carroças de armas, o pássaro de fogo
@@ -318,7 +319,7 @@ function regiaoFala(id) {
   if (id === 'fogueira_cinzas') { czFala(CZ_FALAS.cz_fogueira, () => { if (typeof encheVida === 'function') encheVida(); salvaVila(); aviso('HP e MP recuperados · Jogo salvo!', '#7dffa8'); }); return true; }
   if (id === 'cais_cinzas') { czFala(CZ_FALAS.cais_cinzas); return true; }
   if (id === 'portao_brasaria') {
-    if (C.parteA2) { czFala(CZ_FALAS.cz_portao_fechado, () => salvaVila()); return true; }
+    if (C.parteA2) { czVaiBrasaria(); return true; }   // a Parte B: o portão leva para dentro de Brasária
     if (!C.forjados) { czFala(CZ_FALAS.cz_portao_cedo); return true; }
     tocaFilme(CZ_CENAS_PORTAO, CZ_IMG_PORTAO, czFimParteA2); return true;
   }
@@ -350,13 +351,20 @@ function regiaoChega() {
 function czFimParteA2() {
   noiteFade = { t: 0, virou: false, k: 1.8, txt: 'Fim da Parte A2 — A trilha das cinzas', txt2: 'Próximo: Brasária.',
     vira: () => { const C = czC3(); C.parteA2 = true; C.fase = 'brasaria'; hero.x = 776; hero.y = 262; hero.olha = 'cima'; cam.x = hero.x; cam.y = hero.y; salvaVila(); },
-    fim: () => aviso('Obrigado por jogar a Parte A2!', '#ffe27a') };
+    fim: () => czVaiBrasaria() };
   hero.alvo = null; hero.pontoAlvo = null;
+}
+// Brasária (brasaria.html, Parte B): na primeira vez o time aparece do lado de dentro do portão e toca a cutscene "O porco abriu o
+// portão"; depois, entra pela portinhola do portão sul
+function czVaiBrasaria() {
+  const C = czC3(); C.fase = 'brasaria'; C.parteA2 = true;
+  JOGO.brasaria = { x: 650, y: 846 };   // do lado de dentro do portão sul
+  aviso('Brasária…', '#ffe27a'); vaiPara('brasaria.html');
 }
 // estrela do minimapa (minimapa.js): para onde ir agora
 function cinzasDestino() {
   const C = czC3();
-  if (C.parteA2) return null;
+  if (C.parteA2) return C.bras && C.bras.chegou ? null : { reg: 'cinzas', x: 776, y: 240, txt: 'Entre em Brasária pelo portão' };
   if (!C.carrocas) return { reg: 'cinzas', x: 482, y: 470, txt: 'Suba a trilha de pedra rumo a Brasária' };
   if (!C.forjados) return { reg: 'cinzas', x: 482, y: 470, txt: 'Os Forjados bloqueiam a estrada' };
   return { reg: 'cinzas', x: 776, y: 240, txt: 'Chegue ao portão de Brasária' };
@@ -451,6 +459,9 @@ function regiaoInit() {
     { id: 'z_portao', regiao: 'cinzas', tipo: 'brilho', x: 868, y: 262, da: { gil: 120, item: 'hipocao', n: 2 } });
   // o verificador de layout (layout_check.js) desenha a tela direto (sem janela nao ha requestAnimationFrame)
   window.__rio = window.__rio || { desenha: () => desenha() };
+  // o '✔' de missão em cima do Tibério (missão do mural de Brasária: o carvão)
+  if (typeof MARCAS_FORA === 'object') MARCAS_FORA.cinzas = () => ({ tiberio: { x: CZ_TIBERIO.x, y: CZ_TIBERIO.y } });
+  if (typeof ALT_FORA === 'object') ALT_FORA.tiberio = 58;
   // laboratório (como os outros mapas): cinzas.html#cine_carrocas e #cine_portao só tocam o filme
   const h = location.hash.split('?')[0];
   if (h === '#cine_carrocas') setTimeout(() => tocaFilme(CZ_CENAS_CARROCAS, CZ_IMG_CARROCAS, () => {}), 1500);

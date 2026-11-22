@@ -150,7 +150,7 @@ const SOM_DESL=[0,1,2,3].map(i=>arq('assets/vila/deslize_'+i));let tDesl=0;   //
 const PASSOS=[0,1,2,3].map(i=>arq('assets/vila/passo_'+i)),PASSOS_NEVE=[0,1,2,3].map(i=>arq('assets/vila/passo_neve_'+i)),PASSOS_MAD=[0,1,2,3].map(i=>arq('assets/vila/passo_madeira_'+i));
 const naPonte=(x,y)=>(REGIAO==='trilha'&&x>722&&x<894&&y>340&&y<402)||(REGIAO==='garganta'&&x>588&&x<872&&y>370&&y<436);   // tabuas da ponte: som de madeira
 const som=(a,v)=>{try{const c=a.cloneNode();c.volume=clamp(v,0,1);c.play().catch(()=>{});}catch(e){}};
-const MUSICAS=[REGIAO==='cinzas'?['Trilha das Cinzas','../musica/cinzas']:REGIAO==='pico'?['Vento do Pico (sem música)','vento_pico']:REGIAO==='caverna'?['Escuridão','musica_caverna']:REGIAO==='vale'?['Sussurro da Floresta','musica_trilha']:REGIAO==='garganta'?['Catedral na Floresta','musica_garganta']:REGIAO==='trilha'?['Sussurro da Floresta','musica_trilha']:['Manhã Gelada','musica_vila_2']];   // cada regiao tem a sua musica (a trilha NAO usa a da vila)   // musica unica da vila (as outras foram removidas a pedido); o botao so liga/desliga
+const MUSICAS=[REGIAO==='brasaria'?['Brasária','../musica/brasaria']:REGIAO==='cinzas'?['Trilha das Cinzas','../musica/cinzas']:REGIAO==='pico'?['Vento do Pico (sem música)','vento_pico']:REGIAO==='caverna'?['Escuridão','musica_caverna']:REGIAO==='vale'?['Sussurro da Floresta','musica_trilha']:REGIAO==='garganta'?['Catedral na Floresta','musica_garganta']:REGIAO==='trilha'?['Sussurro da Floresta','musica_trilha']:['Manhã Gelada','musica_vila_2']];   // cada regiao tem a sua musica (a trilha NAO usa a da vila)   // musica unica da vila (as outras foram removidas a pedido); o botao so liga/desliga
 let musI=0;try{const v=localStorage.getItem('jux_musica_vila3');if(v!==null)musI=+v;}catch(e){}
 let MUS=null;function pegaMus(){if(MUS)MUS.pause();MUS=musI<MUSICAS.length?arq('assets/vila/'+MUSICAS[musI][1]):null;if(MUS){MUS.loop=true;MUS.volume=.42;}}pegaMus();
 const BIGORNA=[0,1,2].map(i=>arq('assets/vila/bigorna_'+i)),OINC=[0,1,2,3].map(i=>arq('assets/vila/porco_'+i)),GUINCHO=arq('assets/vila/porco_guincho');
@@ -2000,7 +2000,7 @@ function desenha(){
   desenhaBaloes();if(!ab.on&&typeof marcasNoMundo==='function')marcasNoMundo();
   // neve caindo em camadas (perto cai mais rapido e e maior)
   for(const f of flocos){f.y+=f.v*f.z/60;f.x+=Math.sin(t+f.o)*.25*f.z-.15-vento*2.4*f.z;if(f.y>H){f.y=-4;f.x=rnd(0,W);}if(f.x<0)f.x=W;
-    ctx.fillStyle=REGIAO==='cinzas'?`rgba(150,140,140,${.3+.3*f.z})`:`rgba(240,250,255,${.45+.4*f.z})`;ctx.fillRect(f.x,f.y,f.s*f.z,f.s*f.z);}   // trilha das cinzas: cinza caindo
+    ctx.fillStyle=(REGIAO==='cinzas'||REGIAO==='brasaria')?`rgba(150,140,140,${.3+.3*f.z})`:`rgba(240,250,255,${.45+.4*f.z})`;ctx.fillRect(f.x,f.y,f.s*f.z,f.s*f.z);}   // trilha das cinzas: cinza caindo
   // vinheta leve
   const vg=ctx.createRadialGradient(W/2,H/2,H*.45,W/2,H/2,H*.95);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,4,16,.32)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   if(perto&&!fala&&!uiAberto())texto(nomePonto(perto.id)+'  ·  ENTER / toque para examinar',W/2,H-24,16,'#e8f6ff','center');

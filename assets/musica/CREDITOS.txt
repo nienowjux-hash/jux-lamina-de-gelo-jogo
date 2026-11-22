@@ -126,3 +126,5 @@ chefe_serpente.ogg/.mp3 — "Boss Battle #2 (Symphonic Metal)" (loop), nene (Ope
 
 cinzas.ogg/.mp3 — "Krakatoa", Kistol (OpenGameArt.org), CC0 (crédito não obrigatório) — https://opengameart.org/content/krakatoa. Música de exploração da Trilha das Cinzas (estrada vulcânica, Cap. 3, Parte A2); faixa em loop contínuo (72 s).
 chefe_mae_salamandra.ogg/.mp3 — "Heavy Boss Battle 2" (bpm 110, loop), MintoDog (OpenGameArt.org), CC0 — https://opengameart.org/content/heavy-boss-battle-2. Luta contra a Mãe-Salamandra (mini-chefe da Trilha das Cinzas).
+
+brasaria.ogg/.mp3 — "At Work" (loop), HorrorPen (OpenGameArt.org), CC-BY 3.0 (crédito obrigatório: "At Work" por HorrorPen, https://opengameart.org/content/at-work-loop) — https://creativecommons.org/licenses/by/3.0/. Música da cidade de Brasária (Cap. 3, Parte B), ritmo de trabalho; os martelos e as bigornas da cidade tocam por cima, pelo jogo. Na taverna (perto do Gorm) ela abaixa.

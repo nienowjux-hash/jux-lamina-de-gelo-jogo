@@ -3,7 +3,10 @@
    (menu -> Missoes -> ENTER). Se o alvo esta em outra regiao, o marcador fica na saida (portao da vila / caminho da trilha).
    Fora da tela, uma seta na borda mostra para que lado ir. Estado: JOGO.rastreio = id da secundaria rastreada. */
 const ORDEM_REG = ['vila', 'trilha', 'garganta', 'vale', 'pico', 'caverna'];   // saida rumo a regiao do alvo: a proxima na ordem (SAIDAS, em vila_motor.js)
-const saidaPara = alvo => {   // a caverna fica DENTRO da Garganta: de fora, o caminho e a boca da caverna; de dentro, a saida de baixo
+const saidaPara = alvo => {   // Cap. 3: Brasaria e a trilha das cinzas se ligam pelo portao (sul de Brasaria / norte da trilha)
+  if (REGIAO === 'brasaria' && alvo !== 'brasaria') return {x: 650, y: 860, nome: 'Portão sul'};
+  if (REGIAO === 'cinzas' && alvo === 'brasaria') return {x: 776, y: 240, nome: 'Brasária'};
+  // a caverna fica DENTRO da Garganta: de fora, o caminho e a boca da caverna; de dentro, a saida de baixo
   if (REGIAO === 'caverna') {const s = (SAIDAS.caverna || {}).back; return s ? {x: s[0], y: s[1], nome: s[2]} : null;}
   if (alvo === 'caverna' && REGIAO === 'garganta') return {x: 1330, y: 905, nome: 'Caverna'};
   if (alvo === 'caverna') alvo = 'garganta';
@@ -14,6 +17,8 @@ const COR_P = '#ffd84a', COR_S = '#5fe3ff';
 
 function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg,x,y,txt} ou null
   if (k === '_cinzas') return typeof cinzasDestino === 'function' ? cinzasDestino() : null;
+  if (k === '_brasaria') return typeof brasariaDestino === 'function' ? brasariaDestino() : null;
+  if (MISSOES[k] && MISSOES[k].mural && typeof destinoMural === 'function') return destinoMural(k);   // missoes do mural de Brasaria
   if (k === '_historia') return hero.espada ? null : {reg: 'vila', x: 790, y: 140, txt: 'Suba ao altar e pegue a lâmina'};
   // 2026-11-20 (pedido): depois do Skoll a estrela ja aponta a TRILHA DO FENRIR (o circulo do Pico); as pegadas so mostram o caminho
   if (k === '_pegadas') return {reg: 'pico', x: 655, y: 280, txt: 'Siga as pegadas até o Pico do Uivo'};
@@ -49,6 +54,7 @@ function destinoMissao(k) {   // onde ir agora para avançar a missão k -> {reg
 // 2026-11-20 (pedido: 'o jogador as vezes e noob, sempre deixar marcada a direcao da principal'): depois de Olhos Roxos,
 // a estrela segue para as pegadas do Fenrir na Garganta e, aceita a prova, para o circulo de pedras no Pico do Uivo
 const missaoPrincipalAtual = () => {if (REGIAO === 'cinzas' && typeof cinzasDestino === 'function') return cinzasDestino() ? '_cinzas' : null;   // trilha das cinzas (cinzas.js)
+  if (REGIAO === 'brasaria') return typeof brasariaDestino === 'function' && brasariaDestino() ? '_brasaria' : null;   // Brasaria (brasaria.js)
   if (!hero.espada) return '_historia'; if (estadoMissao('olhos_roxos') !== 'feita') return 'olhos_roxos';
   const pf = typeof provaFenrirEstado === 'function' ? provaFenrirEstado() : null;
   if (pf === 'pegadas') return '_pegadas'; if (estadoMissao('prova_fenrir') === 'ativa') return 'prova_fenrir';
@@ -161,7 +167,7 @@ function desenhaMapa(x, y, w, h) {
   // coluna da direita
   const lx = px + pw + 14, lw = 248; let ly = py + 4;
   // nome da regiao certo em cada mapa (2026-11-20: antes todo mapa fora da vila dizia 'Trilha dos Pinheiros')
-  const NR = {vila: ['Invernália', 'Vila do Norte'], trilha: ['Trilha dos Pinheiros', 'Lobos, Bolotas e Goblins'], garganta: ['Garganta Gelada', 'Goblins e acampamentos'], vale: ['Vale dos Lobos', 'Lobos e a Presa-Antiga'], caverna: ['Caverna de Gelo', 'Onde a Ordem prendeu o Skoll'], pico: ['Pico do Uivo', 'O círculo de pedras · sem lutas aleatórias'], cinzas: ['Trilha das Cinzas', 'Salamandras, Fuligens e Forjados']}[REGIAO] || ['', ''];
+  const NR = {vila: ['Invernália', 'Vila do Norte'], trilha: ['Trilha dos Pinheiros', 'Lobos, Bolotas e Goblins'], garganta: ['Garganta Gelada', 'Goblins e acampamentos'], vale: ['Vale dos Lobos', 'Lobos e a Presa-Antiga'], caverna: ['Caverna de Gelo', 'Onde a Ordem prendeu o Skoll'], pico: ['Pico do Uivo', 'O círculo de pedras · sem lutas aleatórias'], cinzas: ['Trilha das Cinzas', 'Salamandras, Fuligens e Forjados'], brasaria: ['Brasária', 'A cidade dos ferreiros · sem lutas']}[REGIAO] || ['', ''];
   const nvR = typeof ENCONTROS !== 'undefined' && ENCONTROS[REGIAO] && !ENCONTROS[REGIAO].semLutas && ENCONTROS[REGIAO].nv;
   texto(NR[0], lx, ly + 16, 20, '#ffe27a'); ly += 22; texto(NR[1] + (nvR ? ' · Nv ' + nvR[0] + '–' + nvR[1] : ''), lx, ly + 12, 12, '#9fb3d9'); ly += 28;
   ctx.fillStyle = 'rgba(127,214,245,.35)'; ctx.fillRect(lx, ly, lw - 6, 1); ly += 14;
@@ -171,7 +177,7 @@ function desenhaMapa(x, y, w, h) {
   for (const [kk, cor, forma, rot2] of [[kp, COR_P, 'estrela', 'Principal'], [kr, COR_S, 'losango', 'Rastreada']]) {
     formaMarca(ctx, forma, lx + 8, ly, 7, kk ? cor : '#4a5878'); texto(rot2, lx + 22, ly + 4, 13, kk ? cor : '#5a6688');
     const d = kk && destinoMissao(kk); ly += 18;
-    if (kk) {texto(kk === '_historia' ? 'A lâmina no altar' : kk === '_pegadas' ? 'Pegadas enormes' : kk === '_festival' || kk === '_cerimonia' || kk === '_preparo' ? 'O Festival' : kk === '_ataque' ? 'O ataque' : kk === '_ignarok' ? 'O Ignarok' : kk === '_partida' ? 'A partida' : kk === '_pend' ? 'Capítulo 1: ' + cap1Feitas() + '/' + CAP1_MISSOES.length + ' missões' : MISSOES[kk].nome, lx + 22, ly + 2, 13, '#fff'); ly += 16; ly = quebra(d ? d.txt : '', lx + 22, ly + 2, lw - 40, 12, '#c8d8f0') + 4;}
+    if (kk) {texto(kk === '_historia' ? 'A lâmina no altar' : kk === '_pegadas' ? 'Pegadas enormes' : kk === '_festival' || kk === '_cerimonia' || kk === '_preparo' ? 'O Festival' : kk === '_ataque' ? 'O ataque' : kk === '_ignarok' ? 'O Ignarok' : kk === '_partida' ? 'A partida' : kk === '_pend' ? 'Capítulo 1: ' + cap1Feitas() + '/' + CAP1_MISSOES.length + ' missões' : kk === '_cinzas' ? 'A trilha das cinzas' : kk === '_brasaria' ? 'Brasária' : MISSOES[kk].nome, lx + 22, ly + 2, 13, '#fff'); ly += 16; ly = quebra(d ? d.txt : '', lx + 22, ly + 2, lw - 40, 12, '#c8d8f0') + 4;}
     else {texto(forma === 'losango' ? 'Nenhuma (Missões → ENTER)' : 'Nenhuma agora', lx + 22, ly + 2, 12, '#5a6688'); ly += 20;}
     ly += 4;
   }

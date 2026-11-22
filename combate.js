@@ -107,7 +107,7 @@ const TIPOS_INIMIGO={
   salamandra:{nome:'Salamandra de Cinza',el:'fogo',reacao:{gelo:1.8,agua:1.5,fogo:.3},fisico:1,magico:1,quebra:70,hp:.55,exp:.72,gil:.55,vel:1.25,imuneEst:['veneno'],
     atk:n=>23+1.8*(n-1),atkm:n=>21+1.6*(n-1),def:n=>10+1*(n-1),defm:n=>11+1*(n-1),
     golpes:[{nome:'Cuspe de Brasa',t:'m',el:'fogo',poder:30,peso:3,est:['queimadura',3,.5],vapor:true},{nome:'Mordida Quente',t:'f',el:'fogo',poder:26,peso:2}],
-    drops:[['brasa',.45],['remedio',.15],['pocao',.15]]},
+    drops:[['brasa',.45],['escama_salamandra',.4],['remedio',.15],['pocao',.15]]},
   fuligem:{nome:'Fuligem',el:'fogo',reacao:{vento:1.7,gelo:1.6,trevas:.4},fisico:1,magico:1,quebra:45,hp:.3,exp:.42,gil:.7,vel:1.5,
     atk:n=>17+1.4*(n-1),atkm:n=>18+1.4*(n-1),def:n=>7+.7*(n-1),defm:n=>8+.8*(n-1),
     golpes:[{nome:'Espirro de Fumaça',t:'m',el:'trevas',poder:18,peso:3,est:['cego',2,.55]},{nome:'Cabeçada Fofa',t:'f',poder:18,peso:2}],
@@ -224,6 +224,8 @@ const ESTADOS={
 // imunidades por tipo de inimigo (chefes costumam ser imunes a atordoar e sono)
 function poeEstado(alvo,nome,turnos,chance,tipoInim){
   if(chance!==undefined&&Math.random()>chance)return false;
+  // roupa de ferreiro de Brasaria (jogo.js resistQueima): chance de NAO pegar Queimadura
+  if(nome==='queimadura'&&alvo&&alvo.quem&&typeof resistQueima==='function'&&typeof JOGO==='object'&&Math.random()<resistQueima(alvo.quem))return false;
   const T=tipoInim&&TIPOS_INIMIGO[tipoInim];if(T&&T.imuneEst&&T.imuneEst.includes(nome))return false;
   alvo.est=alvo.est||{};alvo.est[nome]=Math.max(alvo.est[nome]||0,turnos);return true;}
 const temEst=(alvo,n)=>!!(alvo.est&&alvo.est[n]>0);

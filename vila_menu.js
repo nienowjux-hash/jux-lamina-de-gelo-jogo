@@ -133,6 +133,7 @@ function uiFala(id){
   UI.escolha={id,ops:[...(mk?[mk==='!'?'❗ Missão':mk==='✔'?'✔ Entregar':'Missão']:[]),'Comprar','Conversar','Sair'],sel:0};som(SOM.ui_vez,.5);return true;
 }
 function escolhe(i){const e=UI.escolha;UI.escolha=null;
+  if(e.acao){e.acao(i);return;}   // escolha com acao propria (mural e taverna de Brasaria)
   if(e.id==='rio_cap3'){if(i===0&&typeof desceRio==='function')desceRio();else if(i===1){JOGO.trilha=null;vaiPara('trilha.html');}return;}
   if(e.id==='cura_luta'){if(i===0){curaParaLuta();setTimeout(()=>iniciaProva(e.prova,true),900);}
     else if(i===1){UI.menu=true;UI.home=false;UI.aba=1;UI.sel=0;UI.depoisBolsa=e.prova;som(SOM.ui_vez,.5);}
@@ -508,7 +509,7 @@ function desenhaLoja(){
   const L=LOJAS[UI.loja.id],x=120,y=50,w=W-240,h=H-120,l=itensLoja();painel(x,y,w,h);
   texto(L.nome,x+24,y+34,22,'#ffe27a');texto(JOGO.gil+' gil',x+w-24,y+34,18,'#ffe27a','right');
   if(L.compra){const m=UI.loja.modo;texto(m==='comprar'?'◀ Comprar ▶':'◀ Vender ▶',x+w/2,y+34,15,'#9fe8ff','center');ZONAS.push([x+w/2-70,y+14,x+w/2+70,y+42,()=>{UI.loja.modo=m==='comprar'?'vender':'comprar';UI.loja.sel=0;}]);}
-  texto(UI.loja.modo==='vender'?'O Borin compra cristais.':L.ola,x+24,y+60,14,'#c8d8f0');
+  texto(UI.loja.modo==='vender'?(L.vende||'O Borin compra cristais.'):L.ola,x+24,y+60,14,'#c8d8f0');
   const top=Math.max(0,Math.min(UI.loja.sel-4,l.length-6));
   if(!l.length)texto('Nada para vender.',x+40,y+110,16,'#c8d8f0');
   l.slice(top,top+6).forEach((id,j)=>{const i=top+j,it=ITENS[id],yy=y+76+j*40,pode=UI.loja.modo==='vender'||podeComprar(id);
