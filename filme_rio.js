@@ -14,22 +14,27 @@ function filmeSom(base, vol) { try { const a = audioArq(base); a.volume = Math.m
 function tocaFilmeRio(cenas, musica, fim) {
   const imgs = cenas.map(c => { const i = new Image(); i.src = 'assets/cine_rio/' + c.img + '.jpg'; return i; });
   const vozes = {}; for (const c of cenas) for (const [, v] of c.vozes || []) vozes[v] = audioArq('assets/cine_rio/voz_' + v);
-  Object.assign(FILME, { on: true, cenas, imgs, vozes, i: 0, t: 0, fim, feitos: new Set(), sai: 0, tele: null, espera: 0 });
+  Object.assign(FILME, { on: true, cenas, imgs, vozes, i: 0, t: 0, fim, feitos: new Set(), sai: 0, tele: null, espera: 0, segura: false, liberado: false });
   try { MUS.pause(); } catch (e) {}
   FILME.mus = null; if (musica) { const m = audioArq(musica); m.loop = true; m.volume = 0; m.play().catch(() => {}); FILME.mus = m; }
 }
-function filmePula() { if (!FILME.on || FILME.sai) return; const c = FILME.cenas[FILME.i]; if (FILME.t < .6) return;
-  for (const k in FILME.vozes) { try { FILME.vozes[k].pause(); } catch (e) {} }
-  if (FILME.i < FILME.cenas.length - 1) { FILME.i++; FILME.t = 0; FILME.tele = null; } else FILME.t = Math.max(FILME.t, c.dur); }
+// RITMO (2026-11-21: 'passa rapido, nao da tempo de ler; bota continuar'): 15% mais lento e cada cena PARA no fim com 'ENTER > continuar'
+const VEL_FILME = .85;
+function filmePula() { if (!FILME.on || FILME.sai) return; const c = FILME.cenas[FILME.i];
+  if (FILME.segura) { FILME.segura = false; for (const k in FILME.vozes) { try { FILME.vozes[k].pause(); } catch (e) {} }
+    if (FILME.i < FILME.cenas.length - 1) { FILME.i++; FILME.t = 0; FILME.tele = null; } else { FILME.liberado = true; FILME.t = c.dur + .01; } return; }
+  if (FILME.t < .5) return; FILME.t = Math.max(FILME.t, limFilme(c)); }
+const limFilme = c => FILME.i === FILME.cenas.length - 1 ? c.dur : c.dur - .5;   // para ANTES de a cena escurecer
+function filmePulaTudo() { if (!FILME.on || FILME.sai) return; for (const k in FILME.vozes) { try { FILME.vozes[k].pause(); } catch (e) {} } FILME.i = FILME.cenas.length - 1; FILME.t = FILME.cenas[FILME.i].dur + .01; FILME.segura = false; FILME.liberado = true; }
 addEventListener('keydown', e => { if (!FILME.on) return; const k = e.key.toLowerCase();
-  if (k === 'enter' || k === ' ' || k === 'escape') filmePula(); e.preventDefault(); e.stopImmediatePropagation(); }, true);
+  if (k === 'escape') filmePulaTudo(); else if (k === 'enter' || k === ' ' || k === 'e') filmePula(); e.preventDefault(); e.stopImmediatePropagation(); }, true);
 addEventListener('pointerdown', e => { if (FILME.on && e.target && e.target.tagName === 'CANVAS') filmePula(); }, true);
 
 function filmeQuadro(dt) {   // true enquanto o filme esta na tela (o motor do rio nao anda nem desenha)
   if (!FILME.on) return false;
   const F = FILME, c = F.cenas[F.i], im = F.imgs[F.i];
   if (!im.complete && F.espera < 8) { F.espera += dt; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); return true; }   // espera a imagem carregar
-  F.t += dt;
+  if (!F.segura) { F.t += dt * VEL_FILME; if (F.t >= limFilme(c) && !F.liberado) { F.t = limFilme(c); F.segura = true; } }
   if (F.mus) F.mus.volume = Math.min(.5, F.mus.volume + dt * .4) * (F.sai ? Math.max(0, 1 - F.sai) : 1);
   // vozes e sons no tempo da cena
   for (const [tt, v] of c.vozes || []) { const id = F.i + ':v:' + v; if (F.t >= tt && !F.feitos.has(id)) { F.feitos.add(id); try { const a = F.vozes[v]; a.currentTime = 0; a.volume = 1; a.play().catch(() => {}); } catch (e) {} } }
@@ -68,9 +73,11 @@ function filmeQuadro(dt) {   // true enquanto o filme esta na tela (o motor do r
     ctx.globalAlpha = a; ctx.textAlign = 'center'; ctx.font = 'bold 34px "Trebuchet MS",sans-serif'; ctx.lineWidth = 5; ctx.strokeStyle = '#000'; ctx.strokeText(c.cartaz[1], W / 2, H / 2 - 6); ctx.fillStyle = '#ffe27a'; ctx.fillText(c.cartaz[1], W / 2, H / 2 - 6);
     ctx.font = 'italic bold 19px "Trebuchet MS",sans-serif'; ctx.strokeText(c.cartaz[2] || '', W / 2, H / 2 + 30); ctx.fillStyle = '#bff4ff'; ctx.fillText(c.cartaz[2] || '', W / 2, H / 2 + 30); ctx.restore(); }
   if (fade > 0) { ctx.fillStyle = 'rgba(0,0,0,' + Math.min(1, fade) + ')'; ctx.fillRect(0, 0, W, H); }
-  ctx.save(); ctx.font = '12px "Trebuchet MS",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.textAlign = 'right'; ctx.fillText('ENTER: pular', W - 14, H - 14); ctx.restore();
+  ctx.save(); ctx.textAlign = 'right';
+  if (F.segura) { ctx.globalAlpha = .55 + .45 * Math.sin(performance.now() / 260); ctx.font = 'bold 17px "Trebuchet MS",sans-serif'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.strokeText('ENTER ▶ continuar', W - 16, H - 10); ctx.fillStyle = '#ffe27a'; ctx.fillText('ENTER ▶ continuar', W - 16, H - 10); }
+  else { ctx.font = '12px "Trebuchet MS",sans-serif'; ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillText('ENTER: avançar · ESC: pular tudo', W - 14, H - 14); } ctx.restore();
   // fim da cena / do filme
-  if (F.t >= c.dur) {
+  if (F.t >= c.dur && !F.segura) {
     if (F.i < F.cenas.length - 1) { F.i++; F.t = 0; F.tele = null; }
     else { F.sai += dt / 1; ctx.fillStyle = 'rgba(0,0,0,' + Math.min(1, F.sai) + ')'; ctx.fillRect(0, 0, W, H);
       if (F.sai >= 1) { F.on = false; if (F.mus) { try { F.mus.pause(); } catch (e) {} } try { if (typeof musLigada === 'undefined' || musLigada) MUS.play().catch(() => {}); } catch (e) {} const f = F.fim; F.fim = null; if (f) f(); } }

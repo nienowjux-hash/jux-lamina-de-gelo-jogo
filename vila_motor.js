@@ -1541,7 +1541,7 @@ const FILMES=[
 ];
 const filmeVisto=f=>!!((JOGO.cines||{})[f.id])||(()=>{try{return f.visto();}catch(e){return false;}})();
 function reverFilme(id){const f=FILMES.find(x=>x.id===id);if(!f||!filmeVisto(f))return;tocaFilme(f.c(),f.i(),()=>{});}
-function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;fala=null;abToca();}
+function tocaFilme0(cenas,imgs,onFim){{const f=FILMES.find(x=>{try{return x.c()===cenas;}catch(e){return false;}});if(f){JOGO.cines=JOGO.cines||{};JOGO.cines[f.id]=true;}}CENAS=cenas;CENA_IMG=imgs;ab.onFim=onFim;ab.on=true;ab.neve=[];ab.i=0;ab.t=0;ab.fim=0;ab.segura=false;ab.liberado=false;fala=null;abToca();}
 function filmeEspada(){tocaFilme(CENAS_ESPADA,IMG_ESPADA,()=>{hero.espada=true;espadaSobe=-.6;salvaVila();clarao=1;hero.olha='baixo';
   for(let i=0;i<40;i++)poeira.push({x:hero.x+rnd(-14,14),y:hero.y-rnd(0,30),vx:rnd(-60,60),vy:rnd(-80,-10),v:0});});}
 const MUS_CINE={bino_b:arq('assets/musica/bino_b'),rio:arq('assets/musica/musica_rio'),preco_morte:arq('assets/musica/cine_preco_morte'),preco:arq('assets/musica/cine_preco'),ignarok:arq('assets/musica/cine_ignarok'),festa:arq('assets/vila/musica_festival'),ataque:arq('assets/musica/cine_ataque'),piano:arq('assets/musica/intro_piano'),epico:arq('assets/musica/cine_4'),lenda:arq('assets/musica/espada_lenda'),heroi:arq('assets/musica/espada_heroi'),bino_a:arq('assets/musica/bino_a'),skoll:arq('assets/musica/chefe_skoll'),fenrir:arq('assets/musica/cine_fenrir'),ordem:arq('assets/musica/cine_ordem'),bino_b:arq('assets/musica/bino_b')};
@@ -1565,9 +1565,16 @@ const SOM_CINE={ig_rugido:arq('assets/sfx/novos/ignarok_rugido'),ig_rosna:arq('a
 const ab={on:false,esperando:false,i:0,t:0,fim:0,neve:[]};
 let abVista=false;try{abVista=localStorage.getItem('jux_abertura_vista')==='1';}catch(e){}
 function abSom(n){if(n==='oinc'){som(OINC[(Math.random()*OINC.length)|0],.8);return;}const a=SOM_CINE[n];if(a)som(a,.7);}
-function abComeca(){CENAS=CENAS_INTRO;CENA_IMG=IMG_INTRO;ab.onFim=null;ab.on=true;ab.esperando=true;ab.i=0;ab.t=0;ab.fim=0;fala=null;}
+function abComeca(){CENAS=CENAS_INTRO;CENA_IMG=IMG_INTRO;ab.onFim=null;ab.on=true;ab.esperando=true;ab.i=0;ab.t=0;ab.fim=0;ab.segura=false;ab.liberado=false;fala=null;}
 function abToca(){ab.esperando=false;ligaAudio();if(MUS)MUS.pause();musNome=null;abMusica(CENAS[0].mus);ab.feitos=new Set();}
-function abProxima(){for(const v of Object.values(VOZES))v.pause();ab.i++;ab.t=0;ab.feitos=new Set();if(ab.i>=CENAS.length)abTermina();}
+function abProxima(){for(const v of Object.values(VOZES))v.pause();ab.i++;ab.t=0;ab.segura=false;ab.liberado=false;ab.feitos=new Set();if(ab.i>=CENAS.length)abTermina();}
+// RITMO DAS CUTSCENES (2026-11-21: 'passa tao rapido que nao da tempo de ler; bota continuar, da um enter'): tudo 15% mais lento e
+// no fim de cada cena a imagem PARA com 'ENTER > continuar' (na ultima, antes de escurecer). ENTER no meio = vai ao fim da cena.
+const VEL_CINE=.85;
+const abLimite=c=>ab.i===CENAS.length-1?Math.max(0,c.dur-1.25):c.dur;
+function abContinua(){if(!ab.on||ab.esperando)return;const c=CENAS[ab.i];if(!c)return;
+  if(ab.segura){ab.segura=false;if(ab.i<CENAS.length-1)abProxima();else{ab.liberado=true;ab.t=abLimite(c)+.01;}som(SOM.ui_mover,.4);return;}
+  if(ab.t<.5)return;ab.t=Math.max(ab.t,abLimite(c));}
 function abTermina(){if(!ab.on)return;for(const v of Object.values(VOZES))v.pause();ab.on=false;ab.fim=1;
   if(ab.onFim){const f=ab.onFim;ab.onFim=null;if(musNome!=='vila')abMusica('vila');musNome=null;musAtual=null;f();return;}
   try{localStorage.setItem('jux_abertura_vista','1');}catch(e){}abVista=true;
@@ -1576,7 +1583,7 @@ function abTermina(){if(!ab.on)return;for(const v of Object.values(VOZES))v.paus
 function abPasso(dt){
   if(ab.fim>0)ab.fim=Math.max(0,ab.fim-dt*.9);   // volta do preto para o mapa devagar
   if(!ab.on||ab.esperando)return;
-  const c=CENAS[ab.i];ab.t+=dt;
+  const c=CENAS[ab.i];if(!ab.segura){ab.t+=dt*VEL_CINE;if(ab.t>=abLimite(c)&&!ab.liberado){ab.t=abLimite(c);ab.segura=true;}}
   for(const [tt,n] of c.sons){const k=ab.i+':'+tt;if(ab.t>=tt&&!ab.feitos.has(k)){ab.feitos.add(k);abSom(n);}}
   if(c.vozes)for(const [tt,nm] of c.vozes){const k='z'+ab.i+nm;if(ab.t>=tt&&!ab.feitos.has(k)){ab.feitos.add(k);for(const v of Object.values(VOZES))v.pause();const v=VOZES[nm];if(v)try{v.currentTime=0;v.play().catch(()=>{});}catch(e){}}}
   if(c.voz2){const k='w'+ab.i;if(ab.t>=c.voz2[0]&&!ab.feitos.has(k)){ab.feitos.add(k);const v=VOZES[c.voz2[1]];try{v.currentTime=0;v.play().catch(()=>{});}catch(e){}}}
@@ -1584,7 +1591,7 @@ function abPasso(dt){
     const v=VOZES[c.voz[1]];try{v.currentTime=0;v.volume=1;v.play().catch(()=>{});}catch(e){}}}
   abMusica(c.mus);
   {const fala_=(c.voz&&!VOZES[c.voz[1]].paused)||(c.voz2&&!VOZES[c.voz2[1]].paused)||(c.vozes&&c.vozes.some(z=>VOZES[z[1]]&&!VOZES[z[1]].paused));if(musAtual&&musAtual.volume>.05){const alvo=(musNome==='vila'?.42:.55)*(fala_?.5:1);musAtual.volume+=(alvo-musAtual.volume)*Math.min(1,dt*4);}}   // musica abaixa quando tem voz
-  if(ab.t>=c.dur)abProxima();
+  if(ab.t>=c.dur&&!ab.segura)abProxima();
   if(Math.random()<dt*40)ab.neve.push({x:rnd(-20,W),y:-6,v:rnd(25,70),s:rnd(1,3),o:rnd(0,6)});
   for(const f of ab.neve){f.y+=f.v*dt;f.x+=Math.sin(t+f.o)*12*dt+18*dt;}ab.neve=ab.neve.filter(f=>f.y<H+8);
 }
@@ -1635,13 +1642,14 @@ function abDesenha(){
     ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.85)';
     if(quem!=='Narrador'){ctx.strokeText(quem,W/2,y-24);ctx.fillText(quem,W/2,y-24);}
     ctx.font=(quem==='Narrador'?'italic ':'')+'bold 21px "Trebuchet MS"';ctx.fillStyle='#ffffff';let resta=n;lin.forEach((l,k)=>{const sl=l.slice(0,Math.max(0,resta));resta-=l.length+1;ctx.strokeText(sl,W/2,y+k*27);ctx.fillText(sl,W/2,y+k*27);});}
-  ctx.textAlign='right';ctx.font='12px "Trebuchet MS"';ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillText('toque: próxima cena · ENTER: pular',W-12,H-12);
+  if(ab.segura){const a=.55+.45*Math.sin(performance.now()/260);ctx.textAlign='right';ctx.font='bold 17px "Trebuchet MS"';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.85)';ctx.globalAlpha=a;ctx.strokeText('ENTER ▶ continuar',W-16,H-10);ctx.fillStyle='#ffe27a';ctx.fillText('ENTER ▶ continuar',W-16,H-10);ctx.globalAlpha=1;}
+  else{ctx.textAlign='right';ctx.font='12px "Trebuchet MS"';ctx.fillStyle='rgba(255,255,255,.55)';ctx.fillText('ENTER: avançar · ESC: pular tudo',W-12,H-12);}
   ctx.textAlign='left';
 }
 
 addEventListener('keydown',e=>{ligaAudio();const k=e.key.toLowerCase();
   if(!ab.on&&!fala&&uiTecla(k)){e.preventDefault();return;}
-  if(ab.on){e.preventDefault();if(ab.esperando){if(k==='enter'||k===' ')abToca();}else if(k==='enter'||k==='escape')abTermina();else if(k===' ')abProxima();return;}
+  if(ab.on){e.preventDefault();if(ab.esperando){if(k==='enter'||k===' ')abToca();}else if(k==='escape')abTermina();else if(k==='enter'||k===' '||k==='e')abContinua();return;}
   teclas[k]=true;
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
   if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(perto)abreFala(perto.id);}});
@@ -1651,7 +1659,7 @@ function soltaTudo(){for(const k in teclas)teclas[k]=false;hero.alvo=null;hero.p
 addEventListener('blur',soltaTudo);document.addEventListener('visibilitychange',()=>{if(document.hidden)soltaTudo();});
 // roda do mouse: rola as listas do menu e das lojas
 cv.addEventListener('wheel',e=>{if(!uiAberto())return;e.preventDefault();uiTecla(e.deltaY>0?'arrowdown':'arrowup');},{passive:false});
-cv.addEventListener('pointerdown',e=>{ligaAudio();if(ab.on){if(ab.esperando)abToca();else abProxima();return;}const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width,sy=(e.clientY-r.top)*H/r.height;
+cv.addEventListener('pointerdown',e=>{ligaAudio();if(ab.on){if(ab.esperando)abToca();else abContinua();return;}const r=cv.getBoundingClientRect(),sx=(e.clientX-r.left)*W/r.width,sy=(e.clientY-r.top)*H/r.height;
   if(uiClique(sx,sy))return;
   if(fala){avanca();return;}
   const mx=cam.x+(sx-W/2)/Z,my=cam.y+(sy-H/2)/Z;

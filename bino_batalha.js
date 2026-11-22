@@ -25,7 +25,9 @@ function escolheAlvoAliado() {
   const v = aliados().filter(a => a.hp > 0);
   if (v.length < 2) return v[0] || JUX;
   if (temEst(BINO, 'provocar')) return BINO;
-  return Math.random() < .5 ? BINO : JUX;
+  // a formacao: quem esta na FRENTE apanha mais (peso 2) que quem esta ATRAS (peso 1)
+  const peso = a => (typeof linhaDe === 'function' && linhaDe(a.quem) === 'tras') ? 1 : 2, tot = v.reduce((s, a) => s + peso(a), 0);
+  let r = Math.random() * tot; for (const a of v) { r -= peso(a); if (r <= 0) return a; } return v[0];
 }
 // o alvo atual (hero) chegou a 0 de vida? so e derrota se TODOS cairam
 function aliadoCaiu() {

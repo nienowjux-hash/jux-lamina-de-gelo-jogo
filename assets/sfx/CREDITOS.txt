@@ -50,3 +50,12 @@ Sons proprios do Skoll e do Bolotao (2026-11-21, ffmpeg a partir de sons CC0 ja 
 skoll_rosna, skoll_ataque, skoll_uivo: lobo_rosna/lobo_ataque/lobo_uivo (CC0 / dominio publico NPS) bem mais graves, com eco de caverna, misturados com acolito_explode e skoll_correntes (CC0).
 bolotao_pancada, bolotao_espirro: neve_pancada e bolota_espirro (CC0) mais graves, com bolotao_bruf (CC0).
 telepatia_gelo, telepatia_natureza (2026-11-21): sintetizados do zero com ffmpeg (aevalsrc), feitos para o jogo - sem licenca de terceiros.
+
+Sons da Tartarok (2026-11-21, ffmpeg em tools/cria_sons_tartarok.py, sintese + sons CC0 ja creditados acima, bem mais graves/lentos e com outro eco):
+tartarok_rosna: bino_urso2 ("Bear Growls" - U.S. Fish & Wildlife Service, CC0) bem mais grave e lento + gemido e ronco sintetizados (ffmpeg)
+tartarok_casco: baque grave sintetizado (ffmpeg) + bino_quebra ("75 CC0 breaking / falling / hit SFX" - rubberduck, CC0) + pedras ("80 CC0 RPG SFX", CC0)
+tartarok_tremor: ronco de ruido marrom sintetizado (ffmpeg) + bino_quebra, bino_pedras (rubberduck, CC0) e pedras ("80 CC0 RPG SFX", CC0)
+tartarok_folhas: sintetizado do zero com ffmpeg (vento + folhas), sem material de terceiros
+tartarok_raizes: sintetizado do zero com ffmpeg (rangido e estalos de madeira), sem material de terceiros
+tartarok_cura: sinos sintetizados (ffmpeg) + magia_brilho ("RPG Sound Pack" - artisticdude, CC0) mais grave
+tartarok_ilha: bino_urso1 ("Bear Growls", CC0) muito grave + bino_rumble e bino_pedras (rubberduck / themightyglider, CC0) + rugido, ronco e agua caindo sintetizados (ffmpeg)

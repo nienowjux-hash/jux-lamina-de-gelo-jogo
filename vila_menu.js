@@ -306,7 +306,7 @@ function desenhaHabs(cx,cy,w,h,y){const L=habsMenu(),linha=34,vis=Math.floor((y+
     for(const [rot,val,cor] of F){texto(rot+':',x2,yy,14,'#9fb3d9');const y0=yy;quebraTxt(val,x2+104,14,cor||'#e8f6ff',ww-104);if(yy===y0)yy+=19;}
     yy+=6;ctx.fillStyle='rgba(40,70,120,.35)';ctx.fillRect(x2-8,yy-12,ww+16,1);yy+=8;}
   quebraTxt(q.desc,x2,14,'#c8d8f0',ww);
-  if(F)texto('% = em relação ao ataque normal de '+(UI.quem==='bino'?'Bino':'Jux')+'; muda com ATQ, defesa, fraqueza e crítico.',x2,yy+4,11,'#7a8aa8'),yy+=18;
+  if(F){yy+=4;quebraTxt('% = em relação ao ataque normal de '+(UI.quem==='bino'?'Bino':'Jux')+'; muda com ATQ, defesa, fraqueza e crítico.',x2,11,'#7a8aa8',ww);yy-=2;}   // quebra em 2 linhas: nao passa do painel
   yy+=10;const eq=(typeof vagaEco==='function')?vagaEco(UI.quem==='bino'?'bino':'jux').equipadas.filter(k=>HABS[k]&&!HABS[k].passiva):[];
   texto('Habilidades de Eco equipadas: '+(eq.length?eq.map(k=>HABS[k].nome).join(', '):'nenhuma'),x2,yy,12,'#b8a6e8');texto('(gerencie na aba Ecos)',x2,yy+16,11,'#7a8aa8');
   texto('▲ ▼ escolhe · ENTER: liga ou desliga · Q: personagem · desligada não aparece na batalha nem no AUTOMÁTICO',cx,y+h-20,12,'#c8d8f0');}
@@ -370,7 +370,7 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
     else{const st=estadoMissao(k),pr=missaoPronta(k);texto((st==='feita'?'✓ ':pr?'✔ ':'! ')+MISSOES[k].nome,cx+22,yy+23,15,st==='feita'?'#7a8aa8':pr?'#7dffa8':'#fff');if(JOGO.rastreio===k&&st==='ativa')formaMarca(ctx,'losango',cx+276,yy+18,6,COR_S);else if(MISSOES[k].principal&&st==='ativa')formaMarca(ctx,'estrela',cx+276,yy+18,7,COR_P);
       }
     ZONAS.push([cx,yy,cx+300,yy+36,()=>{UI.sel=i;}]);});
-  if(l.length===1)texto('Nenhuma missão ainda. Converse com os moradores com ! em cima da cabeça.',cx+10,cy+80,13,'#9fb3d9');
+  if(l.length===1)['Nenhuma missão ainda.','Converse com os moradores','com ! em cima da cabeça.'].forEach((t,k)=>texto(t,cx+10,cy+76+k*18,13,'#9fb3d9'));   // em linhas: cabe na coluna da lista
   const x2=cx+330,ww=w-370;let yy=cy+24;
   const quebra=(s,tam,cor)=>{ctx.font=`bold ${tam}px "Trebuchet MS"`;let lin='';for(const p of s.split(' ')){if(ctx.measureText(lin+p).width>ww){texto(lin,x2,yy,tam,cor);yy+=tam+7;lin='';}lin+=p+' ';}if(lin)texto(lin,x2,yy,tam,cor);yy+=tam+12;};
   if(sel==='_historia'){texto('Objetivo da história',x2,yy,20,'#ffe27a');yy+=30;
@@ -433,6 +433,8 @@ function abreMenu(){if(ab.on||fala||(typeof transicao!=='undefined'&&transicao))
 function fecha(){UI.menu=false;UI.loja=null;UI.escolha=null;som(SOM.ui_mover,.45);}
 function uiTecla(k){
   if(UI.saves&&typeof teclaSaves==='function'){teclaSaves(k);return true;}   // Salvar / Carregar / Capitulos (saves.js)
+  if(UI.menu&&!UI.home&&UI.aba===ABA_ECOS&&!UI.loja&&!UI.escolha&&typeof teclaEcos==='function'&&teclaEcos(k))return true;
+  if(UI.menu&&!UI.home&&typeof ABA_GRUPO!=='undefined'&&UI.aba===ABA_GRUPO&&!UI.loja&&!UI.escolha&&teclaGrupo(k))return true;   // a formacao (grupo_tela.js)   // a nova tela dos Ecos (ecos_tela.js)
   if(typeof transicao!=='undefined'&&transicao)return true;   // luta comecando: ignora teclas (nao abre menu sem querer)
   if(!uiAberto()){if(k==='m'||k==='i'||k==='escape'||k==='tab'){abreMenu();return true;}return false;}
   if(UI.loja&&UI.loja.qtd){if(k==='arrowright'||k==='d')mudaQtd(1);else if(k==='arrowleft'||k==='a')mudaQtd(-1);else if(k==='arrowup'||k==='w')mudaQtd(10);else if(k==='arrowdown'||k==='s')mudaQtd(-10);
@@ -576,12 +578,12 @@ function desenhaMenu(){
   if(UI.aba!==2||UI.home)UI.eqLista=null;
   if(UI.aba!==ABA_SALVAR||UI.home)UI.cines=null;   // lista de escolha do Equipar so vive na aba Equipar
   const x=90,y=40,w=W-180,h=H-90;painel(x,y,w,h);
-  const PIT=ABAS.length>8?80:86;
-  ABAS.forEach((a,i)=>{const bx=x+10+i*PIT,on=i===UI.aba,fs=a.length>8?12:15;ctx.fillStyle=on?'#7fd6f5':'rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(bx,y+14,PIT-4,30,7);ctx.fill();
-    if(on){ctx.font='bold '+fs+'px "Trebuchet MS"';ctx.textAlign='center';ctx.fillStyle='#0c1a2a';ctx.fillText(a,bx+41,y+35);ctx.textAlign='left';}else texto(a,bx+41,y+35,fs,'#e8f6ff','center');ZONAS.push([bx,y+14,bx+82,y+44,()=>{UI.aba=i;UI.sel=0;UI.confirmaNovo=false;}]);});
+  const PIT=Math.min(86,Math.floor((w-58)/ABAS.length)),MEIO=(PIT-4)/2;   // as abas cabem antes do X (com a aba Grupo sao 10)
+  ABAS.forEach((a,i)=>{const bx=x+10+i*PIT,on=i===UI.aba,fs=a.length>8?11:PIT<80?13:15;ctx.fillStyle=on?'#7fd6f5':'rgba(42,58,102,.9)';ctx.beginPath();ctx.roundRect(bx,y+14,PIT-4,30,7);ctx.fill();
+    if(on){ctx.font='bold '+fs+'px "Trebuchet MS"';ctx.textAlign='center';ctx.fillStyle='#0c1a2a';ctx.fillText(a,bx+MEIO,y+35);ctx.textAlign='left';}else texto(a,bx+MEIO,y+35,fs,'#e8f6ff','center');ZONAS.push([bx,y+14,bx+PIT-4,y+44,()=>{UI.aba=i;UI.sel=0;UI.confirmaNovo=false;}]);});
   texto('✕',x+w-26,y+36,20,'#e8f6ff');ZONAS.push([x+w-44,y+12,x+w-6,y+46,fecha]);
   const cx=x+24;let cy=y+66;
-  if(ABA_COM_GRUPO(UI.aba)&&grupoMenu().length>1){seletorGrupo(cx,y+54);cy+=36;}
+  if(ABA_COM_GRUPO(UI.aba)&&grupoMenu().length>1){if(UI.aba!==ABA_ECOS)seletorGrupo(cx,y+54);cy+=36;}   // nos Ecos os herois ja aparecem nos quadros do alto (ecos_tela.js)
   const ehB=UI.quem==='bino'&&grupoMenu().includes('bino');
   if(UI.aba===0&&ehB){   // Status do Bino
     const b=JOGO.bino,s=statusBino(b.nivel),R=RET&&RET.bino,RI=RETI&&RETI.bino;
@@ -629,6 +631,7 @@ function desenhaMenu(){
   }else if(UI.aba===ABA_HABS){desenhaHabs(cx,cy,w,h,y);
   }else if(UI.aba===ABA_ECOS){desenhaEcos(cx,cy,w,h,y);
   }else if(UI.aba===ABA_MISSOES){desenhaDiario(cx,cy,w,h,y);
+  }else if(typeof ABA_GRUPO!=='undefined'&&UI.aba===ABA_GRUPO){desenhaGrupo(cx,cy,w,h,y);
   }else if(UI.aba===ABA_BESTA){desenhaBestiario(cx,cy,w,h,y);
   }else if(UI.aba===ABA_MAPA){desenhaMapa(x,y,w,h);
   }else if(UI.aba===2){   // Equipar
@@ -660,27 +663,28 @@ function desenhaMenu(){
       else if(LE)texto(String(agora[k]),xx,by+57,14,'#5a6a88','center');});
     textoCabe(LE?'▲▼ escolhe · ENTER: equipar · Esc ou ◀: voltar · verde = fica melhor, vermelho = fica pior':'ENTER ou toque: escolher e comparar · ◀ ▶: troca rápida (o que sai volta para a bolsa)'+(grupoMenu().length>1?' · Q: personagem':''),cx,y+h-14,13,'#c8d8f0',w-48);
   }else{   // Salvar
-    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*29;linhaSel(cx,yy,560,26,i===UI.sel);texto(o,cx+30,yy+19,15,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
-      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+19,14,'#9fe8ff');
-      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+19,14,OPC.tremor?'#7dffa8':'#ff9a9a');
-      if(i===5)texto(OPC.dicas===false?'Desligado':'Ligado',cx+330,yy+19,14,OPC.dicas===false?'#ff9a9a':'#7dffa8');
-      if(i===6)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+19,14,'#9fe8ff');
-      if(i===7)texto(UI.cines?'▲ fechar':'▶ ver a lista',cx+330,yy+19,14,'#9fe8ff');
-      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+8,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+8,bw*v,10);
-        texto(Math.round(v*100)+'%',bx+bw+14,yy+20,15,'#e8f6ff');texto('◀',bx-24,yy+20,15,'#9fe8ff');texto('▶',bx+bw+62,yy+20,15,'#9fe8ff');
-        ZONAS.push([bx-30,yy,bx-4,yy+30,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+30,()=>{UI.sel=i;acaoSalvar(i,1);}]);
-        ZONAS.push([bx,yy,bx+bw,yy+30,(mx)=>{UI.sel=i;}]);}
-      else ZONAS.push([cx,yy,cx+460,yy+30,()=>{UI.sel=i;acaoSalvar(i);}]);});
-    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*29+6,13,'#c8d8f0');
-    if(!UI.controles&&!UI.cines&&typeof textoTempos==='function')texto('⏱ '+textoTempos(),cx,cy+SALVAR_OPS.length*29+28,14,'#ffe27a');
-    if(UI.controles){const px=cx+275,py=cy+7*29-2,pw=300,ph=148;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+24,16,'#ffe27a');
+    const LS=24;   // altura de cada linha do Sistema: 14 opcoes + rodape cabem no painel
+    SALVAR_OPS.forEach((o,i)=>{const yy=cy+i*LS;linhaSel(cx,yy,560,LS-3,i===UI.sel);texto(o,cx+30,yy+16,15,i===SALVAR_OPS.length-1?'#ff9a9a':'#fff');
+      if(i===3)texto('◀ '+(VEL_TEXTO.find(v=>v[0]===OPC.texto)||VEL_TEXTO[1])[1]+' ▶',cx+330,yy+16,14,'#9fe8ff');
+      if(i===4)texto(OPC.tremor?'Ligado':'Desligado',cx+330,yy+16,14,OPC.tremor?'#7dffa8':'#ff9a9a');
+      if(i===5)texto(OPC.dicas===false?'Desligado':'Ligado',cx+330,yy+16,14,OPC.dicas===false?'#ff9a9a':'#7dffa8');
+      if(i===6)texto(UI.controles?'▲ fechar':'▼ ver',cx+330,yy+16,14,'#9fe8ff');
+      if(i===7)texto(UI.cines?'▲ fechar':'▶ ver a lista',cx+330,yy+16,14,'#9fe8ff');
+      if(i<3){const v=VOL[VOL_OPS[i]],bx=cx+250,bw=220;ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(bx,yy+6,bw,10);ctx.fillStyle=i===0?'#7fd6f5':i===1?'#ffe27a':'#c9b8ff';ctx.fillRect(bx,yy+6,bw*v,10);
+        texto(Math.round(v*100)+'%',bx+bw+14,yy+17,15,'#e8f6ff');texto('◀',bx-24,yy+17,15,'#9fe8ff');texto('▶',bx+bw+62,yy+17,15,'#9fe8ff');
+        ZONAS.push([bx-30,yy,bx-4,yy+LS,()=>{UI.sel=i;acaoSalvar(i,-1);}]);ZONAS.push([bx+bw+56,yy,bx+bw+84,yy+LS,()=>{UI.sel=i;acaoSalvar(i,1);}]);
+        ZONAS.push([bx,yy,bx+bw,yy+LS,(mx)=>{UI.sel=i;}]);}
+      else ZONAS.push([cx,yy,cx+460,yy+LS,()=>{UI.sel=i;acaoSalvar(i);}]);});
+    if(!UI.controles)texto('◀ ▶ muda o valor · o jogo também salva sozinho a cada 15 s.',cx,cy+SALVAR_OPS.length*LS+6,13,'#c8d8f0');
+    if(!UI.controles&&!UI.cines&&typeof textoTempos==='function')textoCabe('⏱ '+textoTempos(),cx,cy+SALVAR_OPS.length*LS+28,14,'#ffe27a',w-48);
+    if(UI.controles){const px=cx+275,py=cy+7*LS-2,pw=300,ph=148;painel(px,py,pw,ph);texto('Controles (teclado)',px+16,py+24,16,'#ffe27a');
       [['Setas / WASD','andar (cercas: pula sozinho)'],['Shift','correr'],['Enter / E / Espaço','falar, examinar, confirmar'],['M / Esc','menu'],['Q','trocar herói / AUTO na luta'],['F','tela cheia']].forEach(([a,b],k)=>{texto(a,px+16,py+46+k*18,13,'#9fe8ff');texto(b,px+128,py+46+k*18,13,'#e8f6ff');});}
     if(UI.cines&&typeof FILMES!=='undefined'){const px=cx+250,pw=w-48-250,lh=30,py=cy+2,ph=FILMES.length*lh+44;painel(px,py,pw,ph);
       texto('Rever cutscenes',px+16,py+24,16,'#ffe27a');texto('ENTER assiste · Esc fecha',px+pw-14,py+24,11,'#9fb3d9','right');
       FILMES.forEach((f,k)=>{const yy=py+34+k*lh,vis=filmeVisto(f);linhaSel(px+8,yy,pw-16,lh-4,k===UI.cines.sel);
         texto((vis?'▶ ':'🔒 ')+(vis?f.nome:'???  (ainda não vista)'),px+30,yy+19,14,vis?'#fff':'#5a6688');
         ZONAS.push([px+8,yy,px+pw-8,yy+lh-4,()=>{if(UI.cines.sel===k)assisteFilme(k);else UI.cines.sel=k;}]);});}
-    if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+8*29+19,16,'#7dffa8');
+    if(UI.msgSalvo>0)texto('Salvo!',cx+380,cy+8*LS+16,16,'#7dffa8');
   }
   {const dica='M/ESC: fechar · ◀ ▶: abas · ▲▼: escolher · ENTER: usar';ctx.font='bold 13px "Trebuchet MS"';const dw=ctx.measureText(dica).width+20;
     ctx.fillStyle='rgba(6,16,40,.8)';ctx.beginPath();ctx.roundRect(x+w-6-dw,y+h+8,dw,24,6);ctx.fill();texto(dica,x+w-16,y+h+24,13,'rgba(255,255,255,.75)','right');}

@@ -195,6 +195,8 @@ const ESTADOS={
   aurora:   {nome:'Aurora',    cor:'#7dffc8',ruim:false,dano:1.25},
   regen:    {nome:'Regen',     cor:'#7dffa8',ruim:false,tick:.06},
   muralha:  {nome:'Muralha',   cor:'#7fb8ff',ruim:false,recebido:.7},
+  casco:    {nome:'Casco',     cor:'#9dff8a',ruim:false,recebido:.7},   // Casco Ancestral (Tartarok): o time todo
+  ilha:     {nome:'Ilha Viva', cor:'#7dffa8',ruim:false},   // Ilha Viva (Tartarok): nao leva dano (hitHero)
   fraqueza: {nome:'Fraqueza',  cor:'#c06aff',ruim:true, recebido:1.3},
   queimadura:{nome:'Queimadura',cor:'#ff8a3c',ruim:true, tick:-.07},   // bichos das aguas quentes (Cap. 3): como o veneno, com chamas   // Tambor do Medo (Sombra do Oskar): recebe +30% de dano
 };
