@@ -492,7 +492,7 @@ function linhaSel(x,y,w,h,on){if(on&&UI.pisca&&performance.now()<UI.pisca){const
 function botaoMenu(){ctx.save();ctx.fillStyle='rgba(6,16,40,.8)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(W-118,46,108,30,7);ctx.fill();ctx.stroke();
   texto('☰ Menu  (M)',W-110,67,14,'#e8f6ff');texto(JOGO.gil+' gil',W-114,96,13,'#ffe27a');ctx.restore();}
 function uiDesenha(){
-  ctx.save();ctx.setTransform(1,0,0,1,0,0);ZONAS=[];
+  ctx.save();ctx.setTransform(window.HD_TELA||1,0,0,window.HD_TELA||1,0,0);ZONAS=[];
   if(!ab.on&&!uiAberto()){botaoMenu();if(typeof miniHud==='function')miniHud();}
   if(UI.escolha)desenhaEscolha();
   if(UI.loja)desenhaLoja();

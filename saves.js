@@ -108,7 +108,7 @@ function teclaSaves(k) { const S = UI.saves, L = listaSaves();
     const p = S.ponto; UI.saves = null; setTimeout(() => vaiParaPonto(p), 400); } }
 function cliqueSaves(x, y) { const S = UI.saves; if (!S || !S.zonas) return false; for (const [a, b, c, d, i] of S.zonas) if (x >= a && x <= c && y >= b && y <= d) { if (S.sel === i) teclaSaves('enter'); else { S.sel = i; S.conf = null; } return true; } return false; }
 function desenhaSaves() { const S = UI.saves; if (!S) return; S.zonas = [];
-  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(2,6,16,.6)'; ctx.fillRect(0, 0, W, H);
+  ctx.save(); ctx.setTransform(window.HD_TELA || 1, 0, 0, window.HD_TELA || 1, 0, 0); ctx.fillStyle = 'rgba(2,6,16,.6)'; ctx.fillRect(0, 0, W, H);
   const x = 90, y = 40, w = W - 180, h = H - 80; painel(x, y, w, h);
   const tit = { salvar: 'SALVAR — escolha o espaço', carregar: 'CARREGAR — escolha o espaço', caps: 'CAPÍTULOS — voltar a um ponto da história', guardar: 'Guardar o jogo atual antes?' }[S.modo];
   texto(tit, x + 24, y + 34, 22, '#ffe27a');

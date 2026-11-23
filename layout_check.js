@@ -12,7 +12,7 @@
   window.__importou = true;   // nada e gravado no save
   const P = CanvasRenderingContext2D.prototype, orig = { fillText: P.fillText, strokeText: P.strokeText, roundRect: P.roundRect, fillRect: P.fillRect };
   let grava = false, TX = [], RC = [];
-  const mapa = (c, x, y) => { const m = c.getTransform(); return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]; };
+  const mapa = (c, x, y) => { const m = c.getTransform(), k = window.HD_TELA || 1; return [(m.a * x + m.c * y + m.e) / k, (m.b * x + m.d * y + m.f) / k]; };
   const esc = c => { const m = c.getTransform(); return Math.hypot(m.a, m.b) || 1; };
   function guardaTexto(c, s, x, y) { if (!grava || !s || !String(s).trim()) return; const w = c.measureText(String(s)).width, sz = (parseFloat((c.font.match(/(\d+(\.\d+)?)px/) || [])[1]) || 12);
     const al = c.textAlign, x0 = al === 'center' ? x - w / 2 : (al === 'right' || al === 'end') ? x - w : x, k = esc(c), [ax, ay] = mapa(c, x0, y - sz * .78), [bx, by] = mapa(c, x0 + w, y + sz * .22), [px, py] = mapa(c, x, y - sz * .3);
@@ -24,7 +24,7 @@
   async function capta(nome) {
     TX = []; RC = []; const des = () => { if (window.__rio && __rio.desenha) __rio.desenha(); };   // desenha direto (sem janela nao ha requestAnimationFrame)
     des(); grava = true; des(); grava = false;
-    const cv = document.querySelector('canvas'), W0 = cv.width, H0 = cv.height, prob = [];
+    const cv = document.querySelector('canvas'), W0 = cv.width / (window.HD_TELA || 1), H0 = cv.height / (window.HD_TELA || 1), prob = [];
     const PAINEL = { x0: 88, y0: 38, x1: W0 - 88, y1: H0 - 48 };
     for (const t of TX) {
       if (t.x0 < -1 || t.x1 > W0 + 1 || t.y0 < -1 || t.y1 > H0 + 1) { prob.push({ tipo: 'FORA DA TELA', texto: t.s, x: Math.round(t.x0), y: Math.round(t.y0) }); continue; }

@@ -10,9 +10,11 @@
    - sons: musica da vila, vento, passos, fogo e rio (volume pela distancia) */
 if(typeof fimCarregar==='function')window.addEventListener('load',fimCarregar);else document.getElementById('carregando').remove();   // carrega.js: espera as imagens
 const W=960,H=540,cv=document.getElementById('c'),ctx=cv.getContext('2d');
-const oc=document.createElement('canvas');oc.width=W;oc.height=H;const octx=oc.getContext('2d');octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';let furo=0;
-const hc=document.createElement('canvas');hc.width=W;hc.height=H;const hctx=hc.getContext('2d');hctx.imageSmoothingEnabled=true;hctx.imageSmoothingQuality='high';
-const sc=document.createElement('canvas');sc.width=W;sc.height=H;const sctx=sc.getContext('2d');
+// HD (2026-11-23): a tela do mapa tem o DOBRO de pixels; as coordenadas continuam 960x540 (TELA_BASE no comeco de cada quadro)
+const HD=2;cv.width=W*HD;cv.height=H*HD;window.HD_TELA=HD;const TELA_BASE=c=>c.setTransform(HD,0,0,HD,0,0);
+const oc=document.createElement('canvas');oc.width=W*HD;oc.height=H*HD;const octx=oc.getContext('2d');octx.imageSmoothingEnabled=true;octx.imageSmoothingQuality='high';let furo=0;
+const hc=document.createElement('canvas');hc.width=W*HD;hc.height=H*HD;const hctx=hc.getContext('2d');hctx.imageSmoothingEnabled=true;hctx.imageSmoothingQuality='high';
+const sc=document.createElement('canvas');sc.width=W*HD;sc.height=H*HD;const sctx=sc.getContext('2d');
 const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -1244,11 +1246,11 @@ function noiteFadePasso(dt){const N=noiteFade;if(!N)return;N.t+=dt/(N.k||1);for(
   if(!N.virou&&N.t>=1.4){N.virou=true;SEG.cena=false;SEG.vaiPara=null;SEG.oculto=false;JOGO.cap2.fase='noite';salvaJogo();aplicaFestival();festaPoe();hero.x=722;hero.y=716;hero.olha='cima';}
   if(N.t>=4.6){noiteFade=null;setTimeout(()=>abreFala('fest_chega'),300);}}
 function desenhaNoiteFade(){const N=noiteFade;if(!N)return;const a=N.t<1.4?N.t/1.4:N.t<3.4?1:Math.max(0,1-(N.t-3.4)/1.2);
-  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='rgba(2,4,14,'+a+')';ctx.fillRect(0,0,W,H);
+  ctx.save();TELA_BASE(ctx);ctx.fillStyle='rgba(2,4,14,'+a+')';ctx.fillRect(0,0,W,H);
   if(N.t>1.6&&N.t<3.6){const b=Math.min(1,(N.t-1.6)/.5,(3.6-N.t)/.5);ctx.globalAlpha=b;texto(N.txt||'Naquela noite…',W/2,H/2,N.txt2?26:30,'#ffe9b8','center');if(N.txt2)texto(N.txt2,W/2,H/2+40,18,'#c8d8f0','center');}
   ctx.restore();}
 function desenhaTransicao(){desenhaNoiteFade();if(!transicao)return;transicao=Math.min(1,transicao+.022);const p=transicao;
-  ctx.save();ctx.setTransform(1,0,0,1,0,0);
+  ctx.save();TELA_BASE(ctx);
   for(let i=0;i<14;i++){const ang=i/14*6.283+p*2,rr=p*700;ctx.fillStyle=i%2?`rgba(191,244,255,${.55*p})`:`rgba(10,24,60,${.9*p})`;
     ctx.beginPath();ctx.moveTo(W/2,H/2);ctx.lineTo(W/2+Math.cos(ang)*rr,H/2+Math.sin(ang)*rr);ctx.lineTo(W/2+Math.cos(ang+.45)*rr,H/2+Math.sin(ang+.45)*rr);ctx.fill();}
   if(p>.5){ctx.fillStyle=`rgba(3,5,12,${(p-.5)*2})`;ctx.fillRect(0,0,W,H);}
@@ -1613,7 +1615,7 @@ function abCena(i,alpha,tt){
 }
 function abDesenha(){
   if(!ab.esperando&&ab.i>=CENAS.length)return;   // acabou neste quadro
-  ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  TELA_BASE(ctx);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   if(ab.esperando){
     ctx.fillStyle='#03050c';ctx.fillRect(0,0,W,H);
     for(const f of ab.neve){ctx.fillStyle='rgba(230,248,255,.7)';ctx.fillRect(f.x,f.y,f.s,f.s);}
@@ -1959,7 +1961,7 @@ function desenha(){
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
   // frentes por cima do heroi: vao para uma camada separada e ganham um "buraco" transparente e suave em volta dele
   // (arvore, casa ou torre ficam meio transparentes so ali: da para ver o Jux inteiro sem perder o objeto)
-  const tr=ctx.getTransform();octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,W,H);octx.setTransform(tr);
+  const tr=ctx.getTransform();octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,oc.width,oc.height);octx.setTransform(tr);
   const hyD=hero.esc?Math.max(hero.py0,hero.py1)+2:hero.y;   // escalando: fica NA FRENTE do paredao
   for(const f of FR){if(hyD>=f.base)continue;
     if(hb[2]<f.x||hb[0]>f.x+f.w||hb[3]<f.y||hb[1]>f.y+f.h){ctx.drawImage(f.i,f.x,f.y,f.w,f.h);continue;}
@@ -1974,13 +1976,13 @@ function desenha(){
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(oc,0,0);ctx.restore();
     // "raio-x": contorno azul-gelo claro + o proprio Jux meio transparente por cima do objeto
     // OTIMIZACAO (2026-11-19): o raio-x so mexe numa caixa em volta do Jux (antes eram 6 operacoes de tela inteira por quadro)
-    const hx=tr.a*hero.x+tr.e,hy=tr.d*hero.y+tr.f,bx=Math.max(0,Math.floor(hx-90)),by=Math.max(0,Math.floor(hy-140)),bw=Math.min(W,Math.ceil(hx+90))-bx,bh=Math.min(H,Math.ceil(hy+24))-by;
+    const hx=tr.a*hero.x+tr.e,hy=tr.d*hero.y+tr.f,bx=Math.max(0,Math.floor(hx-90*HD)),by=Math.max(0,Math.floor(hy-140*HD)),bw=Math.min(W*HD,Math.ceil(hx+90*HD))-bx,bh=Math.min(H*HD,Math.ceil(hy+24*HD))-by;
     if(bw>0&&bh>0){
     hctx.setTransform(1,0,0,1,0,0);hctx.clearRect(bx,by,bw,bh);hctx.setTransform(tr);desenhaHeroi(hctx,1,true);
     sctx.setTransform(1,0,0,1,0,0);sctx.clearRect(bx,by,bw,bh);sctx.globalCompositeOperation='source-over';sctx.drawImage(hc,bx,by,bw,bh,bx,by,bw,bh);
     sctx.globalCompositeOperation='source-in';sctx.fillStyle='#bff4ff';sctx.fillRect(bx,by,bw,bh);sctx.globalCompositeOperation='source-over';
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=.95*furo;
-    for(const [ox,oy] of [[-2,0],[2,0],[0,-2],[0,2]])ctx.drawImage(sc,bx,by,bw,bh,bx+ox,by+oy,bw,bh);
+    for(const [ox,oy] of [[-2*HD,0],[2*HD,0],[0,-2*HD],[0,2*HD]])ctx.drawImage(sc,bx,by,bw,bh,bx+ox,by+oy,bw,bh);
     ctx.globalAlpha=.85*furo;ctx.drawImage(hc,bx,by,bw,bh,bx,by,bw,bh);ctx.restore();}
   }else furo=Math.max(0,furo-.12);
   for(const [y,f] of npcs)if(y>hero.y)f();
@@ -2102,7 +2104,7 @@ setInterval(()=>{if(semRAF||!ultRAF)return;if(performance.now()-ultRAF>1000){sem
   tocavamRAF=[MUS,VENTO,musAtual,...Object.values(VOZES),...Object.values(MUS_CINE)].filter(a=>a&&!a.paused);paraAudio();
   try{for(const v of Object.values(MUS_CINE))v.pause();if(AC&&AC.state==='running')AC.suspend();}catch(e){}}},300);
 // um erro num quadro nao congela mais o jogo: mostra o erro (jogo.js mostraErro) e segue
-function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(1,0,0,1,0,0);c.globalAlpha=1;c.filter='none';c.globalCompositeOperation='source-over';}catch(_){}}
+function zeraCtx(c){try{for(let i=0;i<40;i++)c.restore();c.setTransform(HD,0,0,HD,0,0);c.globalAlpha=1;c.filter='none';c.globalCompositeOperation='source-over';}catch(_){}}
 function quadro(now){try{quadro0(now);}catch(e){zeraCtx(ctx);if(typeof mostraErro==='function')mostraErro(e);requestAnimationFrame(quadro);}}
 function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quadro);return;}
   if(window.__tut){ult=now;for(const k in teclas)teclas[k]=false;requestAnimationFrame(quadro);return;}   // cartao do tutorial aberto: jogo pausado
@@ -2148,9 +2150,9 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
   if(!comecou&&TER&&MAPA.complete&&!ab.on){
     if(!abVista&&!ab.fim){abComeca();}
     else{comecou=true;setTimeout(()=>{abreFala('inicio');salvaVila();},400);}}
-  if(ab.on){t+=dt;abPasso(dt);if(ab.on){abDesenha();requestAnimationFrame(quadro);return;}}
-  abPasso(dt);passo(dt);desenha();
-  if(ab.fim>0){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle=`rgba(0,0,0,${ab.fim})`;ctx.fillRect(0,0,W,H);}
+  if(ab.on){t+=dt;abPasso(dt);if(ab.on){TELA_BASE(ctx);abDesenha();requestAnimationFrame(quadro);return;}}
+  abPasso(dt);passo(dt);TELA_BASE(ctx);desenha();
+  if(ab.fim>0){TELA_BASE(ctx);ctx.fillStyle=`rgba(0,0,0,${ab.fim})`;ctx.fillRect(0,0,W,H);}
   requestAnimationFrame(quadro);}
 if(typeof regiaoInit==='function')regiaoInit();   // a regiao completa NOMES, FALAS, retratos, sons e filmes (cinzas.js)
 requestAnimationFrame(quadro);

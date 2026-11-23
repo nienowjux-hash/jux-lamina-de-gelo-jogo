@@ -40,7 +40,7 @@ function expressaoRio(quem, L) { if (/^…|\?!|!\?/.test(L)) return 3; if (/!$/.
 function desenhaFalaRio() { if (!fala) return;
   const agora = performance.now(), dt = Math.min(.1, (agora - falaUlt) / 1000); falaUlt = agora; fala.letras += dt * 42 * ((typeof OPC === 'object' && OPC.texto) || 1);
   const [quem, L] = fala.linhas[fala.i], x = 110, y = H - 150, w = W - 220, h = 126;
-  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(6,16,40,.9)'; ctx.strokeStyle = '#8fdcff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
+  ctx.save(); ctx.setTransform(window.HD_TELA || 1, 0, 0, window.HD_TELA || 1, 0, 0); ctx.fillStyle = 'rgba(6,16,40,.9)'; ctx.strokeStyle = '#8fdcff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.stroke();
   let tx = 0; const q = expressaoRio(quem, L);
   if (fala.ret !== fala.i + quem) { fala.ret = fala.i + quem; fala.retT = agora; } const a = Math.min(1, (agora - fala.retT) / 180);
   if (quem === 'Marta' && F.marta_ret && F.marta_ret.i.complete) {   // linha 3 da folha: 0 virando, 1 acenando, 2 maos na cintura, 3 apontando

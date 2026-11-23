@@ -6,6 +6,8 @@
    - peixes pulando, brilhos na agua, a raposa da margem (anda, para e olha, foge) e passarinhos
    Dados: rio_dados.js (mapa, mascara da agua, folhas recortadas). Sons: assets/sfx/rio_*.  */
 const W = 960, H = 540, cv = document.getElementById('c'), ctx = cv.getContext('2d');
+// HD (2026-11-23): a tela do rio tem o DOBRO de pixels; as coordenadas continuam 960x540
+const HD = 2; cv.width = W * HD; cv.height = H * HD; window.HD_TELA = HD;
 ctx.imageSmoothingEnabled = false;
 const R = window.JUX_RIO, Z = .72;   // camera mais longe (2026-11-21: 'da para afastar um pouco, nao da para ver o mapa')
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -705,6 +707,7 @@ function faixa(txt, x, y, cor, al) {
 let ultimo = performance.now();
 function frame(agora) {
   const dt = Math.min(.05, Math.max(0, (agora - ultimo) / 1000)); ultimo = agora;
+  ctx.setTransform(HD, 0, 0, HD, 0, 0);
   if (filmeQuadro(dt)) { requestAnimationFrame(frame); return; }
   if (typeof uiPasso === 'function') uiPasso(dt);
   if (AGUA) passo(dt);
