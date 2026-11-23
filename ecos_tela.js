@@ -77,7 +77,7 @@ function desenhaEcosLista(cx, cy, w, h, y) { const E = estadoEcos(), q = quemEco
     retratoHeroi(qq, x + 30, yy + 27, 20); texto('Eco do ' + NOME_QUEM[qq], x + 60, yy + 22, 12, '#9fb3d9');
     texto(eq ? nomeEcoM(eq) : 'nenhum', x + 60, yy + 42, 17, eq ? ECOS[eq].cor : '#5a6688');
     if (eq) retratoEcoQ(eq, x + sw - 50, yy + 7, 40, ECOS[eq].cor);
-    if (on) texto('escolhendo para ele', x + sw - 58, yy + 42, 11, '#8fe9ff', 'right');
+    if (on && G.length < 3) texto('escolhendo para ele', x + sw - 58, yy + 42, 11, '#8fe9ff', 'right');   // com 3 herois o quadro fica estreito: a borda acesa ja mostra de quem e
     ZONAS.push([x, yy, x + sw, yy + 54, () => { UI.quem = qq; som(SOM.ui_mover, .4); }]); });
   // os cartoes dos Ecos
   const top = cy + 58, cw = (w - 24) / 3, ch = Math.min(150, (y + h - 52 - top) / 2 - 8);

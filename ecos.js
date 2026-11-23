@@ -86,9 +86,9 @@ function aprendidas(){const E=estadoEcos(),r=[];for(const id of E.tem){const e=E
 // A do Jux continua sendo o proprio JOGO.ecos (equip/equipadas: saves antigos seguem iguais); a dos companheiros fica em JOGO.ecos.grupo[q].
 // O MESMO Eco (e a mesma habilidade de Eco) nao fica em dois personagens ao mesmo tempo.
 function vagaEco(q){const E=estadoEcos();if(!q||q==='jux')return E;E.grupo=E.grupo||{};return E.grupo[q]=E.grupo[q]||{equip:null,equipadas:[]};}
-const timeEco=()=>['jux',...((typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo)?['bino']:[])];
-const nivelQuem=q=>q==='bino'?((JOGO.bino||{}).nivel||1):JOGO.nivel;
-const NOME_QUEM={jux:'Jux',bino:'Bino'};
+const timeEco=()=>['jux',...((typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo)?['bino']:[]),...((typeof JOGO==='object'&&JOGO.felipe&&JOGO.felipe.ativo)?['felipe']:[])];
+const nivelQuem=q=>q==='bino'?((JOGO.bino||{}).nivel||1):q==='felipe'?((JOGO.felipe||{}).nivel||1):JOGO.nivel;
+const NOME_QUEM={jux:'Jux',bino:'Bino',felipe:'Felipe'};
 const donoEco=id=>timeEco().find(q=>vagaEco(q).equip===id)||null;
 const donoHab=h=>timeEco().find(q=>vagaEco(q).equipadas.includes(h))||null;
 const ecoEmCampo=()=>{for(const q of timeEco()){const e=vagaEco(q).equip;if(e)return e;}return null;};

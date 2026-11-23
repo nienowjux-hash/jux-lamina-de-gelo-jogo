@@ -119,5 +119,5 @@ function drawEstadosTarta(c, t) {
   for (const a of aliados()) { if (a.hp <= 0) continue; const ilha = temEst(a, 'ilha'); if (!ilha && !temEst(a, 'casco')) continue;
     const sc = ilha ? 1.15 : .95, x = a.x - a.lunge, y = a.y + 10 - I.pe * sc;
     c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = (ilha ? .38 : .2) + .06 * Math.sin(t * 2.4 + (a.quem === 'bino' ? 1 : 0)); c.imageSmoothingEnabled = false;
-    c.drawImage(im, 5 * I.w, 0, I.w, I.h, x - I.w * sc / 2, y - I.h * sc / 2, I.w * sc, I.h * sc); c.restore(); }
+    c.drawImage(im, ...fxSrc(I, 5), x - I.w * sc / 2, y - I.h * sc / 2, I.w * sc, I.h * sc); c.restore(); }
 }

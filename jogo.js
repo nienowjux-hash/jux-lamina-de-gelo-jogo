@@ -58,6 +58,9 @@ const ITENS={
   esp_temperada:{nome:'Espada Temperada', tipo:'arma',preco:4600,req:{nivel:20}, cor:'#9fc4e8',desc:'Aço de Brasária temperado na lava. ATQ +34, Crítico +2%.',bonus:{atk:34,crit:2}},
   esp_obsidiana:{nome:'Espada de Obsidiana',tipo:'arma',preco:6300,req:{nivel:23}, cor:'#8a6ad8',desc:'Vidro de vulcão com fio de navalha. ATQ +40, ATQ.M +14.',bonus:{atk:40,atkm:14}},
   mar_forja:    {nome:'Marreta de Forja',  tipo:'arma',para:'bino',preco:4700,req:{nivel:20}, cor:'#a08a7a',desc:'Só o Bino. A marreta de bater ferro da Úrsula. ATQ +36, DEF +8.',bonus:{atk:36,def:8}},
+  // --- arcos do Felipe (Úrsula, Brasária; FICHA_CAP3_FELIPE_BATALHA.md): só o Felipe usa (para:'felipe'); o Arco do Vento Sul é a arma de base
+  arco_pinho:   {nome:'Arco de Pinho',     tipo:'arma',para:'felipe',preco:3900,req:{nivel:18}, cor:'#d8b07a',desc:'Só o Felipe. Leve, de pinho claro. ATQ +28, VEL +2.',bonus:{atk:28,vel:2}},
+  arco_brasa:   {nome:'Arco de Brasa',     tipo:'arma',para:'felipe',preco:6200,req:{nivel:22}, cor:'#ff8a3c',desc:'Só o Felipe. Pontas de ferro com brasa. ATQ +38, Crítico +3%.',bonus:{atk:38,crit:3}},
   mar_vulcanica:{nome:'Marreta Vulcânica', tipo:'arma',para:'bino',preco:6500,req:{nivel:23}, cor:'#ff7a3a',desc:'Só o Bino. Pedra de vulcão ainda quente. ATQ +44, DEF +10, HP +40.',bonus:{atk:44,def:10,hp:40}},
   avental_ferreiro:{nome:'Avental de Ferreiro',tipo:'armadura',preco:1900,req:{nivel:18}, cor:'#a0683a',desc:'DEF +14, DEF.M +6, HP +30. Resiste a Queimadura (25%).',bonus:{def:14,defm:6,hp:30},resQueima:25},
   elmo_fornalha:{nome:'Elmo de Fornalha',  tipo:'elmo',preco:1300,req:{nivel:18}, cor:'#b0604a',desc:'DEF +8, DEF.M +5, HP +20. Resiste a Queimadura (15%).',bonus:{def:8,defm:5,hp:20},resQueima:15},
@@ -101,7 +104,7 @@ function equipadoEmAlguem(id){if(Object.values(JOGO.equip).includes(id))return t
 // RESISTÊNCIA A QUEIMADURA (Brasária): soma o resQueima de tudo o que o personagem veste, até 75%; devolve de 0 a 0,75
 function resistQueima(q){const E=equipDe(q);let r=0;for(const [s] of SLOTS_EQ){const it=ITENS[E[s]];if(it&&it.resQueima)r+=it.resQueima;}return Math.min(75,r)/100;}
 function bonusEquipDe(q){const eq={},E=equipDe(q);for(const [s] of SLOTS_EQ){const it=ITENS[E[s]];if(it&&it.bonus)for(const k in it.bonus)eq[k]=(eq[k]||0)+it.bonus[k];}return eq;}
-const ARMA_BASE={jux:'Aurora Gélida',bino:'Marreta de Pedra'};
+const ARMA_BASE={jux:'Aurora Gélida',bino:'Marreta de Pedra',felipe:'Arco do Vento Sul'};
 function nomeArmaDe(q){const a=ITENS[equipDe(q).arma];return a?a.nome:(ARMA_BASE[q||'jux']||'Nenhuma arma');}
 const LOJAS={
   vovo:  {nome:'Remédios da Vovó Hilda',quem:'Vovó Hilda',itens:['pocao','hipocao','eter','antidoto','colirio','ecoervas','remedio','repelente','fenix'],ola:'Poções feitas com ervas da montanha. Paga e não reclama.'},
@@ -110,7 +113,7 @@ const LOJAS={
   marta: {nome:'Peixaria da Marta',quem:'Marta',itens:['pocao','hipocao','eter','remedio','antidoto','colirio','fenix','repelente'],ola:'Peixe fresco não tenho pra vender. Poção, tenho. Vai querer?'},   // a pescadora do cais do meio do rio (Cap. 3)
   tiberio:{nome:'Carvão & Cia. do Tibério',quem:'Tibério',itens:['pocao','hipocao','eter','unguento_frio','remedio','repelente','fenix'],ola:'Carvão acabou. Poção, tenho. Não pechincha.'},   // o carvoeiro do acampamento da trilha das cinzas (Cap. 3)
   // BRASÁRIA (Cap. 3, Parte B): a ferraria (armas e armaduras de ferreiro), a botica e o mercado (sem morador: o balcão)
-  ursula:{nome:'Ferraria da Úrsula',quem:'Úrsula',itens:['esp_temperada','esp_obsidiana','mar_forja','mar_vulcanica','avental_ferreiro','elmo_fornalha','luvas_forja','botas_ferreiro'],ola:'HA! Ferro de Brasária! O melhor do mundo. E o mais caro!',compra:true,vende:'A Úrsula compra o que você achar.'},
+  ursula:{nome:'Ferraria da Úrsula',quem:'Úrsula',itens:['esp_temperada','esp_obsidiana','mar_forja','mar_vulcanica','arco_pinho','arco_brasa','avental_ferreiro','elmo_fornalha','luvas_forja','botas_ferreiro'],ola:'HA! Ferro de Brasária! O melhor do mundo. E o mais caro!',compra:true,vende:'A Úrsula compra o que você achar.'},
   salvia:{nome:'Botica da Dona Sálvia',quem:'Dona Sálvia',itens:['pocao','hipocao','eter','unguento_frio','remedio','fenix'],ola:'Cheira! Cheira! Tudo fresquinho. Menos eu.'},
   mercado:{nome:'Mercado de Brasária',quem:'Mercado',itens:['pao_forno','espeto_brasa','repelente','cha'],ola:'Pão quente, espeto na brasa e repelente. Paga no balcão.',compra:true,vende:'O mercado compra escamas e coisas achadas.'},
   ingrid:{nome:'Padaria da Ingrid',quem:'Ingrid',itens:['cha','pao_mel','ensopado','torta'],ola:'Pão quentinho dá força pra aventura! Literalmente!'},
@@ -194,7 +197,7 @@ function carregaJogo(){
 // (sem registro = cheio). Enche so ao subir de nivel, no santuario de cristal, conversando com a Vovo ou perdendo (a Vovo cuida).
 function guardaVida(q,hp,mp){JOGO.vida=JOGO.vida||{};JOGO.vida[q]={hp:Math.max(0,Math.round(hp)),mp:Math.max(0,Math.round(mp))};}
 function encheVida(q){if(!JOGO.vida)return;if(q)delete JOGO.vida[q];else JOGO.vida={};}
-function vidaAtual(q){const s=q==='bino'?(typeof statusBino==='function'&&JOGO.bino?statusBino(JOGO.bino.nivel):{hp:400,mp:40}):statusJux(),v=(JOGO.vida||{})[q];
+function vidaAtual(q){const s=q==='bino'?(typeof statusBino==='function'&&JOGO.bino?statusBino(JOGO.bino.nivel):{hp:400,mp:40}):q==='felipe'?(typeof statusFelipe==='function'&&JOGO.felipe?statusFelipe(JOGO.felipe.nivel):{hp:300,mp:50}):statusJux(),v=(JOGO.vida||{})[q];
   return v?{hp:Math.min(v.hp,s.hp),mp:Math.min(v.mp,s.mp),max:s.hp,mmax:s.mp}:{hp:s.hp,mp:s.mp,max:s.hp,mmax:s.mp};}
 function salvaJogo(){if(window.LAB_FIXO||window.__importou||window.__semSalvar)return;   // __semSalvar: modo de teste de cena (ex.: vila.html#preparativos)
 try{localStorage.setItem(SAVE_J,JSON.stringify(JOGO));localStorage.setItem('jux_progresso',JSON.stringify({nivel:JOGO.nivel,exp:JOGO.exp}));}catch(e){}

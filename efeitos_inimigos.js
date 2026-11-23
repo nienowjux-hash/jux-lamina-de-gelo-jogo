@@ -17,8 +17,9 @@ function fxiPlay(nome, x, y, ms, o) {
     c.save(); c.translate(o.x1 != null ? x + (o.x1 - x) * kv : x, o.y1 != null ? y + (o.y1 - y) * kv : y); if (o.rot) c.rotate(o.rot); c.scale((o.flip ? -1 : 1) * esc, esc);
     c.globalAlpha = o.alpha == null ? 1 : o.alpha; c.imageSmoothingEnabled = false;
     if (o.furia) c.filter = 'sepia(.85) saturate(3.2) hue-rotate(-38deg) brightness(1.08)';   // efeito em tons de brasa (Furia Barbara do Bino)
-    c.drawImage(im, q * I.w, 0, I.w, I.h, -I.w / 2, -I.h / 2, I.w, I.h);
-    if (o.brilho) { c.globalCompositeOperation = 'lighter'; c.globalAlpha *= .3; c.drawImage(im, q * I.w, 0, I.w, I.h, -I.w / 2, -I.h / 2, I.w, I.h); }
+    const fs = fxSrc(I, q);   // HD: I.r (tools/hd_atlas.py)
+    c.drawImage(im, ...fs, -I.w / 2, -I.h / 2, I.w, I.h);
+    if (o.brilho) { c.globalCompositeOperation = 'lighter'; c.globalAlpha *= .3; c.drawImage(im, ...fs, -I.w / 2, -I.h / 2, I.w, I.h); }
     c.restore(); });
   return true;
 }

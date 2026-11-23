@@ -7,12 +7,13 @@
 'use strict';
 const temBino = () => (TESTE ? !!G.labBino : !!(JOGO.bino && JOGO.bino.ativo));
 const nvBino = () => (TESTE ? prog.nivel : Math.max(1, (JOGO.bino && JOGO.bino.nivel) | 0 || 1));
-const aliados = () => (temBino() ? [JUX, BINO] : [JUX]);
-const statsDe = a => (a && a.quem === 'bino' ? statusBino(nvBino()) : stats(prog.nivel));
-const baseDe = a => (a && a.quem === 'bino' ? statusBino(nvBino(), true) : statusBase(prog.nivel));
-const nvAtor = () => (hero.quem === 'bino' ? nvBino() : prog.nivel);
-const bAn = () => (hero.quem === 'bino' ? BINO_D : BAT);   // folha de animacoes de quem esta em cena
-const nomeAliado = a => (a.quem === 'bino' ? 'Bino' : 'Jux');
+const temF_ = () => typeof temFelipe === 'function' && temFelipe();   // o Felipe (felipe_batalha.js), o 3o do time
+const aliados = () => [JUX, ...(temBino() ? [BINO] : []), ...(temF_() ? [FELIPE] : [])];
+const statsDe = a => (a && a.quem === 'bino' ? statusBino(nvBino()) : a && a.quem === 'felipe' ? statsFelipe() : stats(prog.nivel));
+const baseDe = a => (a && a.quem === 'bino' ? statusBino(nvBino(), true) : a && a.quem === 'felipe' ? statsFelipe(true) : statusBase(prog.nivel));
+const nvAtor = () => (hero.quem === 'bino' ? nvBino() : hero.quem === 'felipe' ? nvFelipe() : prog.nivel);
+const bAn = () => (hero.quem === 'bino' ? BINO_D : hero.quem === 'felipe' ? FELIPE_D : BAT);   // folha de animacoes de quem esta em cena
+const nomeAliado = a => (a.quem === 'bino' ? 'Bino' : a.quem === 'felipe' ? 'Felipe' : 'Jux');
 
 function iniciaBino() {
   const sb = statusBino(nvBino());
@@ -64,7 +65,7 @@ function ganhaExpBino(x) {
 
 /* ---------- menu do Bino ---------- */
 const MAIN_BINO = ['Atacar', 'Habilidades', 'Itens', 'Defender', 'Fugir'];
-const mainLista = () => (hero.quem === 'bino' ? MAIN_BINO : MAIN);
+const mainLista = () => (hero.quem === 'bino' ? MAIN_BINO : hero.quem === 'felipe' ? MAIN_FELIPE : MAIN);
 function habBinoLista() {
   const lib = HAB_BINO.filter(h => h.nivel <= nvBino() && habLigada(h.id)), prox = HAB_BINO.find(h => h.nivel > nvBino());
   // habilidades de Eco equipadas no Bino (FICHA_ECOS_GRUPO.md): o golpe e da criatura do Eco, igual no Jux

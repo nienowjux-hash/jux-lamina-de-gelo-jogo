@@ -46,7 +46,7 @@ const vel=document.getElementById('vel'),cebola=document.getElementById('cebola'
 vel.oninput=()=>document.getElementById('velv').textContent=vel.value+'x';
 function idx(an,t){let i=Math.floor(t*an.fps);return an.loop?i%an.quadros.length:Math.min(i,an.quadros.length-1);}
 function blit(x,j,dx,dy,s,flip,D,im){D=D||A;im=im||img;x.save();x.translate(dx,dy);if(flip)x.scale(-1,1);x.imageSmoothingEnabled=false;
-  x.drawImage(im,j*D.w,0,D.w,D.h,-D.ancora[0]*s,-D.ancora[1]*s-s,D.w*s,D.h*s);x.restore();}
+  const r=D.r||1,cl=D.cols||1e9;x.drawImage(im,(j%cl)*D.w*r,Math.floor(j/cl)*D.h*r,D.w*r,D.h*r,-D.ancora[0]*s,-D.ancora[1]*s-s,D.w*s,D.h*s);x.restore();}
 // golpe: corre 460 ms, ataca 510 ms, volta 450 ms (igual ao index.html)
 let golpe=null;document.getElementById('golpe').onclick=()=>golpe={t:0};
 let last=performance.now(),T=0;

@@ -129,7 +129,7 @@ function vidaPasso(dt) {
   if (brMartT <= 0) { brMartT = brRnd(1.2, 3.4); const [x, y] = BR_BIGORNAS[(Math.random() * BR_BIGORNAS.length) | 0], v = brVol(x, y, 700);
     if (v > .05 && typeof BIGORNA !== 'undefined' && !ab.on) som(BIGORNA[(Math.random() * BIGORNA.length) | 0], .22 * v); }
   // o "z z z" do telhado (sobe da rede)
-  brZT -= dt; if (brZT <= 0) { brZT = brRnd(1, 1.6); brZs.push({ x: 322 + brRnd(-4, 4), y: 118, v: 0 }); }
+  brZT -= dt; if (brZT <= 0 && !(typeof feEntrou === 'function' && feEntrou())) { brZT = brRnd(1, 1.6); brZs.push({ x: 322 + brRnd(-4, 4), y: 118, v: 0 }); }
   for (const z of brZs) { z.v += dt; z.y -= 9 * dt; z.x += Math.sin(z.v * 2.4) * 6 * dt + 3 * dt; }
   while (brZs.length && brZs[0].v > 3.2) brZs.shift();
   // na taverna (perto do Gorm) a música abaixa
@@ -137,6 +137,7 @@ function vidaPasso(dt) {
     const v = MUS.volume; if (Math.abs(v - alvo) > .005) MUS.volume = v + (alvo - v) * Math.min(1, dt * 2); }
   if (typeof baconTimePasso === 'function') baconTimePasso(dt);
   brHistoriaPasso(dt);
+  if (typeof fePasso === 'function') fePasso();   // Parte C: a entrada do Felipe (felipe_entrada.js)
 }
 
 // a lava dos canais: a textura desliza no sentido do canal, em duas fases que se cruzam (não aparece emenda), e o brilho pulsa
@@ -347,6 +348,7 @@ function regiaoChega() {
   const C = brC3(), B = brB(); C.fase = 'brasaria'; C.parteA2 = true;
   pontoGato();
   if (/[?&]layout/.test(location.search)) return;   // verificador de layout (layout_check.js): sem cutscene por cima das telas
+  if (typeof fePosLuta === 'function' && fePosLuta()) return;   // Parte C: a luta de estreia do Felipe
   if (!B.chegou) { hero.alvo = null; hero.pontoAlvo = null; for (const k in teclas) teclas[k] = false;
     setTimeout(() => tocaFilme(BR_CENAS_ENTRADA, BR_IMG_ENTRADA, brFimEntrada), 500); }
 }
@@ -359,7 +361,7 @@ function brFimEntrada() {
 function brasariaDestino() {
   const B = brB();
   if (!B.mural) return { reg: 'brasaria', x: 962, y: 540, txt: 'Leia o mural de avisos da praça' };
-  return null;
+  return typeof feDestino === 'function' ? feDestino() : null;
 }
 
 // ---------- cutscene "O porco abriu o portão" (sistema do motor: cada cena segura no fim com 'ENTER ▶ continuar'; ESC pula) ----------
@@ -420,4 +422,5 @@ function regiaoInit() {
   window.__rio = window.__rio || { desenha: () => desenha() };
   // laboratório: brasaria.html#cine_entrada só toca o filme
   if (location.hash.split('?')[0] === '#cine_entrada') setTimeout(() => tocaFilme(BR_CENAS_ENTRADA, BR_IMG_ENTRADA, () => {}), 1500);
+  if (typeof feInit === 'function') feInit();   // Parte C: a entrada do Felipe
 }

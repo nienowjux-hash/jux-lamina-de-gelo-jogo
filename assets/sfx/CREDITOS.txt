@@ -95,3 +95,30 @@ Mae-Salamandra:
   mae_onda: fireball [FB] na metade da velocidade + cannon_02 [BG] e roar_04 [C2] graves + rugido de fogo sintetizado + fire-1 [CR]
   mae_lava: estalos e bolhas de lava sintetizados (ffmpeg) + bang_07 [BG] e wood_cracking_02 [MW] bem mais graves + ronco
   mae_dor: scream_01 [C1] e roar_06 [C2] bem mais graves, com eco
+
+Felipe, o arqueiro do vento (Cap. 3, Parte C2) — fontes:
+  [AS] "Archers shooting" - copyc4t (Paolo D'Emilio), from OpenGameArt - CC-BY 3.0 - https://opengameart.org/content/archers-shooting
+       (mistura de: Anton, CC-BY; qubodup, CC0; Benboncan, CC-BY — freesound.org)
+  [TW] "Thwack Sounds" - AntumDeluge - CC0 - https://opengameart.org/content/thwack-sounds
+  [YW] "Yawn" - spookymodem - CC-BY 3.0 - https://opengameart.org/content/yawn
+  felipe_corda: wood_squeak_01 [MW] mais agudo e curto (a corda esticando)
+  felipe_solta: o primeiro estalo da corda de "Archers shooting" [AS] + whoosh ("RPG Sound Pack", artisticdude, CC0) mais agudo
+  felipe_impacto: thwack-02 [TW] + wood_hit_03 [MW]
+  felipe_impacto_forte: thwack-05 [TW] mais grave + wood_hit_03 [MW] + whoosh (artisticdude, CC0)
+  felipe_bocejo: Yawn [YW] um pouco mais grave
+  felipe_acorda: bino_whoosh (deste jogo) mais agudo + magia_brilho ("RPG Sound Pack", artisticdude, CC0) mais agudo
+  Habilidades novas do Felipe — fontes:
+  [EG] "Bald Eagle Screams" - pla1554alaska (enviado por qubodup), from OpenGameArt - CC-BY 3.0 - https://opengameart.org/content/bald-eagle-screams
+  [SW] "Short wind sound" - remaxim - CC0 - https://opengameart.org/content/short-wind-sound
+  [WM] "Wind / Hit / Time Morph" - qubodup - CC0 - https://opengameart.org/content/wind-hit-time-morph
+  [BD] "Bell Dings/Chimes" - PWL - CC0 - https://opengameart.org/content/bell-dingschimes
+  [HB] "8 Heals and Buffs SFX" - leohpaz - CC-BY 4.0 - https://opengameart.org/content/8-heals-and-buffs-sfx
+  [MA] "8 Magic Attacks" - leohpaz - CC-BY 4.0 - https://opengameart.org/content/8-magic-attacks
+  [TS] "Fantasy Sound Effects (Tinysized SFX)" - Vehicle - CC0 - https://opengameart.org/content/fantasy-sound-effects-tinysized-sfx
+  felipe_falcao: eagle3 [EG] um pouco mais agudo e curto (grito de falcão)
+  felipe_rajada: short wind sound [SW] mais forte e rápido + megaswosh1 [WM] mais grave + whoosh ("RPG Sound Pack", artisticdude, CC0) mais grave
+  felipe_ninar: 44_Sleep_01 [HB] cortado + bell_ding3 [BD] bem mais agudo e baixinho
+  felipe_vento_time: 48_Speed_up_02 [HB] cortado + slomo1 [WM] de trás pra frente (vento subindo) + magia_brilho ("RPG Sound Pack", artisticdude, CC0) mais agudo
+  felipe_chuva: tin-whistle-whoosh-01 e -02 [TS] em várias alturas (flechas assobiando) + "Archers shooting" [AS] + felipe_impacto (deste jogo) repetido 7 vezes (flechas caindo)
+  felipe_perfura: 25_Wind_01 [MA] mais agudo + tube-plastic-whoosh-01 [TS] e megaswosh2 [WM] mais agudos + felipe_impacto_forte (deste jogo) no final
+  felipe_brisa: short wind sound [SW] abafado e suave + 02_Heal_02 [HB] + magia_brilho ("RPG Sound Pack", artisticdude, CC0) bem mais agudo

@@ -45,15 +45,15 @@
   async function roda() {
     await espera(4500);
     // save de teste: Cap. 3, Jux e Bino, os 2 Ecos, itens, nada gravado
-    Object.assign(JOGO, { nivel: 18, exp: 100, gil: 9999, bino: { ativo: true, nivel: 17, exp: 0 }, cap2: { fase: 'fim' }, cap3: { fase: 'rio', barco: true, serpVista: true, tartarok: true },
+    Object.assign(JOGO, { nivel: 18, exp: 100, gil: 9999, bino: { ativo: true, nivel: 17, exp: 0 }, felipe: { ativo: true, entrou: true, nivel: 16, exp: 0 }, cap2: { fase: 'fim' }, cap3: { fase: 'rio', barco: true, serpVista: true, tartarok: true },
       provas: { fenrir: 'feita', serpente: 'vencida' }, inv: { pocao: 12, hipocao: 8, eter: 5, fenix: 3, remedio: 4, antidoto: 2, colirio: 2, elixir: 1 },
       ecos: { equip: 'lamina', tem: ['lamina', 'guardiao'], pe: { lamina: 3000, guardiao: 40 }, equipadas: ['golpe_duplo'], grupo: { bino: { equip: 'guardiao', equipadas: ['muralha'] } } },
       tut: Object.assign(JOGO.tut || {}, { ecos_tela: true }), formacao: ['bino', null, 'jux', null] });
     const R = [], cap = async n => R.push(await capta(n));
     k('m'); await espera(300); UI.home = true; UI.sel = 0; await cap('menu: inicio');
     for (let a = 0; a < ABAS.length; a++) { UI.home = false; UI.aba = a; UI.sel = 0; UI.ecoTela = 'lista'; UI.quem = 'jux'; await espera(120); await cap('aba ' + ABAS[a]);
-      if (typeof ABA_ECOS !== 'undefined' && a === ABA_ECOS) for (const id of ['lamina', 'guardiao']) for (const q of ['jux', 'bino']) { UI.quem = q; UI.ecoVer = id; UI.ecoTela = 'eco'; UI.sel = 3; await espera(100); await cap('Ecos: ' + id + ' visto pelo ' + q); }
-      if (a === 0 || a === 2 || a === 3) { UI.quem = 'bino'; await espera(100); await cap('aba ' + ABAS[a] + ' (Bino)'); } }
+      if (typeof ABA_ECOS !== 'undefined' && a === ABA_ECOS) for (const id of ['lamina', 'guardiao']) for (const q of ['jux', 'bino', 'felipe']) { UI.quem = q; UI.ecoVer = id; UI.ecoTela = 'eco'; UI.sel = 3; await espera(100); await cap('Ecos: ' + id + ' visto pelo ' + q); }
+      if (a === 0 || a === 2 || a === 3) { UI.quem = 'bino'; await espera(100); await cap('aba ' + ABAS[a] + ' (Bino)'); UI.quem = 'felipe'; await espera(100); await cap('aba ' + ABAS[a] + ' (Felipe)'); } }
     UI.home = true; UI.menu = false;
     if (typeof abreSaves === 'function') for (const m of ['salvar', 'carregar', 'caps']) { abreSaves(m); await espera(120); await cap('janela ' + m); UI.saves = null; }
     // nos mapas do motor (cinzas.html) a loja so abre sem fala na tela: fecha qualquer fala que tenha ficado aberta

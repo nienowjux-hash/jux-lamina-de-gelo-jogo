@@ -62,7 +62,7 @@ function desenhaAtaqueTopo(){if(!emAtaque())return;
 const INIM_V=window.JUX_INIM||{},INIM_VI={};for(const k of ['acolito','sombra_oskar','sombra_borin','sombra_ingrid'])if(INIM_V[k]){INIM_VI[k]=new Image();INIM_VI[k].src=INIM_V[k].atlas;}
 const ATQ_GRUPO={atq_1:[['sombra_oskar',0,-6,.58],['acolito',-40,-16,.55],['acolito',40,-16,.55]],atq_2:[['sombra_borin',0,-6,.68],['acolito',44,-14,.55]],atq_3:[['sombra_ingrid',0,-8,.58],['acolito',-40,-18,.55],['acolito',40,-18,.55]]};
 function atqInimDesenha(k,x,y,e,fase){const D=INIM_V[k],I=INIM_VI[k];if(!D||!I||!I.complete)return;const q=Math.floor(t*4+fase)%4,esp=hero.x<x;
-  ctx.save();ctx.translate(x,y);ctx.scale(esp?-e:e,e);ctx.drawImage(I,q*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1],D.w,D.h);ctx.restore();}
+  ctx.save();ctx.translate(x,y);ctx.scale(esp?-e:e,e);const r=D.r||1,cl=D.cols||1e9;ctx.drawImage(I,(q%cl)*D.w*r,Math.floor(q/cl)*D.h*r,D.w*r,D.h*r,-D.ancora[0],-D.ancora[1],D.w,D.h);ctx.restore();}   // atlas HD (r, cols: tools/hd_atlas.py)
 const ataqueDesenhos=()=>[...ATQ_CHAO.map(([x,y,e])=>[y,()=>atqQuadro('fogo',x,y,e,x*.11,11)]),
   ...ATQ_LUTAS.filter(l=>!((JOGO.cap2&&JOGO.cap2.lutas)||{})[l.id]).flatMap(l=>(ATQ_GRUPO[l.id]||[]).map(([k,dx,dy,e],i)=>[l.y+dy,()=>atqInimDesenha(k,l.x+dx,l.y+dy,e,i*1.3)]))];
 // as tres lutas (a Sombra de um morador + acolitos), uma de cada vez, na ordem

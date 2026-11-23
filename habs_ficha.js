@@ -3,7 +3,7 @@
    normal (Jux 34, Bino 40) = % do ataque. Cada linha da ficha e [rotulo, valor, cor?]. O dano final ainda muda com
    ATQ/ATQ.M, defesa e fraqueza do inimigo, critico e Quebra (x1,5). */
 'use strict';
-const ATQ_BASE = {jux: 34, bino: 40};
+const ATQ_BASE = {jux: 34, bino: 40, felipe: 34};
 const pct = (poder, quem) => Math.round(poder / ATQ_BASE[quem] * 100) + '%';
 const C_DANO = '#ffb38a', C_CURA = '#7dffa8', C_DEF = '#8fd0ff', C_EST = '#d9b8ff';
 const FICHA_HAB = {
@@ -38,4 +38,15 @@ const FICHA_HAB = {
   b_furia:   [['Bônus', 'dano +50%', C_DANO], ['Risco', 'recebe +25% de dano', '#ff9a9a'], ['Duração', '6 turnos do Bino'], ['Extra', 'revida todo golpe que recebe', C_DANO]],
   b_esmaga:  [['Dano', pct(120, 'bino') + ' (físico)', C_DANO], ['Alvo', '1 inimigo'], ['Especial', 'ignora metade da defesa', C_DANO]],
   b_queda:   [['Dano', pct(130, 'bino') + ' em cada inimigo (físico)', C_DANO], ['Alvo', 'todos os inimigos'], ['Efeito', '60% de chance de atordoar (perde 1 turno)', C_EST]],
+  // ---------------- Felipe (ataque normal = 34, flecha física; as habilidades são Vento) ----------------
+  f_certeira:[['Dano', pct(48, 'felipe') + ' (físico, Vento)', C_DANO], ['Alvo', '1 inimigo'], ['Especial', 'crítico garantido se o alvo estiver Marcado', C_EST]],
+  f_soneca:  [['Recupera', '25% do MP e 10% da vida', C_CURA], ['Efeito', 'o próximo ataque é crítico garantido (170% de dano)', C_EST], ['Custo', 'grátis, mas gasta a vez']],
+  f_dupla:   [['Dano', '2 flechas de ' + pct(30, 'felipe') + ' = ' + pct(60, 'felipe') + ' (físico, Vento)', C_DANO], ['Alvo', 'a 2ª flecha vai em outro inimigo, se houver']],
+  f_falcao:  [['Dano', pct(24, 'felipe') + ' (físico, Vento)', C_DANO], ['Efeito', 'Marcado por 3 turnos: recebe +25% de dano de todo o time', C_EST], ['Combo', 'a Flecha Certeira num Marcado é crítico garantido', C_EST]],
+  f_rajada:  [['Dano', pct(36, 'felipe') + ' em cada inimigo (físico, Vento)', C_DANO], ['Alvo', 'todos os inimigos'], ['Efeito', 'atrasa a barra de turno deles', C_EST]],
+  f_ninar:   [['Dano', pct(18, 'felipe') + ' (físico, Vento)', C_DANO], ['Efeito', 'Sono por 2 turnos (acorda se apanhar)', C_EST], ['Atenção', 'chefes costumam ser imunes', '#ff9a9a']],
+  f_corrente:[['Efeito', 'VEL +30% no time inteiro (a barra de turno enche mais rápido)', C_EST], ['Duração', '3 turnos de cada herói']],
+  f_chuva:   [['Dano', '3 ondas de ' + pct(20, 'felipe') + ' = ' + pct(60, 'felipe') + ' em cada inimigo (físico, Vento)', C_DANO], ['Alvo', 'todos os inimigos'], ['Quebra', 'alta (muitos acertos)']],
+  f_perfurante:[['Dano', pct(70, 'felipe') + ' (físico, Vento)', C_DANO], ['Alvo', '1 inimigo'], ['Especial', 'ignora metade da defesa e enche muito a Quebra', C_DANO]],
+  f_brisa:   [['Cura', '18% da vida máxima de cada herói', C_CURA], ['Alvo', 'o time inteiro'], ['Extra', 'tira Lento, Cego e Sono', C_CURA]],
 };

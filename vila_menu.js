@@ -51,8 +51,11 @@ const UI={quem:'jux',menu:false,aba:0,sel:0,loja:null,escolha:null,avisos:[],msg
 const ABAS=['Status','Itens','Equipar','Habilidades','Ecos','Missões','Mapa','Sistema','Bestiário'];
 const ABA_HABS=3,ABA_ECOS=4,ABA_MISSOES=5,ABA_MAPA=6,ABA_SALVAR=7,ABA_BESTA=8;
 // ---------- GRUPO (MENU_GRUPO.md): quem esta sendo visto em Status / Equipar / Habilidades. Companheiro novo: entra em grupoMenu()
-const NOME_GRUPO={jux:'Jux',bino:'Bino'},COR_GRUPO={jux:'#8fe9ff',bino:'#ffb27a'};
-function grupoMenu(){const g=['jux'];if(typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo&&typeof statusBino==='function')g.push('bino');return g;}
+const NOME_GRUPO={jux:'Jux',bino:'Bino',felipe:'Felipe'},COR_GRUPO={jux:'#8fe9ff',bino:'#ffb27a',felipe:'#a8f0a0'};
+function grupoMenu(){const g=['jux'];if(typeof JOGO==='object'&&JOGO.bino&&JOGO.bino.ativo&&typeof statusBino==='function')g.push('bino');if(typeof JOGO==='object'&&JOGO.felipe&&JOGO.felipe.ativo&&typeof statusFelipe==='function')g.push('felipe');return g;}
+// os companheiros (Status do menu): de onde vem o nivel, os atributos e o texto da funcao
+const COMP_MENU={bino:{j:()=>JOGO.bino,st:n=>statusBino(n),funcao:'Bárbaro tanque',l1:'Só dano físico, sem elemento.',l2:'Protege o time e aguenta os golpes.'},
+  felipe:{j:()=>JOGO.felipe,st:n=>statusFelipe(n),funcao:'Arqueiro do vento',l1:'Flechas rápidas; habilidades de Vento.',l2:'O mais rápido do time, crítico alto.'}};
 function trocaQuem(dir){const g=grupoMenu();if(g.length<2)return;UI.eqLista=null;UI.quem=g[(g.indexOf(UI.quem)+dir+g.length)%g.length];UI.sel=0;som(SOM.ui_mover,.4);}
 const ABA_COM_GRUPO=a=>a===0||a===2||a===3||a===4;   // Status, Equipar, Habilidades e Ecos trocam de personagem com Q
 function seletorGrupo(cx,cy){const g=grupoMenu();if(!g.includes(UI.quem))UI.quem='jux';
@@ -174,7 +177,7 @@ function confirmaQtd(){const q=UI.loja.qtd,id=q.id,it=ITENS[id],n=Math.max(1,Mat
 
 // prévia: como ficam os atributos do Jux com este item (equipado / afiado / comido)
 const NOMES_ST=[['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crít%'],['esq','Esq%']];
-const statusDe=q=>q==='bino'?statusBino(JOGO.bino.nivel):statusJux();
+const statusDe=q=>COMP_MENU[q]?COMP_MENU[q].st(COMP_MENU[q].j().nivel):statusJux();
 function quemPrevia(it){if(it.tipo==='arma')return donoItem(it);return grupoMenu().includes(UI.quem)?UI.quem:'jux';}
 function previa(id,q){const it=ITENS[id];if(!it)return null;q=q||quemPrevia(it);
   const E=equipDe(q),antes=statusDe(q),sv={eq:{...E},bf:JOGO.buff};
@@ -280,14 +283,15 @@ const retratoOk=id=>RETRATO_ECO[id]&&RETRATO_ECO[id].complete&&RETRATO_ECO[id].n
 // ---------- aba HABILIDADES: as do Jux (jux_habs.js); ENTER liga/desliga (desligada some da batalha e do AUTO)
 // habilidades do menu: as do Jux e, depois que ele entra no time, as do Bino (ids b_*)
 const temBinoMenu=()=>typeof HAB_BINO!=='undefined'&&!!(JOGO.bino&&JOGO.bino.ativo);
-const habsMenu=()=>(UI.quem==='bino'&&temBinoMenu())?HAB_BINO:HAB_JUX;
-const nvHab=q=>q.id.startsWith('b_')?((JOGO.bino||{}).nivel||1):JOGO.nivel;
+const temFelipeMenu=()=>typeof HAB_FELIPE!=='undefined'&&!!(JOGO.felipe&&JOGO.felipe.ativo);
+const habsMenu=()=>(UI.quem==='bino'&&temBinoMenu())?HAB_BINO:(UI.quem==='felipe'&&temFelipeMenu())?HAB_FELIPE.filter(h=>h.feito):HAB_JUX;
+const nvHab=q=>q.id.startsWith('b_')?((JOGO.bino||{}).nivel||1):q.id.startsWith('f_')?((JOGO.felipe||{}).nivel||1):JOGO.nivel;
 function alternaHab(i){const h=habsMenu()[i];if(!h)return;
   if(nvHab(h)<h.nivel){som(SOM.ui_mover,.4);aviso('Aprende no nível '+h.nivel,'#ff9a9a');return;}
   if(!JOGO.habOff)JOGO.habOff={};if(JOGO.habOff[h.id])delete JOGO.habOff[h.id];else JOGO.habOff[h.id]=true;
   som(SOM.ui_vez,.5);aviso(h.nome+(habLigada(h.id)?': ligada':': desligada'),habLigada(h.id)?'#7dffa8':'#ffb0b0');salvaJogo();}
 function desenhaHabs(cx,cy,w,h,y){const L=habsMenu(),linha=34,vis=Math.floor((y+h-cy-62)/linha),top=Math.max(0,Math.min(UI.sel-Math.floor(vis/2),L.length-vis));
-  texto((UI.quem==='bino'?'Bino Nv '+JOGO.bino.nivel:'Jux Nv '+JOGO.nivel)+' · '+L.filter(q=>q.nivel<=nvHab(q)).length+' de '+L.length+' habilidades aprendidas',cx,cy-4,13,'#9fe8ff');
+  texto((COMP_MENU[UI.quem]&&grupoMenu().includes(UI.quem)?NOME_GRUPO[UI.quem]+' Nv '+COMP_MENU[UI.quem].j().nivel:'Jux Nv '+JOGO.nivel)+' · '+L.filter(q=>q.nivel<=nvHab(q)).length+' de '+L.length+' habilidades aprendidas',cx,cy-4,13,'#9fe8ff');
   L.slice(top,top+vis).forEach((q,j)=>{const i=top+j,yy=cy+8+j*linha,sabe=q.nivel<=nvHab(q),lig=habLigada(q.id);
     linhaSel(cx,yy,340,linha-3,i===UI.sel);
     const c=sabe?(lig?'#7dffa8':'#ff9a9a'):'#5a6688';ctx.strokeStyle=c;ctx.lineWidth=2;ctx.strokeRect(cx+12,yy+7,14,14);if(sabe&&lig){ctx.fillStyle=c;ctx.fillRect(cx+15,yy+10,8,8);}
@@ -298,7 +302,7 @@ function desenhaHabs(cx,cy,w,h,y){const L=habsMenu(),linha=34,vis=Math.floor((y+
   const q=L[UI.sel]||L[0],x2=cx+370,ww=w-410,sabe=q.nivel<=nvHab(q),lig=habLigada(q.id);let yy=cy+14;
   texto(q.nome,x2,yy,19,'#ffe27a');yy+=26;
   texto(sabe?(lig?'✔ Ligada':'✖ Desligada'):'🔒 Aprende no nível '+q.nivel,x2,yy,15,sabe?(lig?'#7dffa8':'#ff9a9a'):'#9a9ab0');yy+=26;
-  texto('Tipo: '+(q.id.startsWith('b_')?'Bino · físico (menu Habilidades na batalha)':q.ressonancia?'Ressonância (usa a barra cheia)':'Magia (menu Magia na batalha)'),x2,yy,14,'#c8d8f0');yy+=22;
+  texto('Tipo: '+(q.id.startsWith('b_')?'Bino · físico (menu Habilidades na batalha)':q.id.startsWith('f_')?'Felipe · flecha (menu Habilidades na batalha)':q.ressonancia?'Ressonância (usa a barra cheia)':'Magia (menu Magia na batalha)'),x2,yy,14,'#c8d8f0');yy+=22;
   texto(q.mp?'Custo: '+q.mp+' MP':'Custo: barra de Ressonância',x2,yy,14,'#9fe8ff');yy+=24;
   // ficha com os numeros (habs_ficha.js): dano em % do ataque normal, alvos, cura, defesa, duracao e efeitos
   const quebraTxt=(txt,x,tam,cor,larg)=>{ctx.font=`bold ${tam}px "Trebuchet MS"`;let lin='';for(const p of String(txt).split(' ')){if(lin&&ctx.measureText(lin+p).width>larg){texto(lin,x,yy,tam,cor);yy+=tam+5;lin='';}lin+=p+' ';}if(lin){texto(lin,x,yy,tam,cor);yy+=tam+5;}};
@@ -307,8 +311,8 @@ function desenhaHabs(cx,cy,w,h,y){const L=habsMenu(),linha=34,vis=Math.floor((y+
     for(const [rot,val,cor] of F){texto(rot+':',x2,yy,14,'#9fb3d9');const y0=yy;quebraTxt(val,x2+104,14,cor||'#e8f6ff',ww-104);if(yy===y0)yy+=19;}
     yy+=6;ctx.fillStyle='rgba(40,70,120,.35)';ctx.fillRect(x2-8,yy-12,ww+16,1);yy+=8;}
   quebraTxt(q.desc,x2,14,'#c8d8f0',ww);
-  if(F){yy+=4;quebraTxt('% = em relação ao ataque normal de '+(UI.quem==='bino'?'Bino':'Jux')+'; muda com ATQ, defesa, fraqueza e crítico.',x2,11,'#7a8aa8',ww);yy-=2;}   // quebra em 2 linhas: nao passa do painel
-  yy+=10;const eq=(typeof vagaEco==='function')?vagaEco(UI.quem==='bino'?'bino':'jux').equipadas.filter(k=>HABS[k]&&!HABS[k].passiva):[];
+  if(F){yy+=4;quebraTxt('% = em relação ao ataque normal de '+(NOME_GRUPO[UI.quem]||'Jux')+'; muda com ATQ, defesa, fraqueza e crítico.',x2,11,'#7a8aa8',ww);yy-=2;}   // quebra em 2 linhas: nao passa do painel
+  yy+=10;const eq=(typeof vagaEco==='function')?vagaEco(COMP_MENU[UI.quem]?UI.quem:'jux').equipadas.filter(k=>HABS[k]&&!HABS[k].passiva):[];
   texto('Habilidades de Eco equipadas: '+(eq.length?eq.map(k=>HABS[k].nome).join(', '):'nenhuma'),x2,yy,12,'#b8a6e8');texto('(gerencie na aba Ecos)',x2,yy+16,11,'#7a8aa8');
   texto('▲ ▼ escolhe · ENTER: liga ou desliga · Q: personagem · desligada não aparece na batalha nem no AUTOMÁTICO',cx,y+h-20,12,'#c8d8f0');}
 function desenhaEcos(cx,cy,w,h,y){const E=estadoEcos(),q=quemEco(),S=vagaEco(q),ap=apUsado(q),lim=limiteAP(nivelQuem(q)),ver=ecoVisto(),apr=aprendidas();
@@ -569,8 +573,9 @@ function desenhaHome(){
     if(on){ctx.fillStyle='#bff0ff';ctx.beginPath();ctx.moveTo(36,yy+19);ctx.lineTo(50,yy+11);ctx.lineTo(50,yy+27);ctx.fill();}
     texto(h[0],90,yy+27,21,on?'#fff':'#d8ecf8');ZONAS.push([60,yy,360,yy+39,()=>{UI.sel=i;abreSecao(i);}]);});
   const st=statusJux(JOGO.nivel),prox=expProx(JOGO.nivel)-(JOGO.exp||0);
-  cartaoGrupo(400,100,230,H-150,'Jux',JOGO.nivel,'jux',st.hp,st.mp,JOGO.exp||0,Math.max(0,prox),'Cavaleiro Glacial');
-  if(JOGO.bino&&JOGO.bino.ativo&&typeof statusBino==='function'){const b=JOGO.bino,sb=statusBino(b.nivel);cartaoGrupo(650,100,230,H-150,'Bino',b.nivel,'bino',sb.hp,sb.mp,b.exp||0,Math.max(0,expProx(b.nivel)-(b.exp||0)),'Bárbaro tanque');}
+  const gm=grupoMenu(),cw_=gm.length>2?175:230,cg_=gm.length>2?10:20;
+  cartaoGrupo(400,100,cw_,H-150,'Jux',JOGO.nivel,'jux',st.hp,st.mp,JOGO.exp||0,Math.max(0,prox),'Cavaleiro Glacial');
+  gm.filter(q=>COMP_MENU[q]).forEach((q,i)=>{const C=COMP_MENU[q],b=C.j(),sb=C.st(b.nivel);cartaoGrupo(400+(i+1)*(cw_+cg_),100,cw_,H-150,NOME_GRUPO[q],b.nivel,q,sb.hp,sb.mp,b.exp||0,Math.max(0,expProx(b.nivel)-(b.exp||0)),C.funcao);});
   texto(JOGO.gil+' gil',W-30,64,20,'#ffe27a','right');
   texto('▲ ▼ escolhe · ENTER abre · ESC fecha',400,H-18,13,'rgba(220,238,250,.75)');ZONAS.push([W-60,10,W-6,60,fecha]);
 }
@@ -585,22 +590,22 @@ function desenhaMenu(){
   texto('✕',x+w-26,y+36,20,'#e8f6ff');ZONAS.push([x+w-44,y+12,x+w-6,y+46,fecha]);
   const cx=x+24;let cy=y+66;
   if(ABA_COM_GRUPO(UI.aba)&&grupoMenu().length>1){if(UI.aba!==ABA_ECOS)seletorGrupo(cx,y+54);cy+=36;}   // nos Ecos os herois ja aparecem nos quadros do alto (ecos_tela.js)
-  const ehB=UI.quem==='bino'&&grupoMenu().includes('bino');
-  if(UI.aba===0&&ehB){   // Status do Bino
-    const b=JOGO.bino,s=statusBino(b.nivel),R=RET&&RET.bino,RI=RETI&&RETI.bino;
+  const ehB=!!COMP_MENU[UI.quem]&&grupoMenu().includes(UI.quem),qC=UI.quem,CM=COMP_MENU[qC];
+  if(UI.aba===0&&ehB){   // Status do companheiro (Bino ou Felipe)
+    const b=CM.j(),s=CM.st(b.nivel),R=RET&&RET[qC],RI=RETI&&RETI[qC];
     if(R&&RI&&RI.complete)ctx.drawImage(RI,0,0,R.w,R.h,cx,cy,R.w*1.25,R.h*1.25);
-    const sx=cx+230;texto('Bino',sx,cy+26,26,COR_GRUPO.bino);texto('Nível '+b.nivel,sx,cy+56,20,'#ffe27a');
+    const sx=cx+230;texto(NOME_GRUPO[qC],sx,cy+26,26,COR_GRUPO[qC]);texto('Nível '+b.nivel,sx,cy+56,20,'#ffe27a');
     const prox=b.nivel>=100?0:expProx(b.nivel);
-    ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(sx,cy+68,220,10);ctx.fillStyle='#ffb27a';ctx.fillRect(sx,cy+68,prox?220*Math.min(1,(b.exp||0)/prox):220,10);
+    ctx.fillStyle='rgba(42,58,102,.9)';ctx.fillRect(sx,cy+68,220,10);ctx.fillStyle=COR_GRUPO[qC];ctx.fillRect(sx,cy+68,prox?220*Math.min(1,(b.exp||0)/prox):220,10);
     texto(prox?'EXP '+(b.exp||0)+' / '+prox:'Nível máximo',sx,cy+96,13,'#c8d8f0');
-    const vb=vidaAtual('bino');[['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crítico %'],['esq','Esquiva %']].forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(k==='hp'?vb.hp+'/'+s.hp:k==='mp'?vb.mp+'/'+s.mp:String(s[k]),sx+140,yy,15,'#fff','right');
+    const vb=vidaAtual(qC);[['hp','HP'],['mp','MP'],['atk','ATQ'],['def','DEF'],['atkm','ATQ.M'],['defm','DEF.M'],['vel','VEL'],['crit','Crítico %'],['esq','Esquiva %']].forEach(([k,n],i)=>{const yy=cy+118+i*24;texto(n,sx,yy,15,'#9fe8ff');texto(k==='hp'?vb.hp+'/'+s.hp:k==='mp'?vb.mp+'/'+s.mp:String(s[k]),sx+140,yy,15,'#fff','right');
       const extra=s[k]-s.base[k];if(extra)texto((extra>0?'+':'')+extra,sx+188,yy,13,extra>0?'#7dffa8':'#ff9a9a','right');});
     // atributos de base (crescem com o nivel), embaixo do retrato igual ao Jux
     [['for','FOR'],['vig','VIG'],['mag','MAG'],['esp','ESP'],['vel','VEL'],['sor','SOR']].forEach(([k,n],i)=>{const bx=cx+8+(i%3)*68,by=cy+218+Math.floor(i/3)*22;
       texto(n,bx,by,12,'#9fb3d9');texto(String(s[k]),bx+60,by,12,'#e8f6ff','right');});
-    const ex=sx+260;texto('Função',ex,cy+26,16,'#9fe8ff');texto('Bárbaro tanque',ex,cy+48,15,'#fff');
-    texto('Arma',ex,cy+84,15,'#9fe8ff');texto(nomeArmaDe('bino'),ex,cy+104,15,'#fff');
-    texto('Só dano físico, sem elemento.',ex,cy+140,13,'#c8d8f0');texto('Protege o time e aguenta os golpes.',ex,cy+158,13,'#c8d8f0');
+    const ex=sx+260;texto('Função',ex,cy+26,16,'#9fe8ff');texto(CM.funcao,ex,cy+48,15,'#fff');
+    texto('Arma',ex,cy+84,15,'#9fe8ff');texto(nomeArmaDe(qC),ex,cy+104,15,'#fff');
+    texto(CM.l1,ex,cy+140,13,'#c8d8f0');texto(CM.l2,ex,cy+158,13,'#c8d8f0');
   }else if(UI.aba===0){   // Status
     const s=statusJux(),R=RET&&RET.jux,RI=RETI&&RETI.jux;
     if(R&&RI&&RI.complete)ctx.drawImage(RI,0,0,R.w,R.h,cx,cy,R.w*1.25,R.h*1.25);
