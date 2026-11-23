@@ -114,7 +114,7 @@ const ESCALAR=window.JUX_ESCALAR?(()=>{const i=new Image();i.src=window.JUX_ESCA
 const VH=window.JUX_VENTO_HEROI?(()=>{const i=new Image();i.src=window.JUX_VENTO_HEROI.atlas;return {...window.JUX_VENTO_HEROI,i};})():null;
 const FR=V.frentes.filter(f=>!f.bandeira).map(f=>{const i=new Image(),o={...f,i,al:null};i.onload=()=>{const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const g=c.getContext('2d');g.drawImage(i,0,0);const d=g.getImageData(0,0,i.width,i.height).data,al=new Uint8Array(i.width*i.height);for(let k=0;k<al.length;k++)al[k]=d[k*4+3]>100?1:0;o.al=al;o.aw=i.width;o.ah=i.height;};i.src=f.img;return o;});
 // o objeto cobre de verdade o corpo do Jux? (confere alguns pontos do corpo no desenho da frente)
-function cobre(f){if(!f.al)return true;let n=0;for(const[dx,dy]of[[0,-6],[0,-14],[0,-22],[0,-30],[0,-38],[-6,-18],[6,-18],[-5,-30],[5,-30]]){const x=Math.floor((hero.x+dx-f.x)*f.aw/f.w),y=Math.floor((hero.y+dy-f.y)*f.ah/f.h);if(x>=0&&y>=0&&x<f.aw&&y<f.ah&&f.al[y*f.aw+x])n++;}return n>=2;}
+function cobre(f){if(!f.al)return true;let n=0;for(const[dx,dy]of[[0,-6],[0,-14],[0,-22],[0,-30],[0,-38],[-6,-18],[6,-18],[-5,-30],[5,-30]]){const x=Math.floor((hero.x+dx-f.x)*f.aw/f.w),y=Math.floor((hero.y+dy-f.y)*f.ah/f.h);if(x>=0&&y>=0&&x<f.aw&&y<f.ah&&f.al[y*f.aw+x])n++;}return n>=1;}   // qualquer pedaço do Jux coberto já liga o raio-x (antes 2: na beirada do telhado ele sumia)
 let TER=null;   // terreno por pixel do mapa: bit 1 andavel, 2 neve, 4 rio
 const rioPx=[];
 {const m=new Image();m.onload=()=>{const c=document.createElement('canvas');c.width=V.w;c.height=V.h;const g=c.getContext('2d');g.drawImage(m,0,0);
@@ -2066,7 +2066,8 @@ function caixaFala(){
   if(fala.cena)desenhaCena();
   const [quem,L,ex]=fala.linhas[fala.i],x=110,y=H-150,w=W-220,h=126;
   if(fala.tele!==fala.i){fala.tele=fala.i;if(TELE_SOM[quem])som(TELE_SOM[quem],.5);}
-  const rk=RET_DE[quem],R=rk&&RET[rk],RI=rk&&RETI[rk];
+  let rk=RET_DE[quem];if(rk==='bacon'&&RET.bacon_laco&&typeof JOGO==='object'&&JOGO.cap3&&JOGO.cap3.barco)rk='bacon_laco';   // do Cap. 3 (barco) em diante: o laço azul
+  const R=rk&&RET[rk],RI=rk&&RETI[rk];
   ctx.save();ctx.fillStyle='rgba(6,16,40,.9)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;
   ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
   // retrato: sai um pouco por cima da caixa, do lado esquerdo; o texto anda para a direita

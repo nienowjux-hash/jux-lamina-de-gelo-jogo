@@ -90,17 +90,32 @@ function baconTimeQuadro() {
   if (BT.est === 'cava') return 19;
   const l = BT_LIN[BT.olha] || 0; return l * 4 + (BT.anda ? Math.floor(BT.animT) % 4 : 0);
 }
+// desenha um NPC atrás das FRENTES (guarita, poste, estátua) SEM repintar a frente por cima do Jux: o NPC vai para uma
+// telinha à parte, a frente "apaga" só o pedaço dele que fica atrás, e o resultado entra no mapa. bb: caixa no mapa; yPe: os pés
+function npcAtrasDasFrentes(bb, yPe, desenha) {
+  const fs = typeof FR === 'undefined' ? [] : FR.filter(f => yPe < f.base && !(bb[2] < f.x || bb[0] > f.x + f.w || bb[3] < f.y || bb[1] > f.y + f.h));
+  if (!fs.length) { desenha(ctx); return; }
+  const tr = ctx.getTransform(), sx = Math.floor(tr.a * bb[0] + tr.e) - 2, sy = Math.floor(tr.d * bb[1] + tr.f) - 2;
+  const sw = Math.ceil(tr.a * (bb[2] - bb[0])) + 4, sh = Math.ceil(tr.d * (bb[3] - bb[1])) + 4;
+  const c = npcAtrasDasFrentes.c || (npcAtrasDasFrentes.c = document.createElement('canvas'));
+  if (c.width < sw) c.width = sw; if (c.height < sh) c.height = sh;
+  const g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, c.width, c.height);
+  g.imageSmoothingEnabled = ctx.imageSmoothingEnabled; g.setTransform(tr.a, tr.b, tr.c, tr.d, tr.e - sx, tr.f - sy);
+  desenha(g);
+  g.globalCompositeOperation = 'destination-out'; for (const f of fs) g.drawImage(f.i, f.x, f.y, f.w, f.h); g.globalCompositeOperation = 'source-over';
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(c, 0, 0, sw, sh, sx, sy, sw, sh); ctx.restore();
+}
 function baconTimeDesenha() {
   if (!BT_F || !BT_I.complete || !BT_I.naturalWidth) return;
   const F = BT_F, q = baconTimeQuadro(), sx = (q % 4) * F.fw, sy = Math.floor(q / 4) * F.fh;
   const vira = (BT.est === 'fareja' || BT.est === 'cheira' || BT.est === 'cava') && BT.olha === 'esquerda';   // a linha 5 olha para a direita
-  const pulo = BT.anda ? -Math.abs(Math.sin(BT.animT * Math.PI)) * 1.2 : 0;
-  ctx.save(); ctx.fillStyle = 'rgba(10,5,10,.3)'; ctx.beginPath(); ctx.ellipse(BT.x, BT.y, 10, 3, 0, 0, 6.283); ctx.fill();
-  ctx.translate(BT.x, BT.y + pulo); if (vira) ctx.scale(-1, 1);
-  ctx.drawImage(BT_I, sx, sy, F.fw, F.fh, -F.fw / 2, -F.fh + 2, F.fw, F.fh); ctx.restore();
+  const pe = F.pe ? F.pe[q] : F.fh - 2;   // as patas de cada quadro na linha do chão (sem pulinho: o passo já está no desenho)
+  npcAtrasDasFrentes([BT.x - F.fw / 2 - 2, BT.y - pe - 2, BT.x + F.fw / 2 + 2, BT.y + 6], BT.y, g => {
+    g.save(); g.fillStyle = 'rgba(25,10,15,.45)'; g.beginPath(); g.ellipse(BT.x, BT.y, 12, 3.6, 0, 0, 6.283); g.fill();
+    g.fillStyle = 'rgba(25,10,15,.35)'; g.beginPath(); g.ellipse(BT.x, BT.y, 7, 2.2, 0, 0, 6.283); g.fill();
+    g.translate(BT.x, BT.y); if (vira) g.scale(-1, 1);
+    g.drawImage(BT_I, sx, sy, F.fw, F.fh, -F.fw / 2, -pe + 1, F.fw, F.fh); g.restore();
+  });
   for (const p of BT.terra) { ctx.fillStyle = `rgba(90,60,40,${1 - p.v / .6})`; ctx.fillRect(p.x, p.y, 2, 2); }
-  // o que está na frente dele (poste, estátua...) por cima, como no Jux
-  if (typeof FR !== 'undefined') { const bb = [BT.x - 12, BT.y - 30, BT.x + 12, BT.y];
-    for (const f of FR) { if (BT.y >= f.base || bb[2] < f.x || bb[0] > f.x + f.w || bb[3] < f.y || bb[1] > f.y + f.h) continue; ctx.drawImage(f.i, f.x, f.y, f.w, f.h); } }
 }
 function baconTimeNpcs() { return baconTimeAtivo() && BT.posto ? [[BT.y, baconTimeDesenha]] : []; }

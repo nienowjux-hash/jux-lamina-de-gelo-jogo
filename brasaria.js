@@ -101,11 +101,12 @@ function brNpcDesenha(n) {
   // Úrsula: a martelada (quadro 3 do loop) solta faíscas na bigorna e faz barulho
   if (n.k === 'ursula' && q === 2 && n.ultQ !== 2) { brFaiscas(X + (F.vira ? -20 : 20), Y - 8, 10); const v = brVol(X, Y, 420); if (v > 0 && typeof BIGORNA !== 'undefined') som(BIGORNA[(Math.random() * BIGORNA.length) | 0], .45 * v); }
   n.ultQ = q;
-  ctx.save(); ctx.fillStyle = 'rgba(10,5,10,.35)'; ctx.beginPath(); ctx.ellipse(X, Y - 1, 13, 4, 0, 0, 6.283); ctx.fill();
-  ctx.translate(X, Y); if (espelha) ctx.scale(-1, 1);
-  ctx.drawImage(n.img, (q % 4) * F.fw, Math.floor(q / 4) * F.fh, F.fw, F.fh, -F.fw / 2, -F.fh + 2, F.fw, F.fh); ctx.restore();
-  if (typeof FR !== 'undefined') { const bb = [X - 22, Y - F.fh, X + 22, Y];
-    for (const f of FR) { if (Y >= f.base || bb[2] < f.x || bb[0] > f.x + f.w || bb[3] < f.y || bb[1] > f.y + f.h) continue; ctx.drawImage(f.i, f.x, f.y, f.w, f.h); } }
+  const pe = F.pe ? F.pe[q] : F.fh - 2;
+  npcAtrasDasFrentes([X - F.fw / 2 - 2, Y - pe - 2, X + F.fw / 2 + 2, Y + 6], Y, g => {
+    g.save(); g.fillStyle = 'rgba(10,5,10,.35)'; g.beginPath(); g.ellipse(X, Y - 1, 13, 4, 0, 0, 6.283); g.fill();
+    g.translate(X, Y); if (espelha) g.scale(-1, 1);
+    g.drawImage(n.img, (q % 4) * F.fw, Math.floor(q / 4) * F.fh, F.fw, F.fh, -F.fw / 2, -pe + 1, F.fw, F.fh); g.restore();
+  });
   if (brPerto(X, Y, 110) && !fala) { ctx.save(); ctx.font = 'bold 11px "Trebuchet MS"'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.85)';
     const nm = n.nome + (LOJAS[n.k] ? ' (loja)' : n.k === 'gorm' ? ' (taverna)' : ''); ctx.strokeText(nm, X, Y - F.fh - 6); ctx.fillStyle = n.cor; ctx.fillText(nm, X, Y - F.fh - 6); ctx.restore(); }
 }

@@ -19,7 +19,7 @@ function reverFilme() { aviso('As cinemáticas dá para rever no menu, lá na vi
 // CONVERSAR (2026-11-21: "so aparece uma mensagem azul em cima, achei feio, tem que fazer igual os outros"): a mesma caixa
 // de fala da vila, com o retrato de quem fala, o texto digitando e ENTER para seguir. A Marta usa a linha 3 da folha dela.
 const COR_FALA = { Jux: '#bff0ff', Bino: '#d8b48a', 'Sir Bacon': '#ffb6c8', Marta: '#ffd88a' };
-const RET_RIO = { Jux: 'jux', Bino: 'bino', 'Sir Bacon': 'bacon' };
+const RET_RIO = { Jux: 'jux', Bino: 'bino', 'Sir Bacon': 'bacon_laco' };   // no Cap. 3 ele usa o laço azul
 const CONVERSAS_MARTA = [
   [['Marta', 'Ora, visita! Pesco neste cais desde que o rio era só gelo.'], ['Marta', 'Agora o gelo derrete e até os peixes andam suando.'],
    ['Jux', 'Peixe suando… essa eu queria ver.'], ['Marta', 'Fica mais um pouco que você vê, menino. Ha!']],
