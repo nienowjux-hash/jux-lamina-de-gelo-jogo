@@ -49,4 +49,7 @@ const FICHA_HAB = {
   f_chuva:   [['Dano', '3 ondas de ' + pct(20, 'felipe') + ' = ' + pct(60, 'felipe') + ' em cada inimigo (físico, Vento)', C_DANO], ['Alvo', 'todos os inimigos'], ['Quebra', 'alta (muitos acertos)']],
   f_perfurante:[['Dano', pct(70, 'felipe') + ' (físico, Vento)', C_DANO], ['Alvo', '1 inimigo'], ['Especial', 'ignora metade da defesa e enche muito a Quebra', C_DANO]],
   f_brisa:   [['Cura', '18% da vida máxima de cada herói', C_CURA], ['Alvo', 'o time inteiro'], ['Extra', 'tira Lento, Cego e Sono', C_CURA]],
+  f_furacao: [['Efeito', 'desvia de TODO golpe por 2 turnos', C_EST], ['Revide', 'cada desvio devolve uma flecha de ' + pct(30, 'felipe'), C_DANO], ['Cinemática', 'sim']],
+  f_ceu:     [['Dano', pct(150, 'felipe') + ' (físico, Vento)', C_DANO], ['Alvo', '1 inimigo'], ['Quebra', 'enorme', C_DANO], ['Cinemática', 'sim']],
+  f_tempestade:[['Dano', '2 ondas de ' + pct(72, 'felipe') + ' = ' + pct(144, 'felipe') + ' em cada inimigo (físico, Vento)', C_DANO], ['Alvo', 'todos os inimigos'], ['Efeito', 'apaga os bônus deles', C_EST], ['Cinemática', 'sim']],
 };

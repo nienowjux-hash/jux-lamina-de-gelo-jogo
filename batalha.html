@@ -29,7 +29,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="tutorial.js?v=1795226200"></script>
 <script src="combate.js?v=1795330100"></script>
 <script src="bino_habs.js?v=1795225300"></script>
-<script src="felipe_habs.js?v=1795452851"></script>
+<script src="felipe_habs.js?v=1795470609"></script>
 <script src="jux_habs.js?v=1795117438"></script>
 <script src="ecos.js?v=1795443614"></script>
 <script src="ecos_retratos.js?v=1795254900"></script>
@@ -43,21 +43,22 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_zero.js?v=1795117438"></script>
 <script src="sprites_cine.js?v=1795265000"></script>
 <script src="sprites_bino.js?v=1795457045"></script>
-<script src="sprites_felipe.js?v=1795457045"></script>
-<script src="sprites_batalha.js?v=1795456067"></script>
+<script src="sprites_felipe.js?v=1795470609"></script>
+<script src="sprites_batalha.js?v=1795486176"></script>
 <script src="ecos_sprites.js?v=1795457045"></script>
 <script src="inimigos_sprites.js?v=1795456067"></script>
 <script src="efeitos_fx.js?v=1795457045"></script>
 <script src="fx_inimigos_sprites.js?v=1795457045"></script>
 <script src="fx_bino_sprites.js?v=1795457045"></script>
-<script src="fx_felipe_sprites.js?v=1795457045"></script>
+<script src="fx_felipe_sprites.js?v=1795470609"></script>
 <script src="ecos_tartarok.js?v=1795457045"></script>
 <script src="efeitos_inimigos.js?v=1795457045"></script>
 <script src="sprites_cine_bino.js?v=1795117438"></script>
+<script src="sprites_cine_felipe.js?v=1795470600"></script>
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
 <script src="bino_batalha.js?v=1795443614"></script>
-<script src="felipe_batalha.js?v=1795453986"></script>
+<script src="felipe_batalha.js?v=1795470609"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -87,7 +88,7 @@ let AC=null;
 // sons gravados (assets/sfx/novos, CC0): interface, batalha e cinematicas. som(nome,vol): toca uma copia; o mesmo som
 // nao repete em menos de 50 ms (cacos caindo juntos nao viram um estouro)
 const SOM={},somUlt={};
-for(const n of ['felipe_corda','felipe_solta','felipe_impacto','felipe_impacto_forte','felipe_bocejo','felipe_acorda','felipe_falcao','felipe_rajada','felipe_ninar','felipe_vento_time','felipe_chuva','felipe_perfura','felipe_brisa','ui_mover','ui_ok','ui_voltar','ui_erro','ui_vez','ui_inicio','magia_gelo','carga_gelo','pocao','defender','recompensa','nivel',
+for(const n of ['felipe_corda','felipe_solta','felipe_impacto','felipe_impacto_forte','felipe_bocejo','felipe_acorda','felipe_falcao','felipe_rajada','felipe_ninar','felipe_vento_time','felipe_chuva','felipe_perfura','felipe_brisa','felipe_furacao','felipe_desvia','felipe_ceu_sobe','felipe_ceu_cai','felipe_ceu_impacto','felipe_sussurro','felipe_tornado','ui_mover','ui_ok','ui_voltar','ui_erro','ui_vez','ui_inicio','magia_gelo','carga_gelo','pocao','defender','recompensa','nivel',
   'inimigo_ataca','inimigo_morre','inimigo_rosna','fenrir_rosna','fenrir_latido','fenrir_ataque','fenrir_mordida','fenrir_uivo','presa_rosna','presa_uivo','presa_mordida','presa_investida','som_oskar_lamento','som_oskar_abraco','som_oskar_tambor','som_borin_lamento','som_borin_martelada','som_borin_abraco','som_ingrid_lamento','som_ingrid_sopa','som_ingrid_lagrima','ignarok_rugido','ignarok_rosna','ignarok_punho','ignarok_derreter','ignarok_erupcao','ignarok_queda','caco_pequeno','gelo_quebra','gelo_quebra2','whoosh','whoosh2','magia_brilho','magia_raio','pedras','neve_pancada','bolota_espirro','goblin_facada','goblin_moedas','goblin_pedrada','acolito_esfera','acolito_explode','acolito_drenar','acolito_vazio','skoll_mordida','skoll_correntes','telepatia_gelo','telepatia_natureza','tartarok_rosna','tartarok_casco','tartarok_tremor','tartarok_folhas','tartarok_raizes','tartarok_cura','tartarok_ilha','aguaviva_choque','aguaviva_clarao','aguaviva_pulso','caramujo_gosma','caramujo_vapor','caranguejo_pinca','enguia_chicote','enguia_fogo','enguia_sibilo','lontra_mergulho','lontra_risada','lontra_roubo','morcego_asas','morcego_guincho','morcego_suga','piranha_mordida','piranha_salto','sapo_borbulha','sapo_cuspe','sapo_incha','serpente_degelo','serpente_onda','serpente_rugido','serpente_sibilo','serpente_aperta','rio_splash_grande','rio_splash_peq','salamandra_sibilo','salamandra_cuspe','salamandra_brasa','salamandra_vapor','salamandra_dor','fuligem_risinho','fuligem_espirro','fuligem_foge','fuligem_dor','forjado_ranger','forjado_ergue','forjado_martelo','forjado_dor','forjado_racha','mae_rugido','mae_acende','mae_onda','mae_lava','mae_dor','skoll_rosna','skoll_ataque','skoll_uivo','bolotao_pancada','bolotao_espirro','bolotao_rosna','bolotao_bruf','bolotao_rolo','bolotao_avalanche','bolotao_abraco','bolotao_bola','capitao_rosna','capitao_bravata','capitao_risada','capitao_machado','capitao_clank','capitao_apito','lobo_rosna','lobo_ataque','lobo_mordida','lobo_uivo','lobo_latido','bino_whoosh','bino_golpe','bino_golpe_forte','bino_quebra','bino_rumble','bino_pedras','bino_pedra_forma','bino_muralha','bino_cura','bino_investida','bino_peito','bino_urso1','bino_urso2','bino_rugido','bino_rugido2','bino_rugido_longo','bino_rugido_queda']){
   const a=new Audio();a.preload='auto';a.src='assets/sfx/novos/'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3')+(n.startsWith('bino_')?'?v=2':'');SOM[n]=a;}
 function som(n,vol){const a=SOM[n],now=performance.now();if(!a||now-(somUlt[n]||0)<50)return;somUlt[n]=now;
@@ -332,7 +333,8 @@ function animFrame(name,at,bino){const src=bino==='felipe'&&typeof FELIPE_D!=='u
 // TAMANHO IGUAL EM TODAS AS POSES (pedido 2026-11-20: 'fica pequeno e maior toda hora'): o 'parado' e o 'ataque' foram
 // desenhados maiores que as outras poses (8 a 25%, medido pelo tamanho do rosto em cada quadro). Aqui as outras sao
 // desenhadas maiores em volta do pe para empatar com o 'parado', sem gerar sprites novos. Vale tambem para as versoes _branco.
-const ESCALA_POSE={corrida:1.1,dano:1.1,guarda:1.08,guarda_empurra:1.1,pocao:1.15,vitoria:1.15,derrota:1.12,lamina:1.18,tempestade:1.08,danca:1.15,
+const ESCALA_POSE={};   // 2026-11-23: as folhas novas (ref/batalha2) ja saem no tamanho certo; a escala por pose era das folhas antigas
+const ESCALA_POSE_ANTIGA={corrida:1.1,dano:1.1,guarda:1.08,guarda_empurra:1.1,pocao:1.15,vitoria:1.15,derrota:1.12,lamina:1.18,tempestade:1.08,danca:1.15,
   escudo:1.12,lanca:1.18,nevasca:1.15,ressonancia:1.18,zero:1.12,prisao:1.12,espelho:1.12,coroa:1.18,estalactites:1.2,coracao:1.18,aurora:1.2,kelvin:1.2};
 function drawHero(c,x,y,s,o){
   o=o||{};const f=animFrame(o.anim||'parado',o.at||0,o.bino),dir=o.flip?-1:1,yy=Math.round(y+(o.bob||0));
@@ -454,7 +456,14 @@ function vigiaHD(now){if(HD===1||!document.hasFocus()||document.hidden){VHD.ult=
 function preAbreImagens(){const L=[ATLAS_B,typeof ATLAS_BINO!=='undefined'?ATLAS_BINO:null,typeof ATLAS_FELIPE!=='undefined'?ATLAS_FELIPE:null,ATLAS_EC,typeof ATLAS_TAR!=='undefined'?ATLAS_TAR:null,
   ...Object.values(INIM_IMG),...(typeof FXI_IMG!=='undefined'?Object.values(FXI_IMG):[]),...new Set(Object.values(FXSRC).map(S=>S.img))];
   const k=document.createElement('canvas').getContext('2d');
-  for(const im of L){if(!im)continue;const ok=()=>{try{k.drawImage(im,0,0,1,1);}catch(_){}};(im.decode?im.decode().then(ok,()=>{}):Promise.resolve().then(ok));}}
+  for(const im of L){if(!im)continue;const ok=()=>{try{k.drawImage(im,0,0,1,1);}catch(_){}fixaImagem(im);};(im.decode?im.decode().then(ok,()=>{}):Promise.resolve().then(ok));}}
+// 2026-11-23: as folhas grandes (Jux, Bino, Felipe, Tartarok...) somam ~380 MB abertas; o navegador jogava fora e reabria
+// a cada 2-3 s (travada de ~0,4 s). Cada uma vira um ImageBitmap (fica aberto) e o drawImage troca a <img> por ele sozinho.
+const IMG_FIXA=new WeakMap();
+function fixaImagem(im){if(!window.createImageBitmap||IMG_FIXA.has(im)||!(im instanceof HTMLImageElement)||!im.naturalWidth||im.naturalWidth*im.naturalHeight<2e6)return;
+  IMG_FIXA.set(im,null);createImageBitmap(im).then(b=>IMG_FIXA.set(im,b),()=>{});}
+(function(){const P=CanvasRenderingContext2D.prototype,orig=P.drawImage;
+  P.drawImage=function(im,...a){const b=im&&IMG_FIXA.get(im);return orig.call(this,b||im,...a);};})();
 window.addEventListener('load',()=>setTimeout(preAbreImagens,300));
 function comFiltro(c,filtro,desenha){if(!filtro){desenha(c);return;}
   const k=CAMADA_C;k.setTransform(1,0,0,1,0,0);k.clearRect(0,0,CAMADA_F.width,CAMADA_F.height);k.setTransform(c.getTransform());k.imageSmoothingEnabled=c.imageSmoothingEnabled;k.globalAlpha=1;k.filter='none';
@@ -920,6 +929,7 @@ function hitEnemy(n,weak,mudo){
 }
 function hitHero(n){
   if(temEst(hero,'ilha')){pop(hero.x,hero.y-200,'PROTEGIDO!','#9dff8a');som('tartarok_casco',.5);return;}   // Ilha Viva (Tartarok): escudo total
+  if(typeof furacaoDesvia==='function'&&furacaoDesvia())return;   // Olho do Furacao (Felipe): desvia e revida
   n=Math.round(n*(enemy.forca||1));
   if(hero.espelho>0&&(G.golpeInim||{}).t==='m'){refleteMagia(n);return;}
   {const g=G.golpeInim||{t:'f'},r=danoNoJux(n,g.t,g.el,statsDe(hero),baseDe(hero),enemy.tipo||'ignarok',enemy.nv||prog.nivel);
@@ -2090,7 +2100,12 @@ const SONS={
 function fala(n){const a=VOZES[n];if(!a)return;try{a.currentTime=0;a.volume=1;a.play().catch(()=>{});
   const m=typeof musCineTocando!=='undefined'?musCineTocando:null;if(m&&!m.paused){const v=m.volume;volPara(m,v*.35,150);a.onended=()=>{if(!m.paused&&cine)volPara(m,v,600);};}}catch(e){}}
 function cinematica(id){const C=CINES[id],ims=C?C.tomadas.flatMap(t=>[CIMG[t.cena],t.jux&&CIMG[t.jux.img]]).filter(Boolean):[],t0=Date.now();
-  return new Promise(res=>{(function vai(){if(ims.some(i=>!i.complete||!i.naturalWidth)&&Date.now()-t0<8000)return setTimeout(vai,100);cine={id,t:0,res,flocos:[],cacos:[],p:[],ti:-1,vozes:new Set()};})();});}
+  return new Promise(res=>{(function vai(){if(ims.some(i=>!i.complete||!i.naturalWidth)&&Date.now()-t0<8000)return setTimeout(vai,100);
+    // 2026-11-23: as cenas ja abertas (ImageBitmap) antes de comecar; sem isso cada troca de tomada parava ~0,4 s abrindo a imagem
+    const nomes=[...new Set((C?C.tomadas:[]).map(t=>t.cena).filter(n=>CIMG[n]&&CIMG[n].naturalWidth))],bmp={};
+    const comeca=()=>{const fim=()=>{for(const b of Object.values(bmp))try{b.close();}catch(_){}res();};cine={id,t:0,res:fim,bmp,flocos:[],cacos:[],p:[],ti:-1,vozes:new Set()};};
+    if(!window.createImageBitmap||!nomes.length)return comeca();
+    Promise.all(nomes.map(n=>createImageBitmap(CIMG[n]).then(b=>{bmp[n]=b;},()=>{}))).then(comeca,comeca);})();});}
 function pulaCine(){if(!cine)return;for(const a of Object.values(VOZES))a.pause();const r=cine.res;cine=null;r();}
 // efeitos vivos desenhados por cima da cena: posicoes em fracao da imagem, andam junto com a camera
 function cineFx(c,s,i,p,dt,ox,oy,dw,dh,im,info){
@@ -2153,7 +2168,7 @@ function drawCine(c,dt){if(!cine)return;BARRA=(CINES[cine.id]&&CINES[cine.id].ba
   const s=C.tomadas[i];if((s.voz||s.legenda||s.som)&&!cine.vozes.has(i)){cine.vozes.add(i);if(s.voz)fala(s.voz);for(const n of s.som||[])SONS[n]&&SONS[n]();if(s.legenda)cine.leg={jp:s.legenda[0],pt:s.legenda[1],t0:cine.t};if(s.pensa)ecoPensa(s.pensa,Math.max(1800,(s.d||2)*1000-200),'Tartarok','#9dff8a');}
   const p=clamp(t/s.d,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;   // movimento suave
   // '_vel': tomada sem imagem, so fundo escuro com linhas de velocidade (o Jux recortado passa correndo)
-  const AH=H-2*BARRA,vel=s.cena==='_vel',im=vel?null:CIMG[s.cena],info=vel?{w:W,h:AH}:CIN.cenas[s.cena];
+  const AH=H-2*BARRA,vel=s.cena==='_vel',im=vel?null:((cine.bmp&&cine.bmp[s.cena])||CIMG[s.cena]),info=vel?{w:W,h:AH}:CIN.cenas[s.cena];
   const z=s.z[0]+(s.z[1]-s.z[0])*e,fx=s.f[0][0]+(s.f[1][0]-s.f[0][0])*e,fy=s.f[0][1]+(s.f[1][1]-s.f[0][1])*e;
   const k=Math.max(W/info.w,AH/info.h)*z,dw=info.w*k,dh=info.h*k;
   let ox=clamp(W/2-fx*dw,W-dw,0),oy=clamp(BARRA+AH/2-fy*dh,BARRA+AH-dh,BARRA);
@@ -2348,7 +2363,7 @@ function frame0(now){if(window.__carregando){requestAnimationFrame(frame);return
   vigiaHD(now);ctx.setTransform(HD,0,0,HD,0,0);ctx.save();ctx.clearRect(0,0,W,H);
   if(typeof OPC==='object'&&!OPC.tremor)shake=0;
   if(shake>.3){const ks=hero.quem==='bino'?.8:0;ctx.translate(rnd(-shake,shake)*ks,rnd(-shake,shake)*ks);shake*=.9;}else shake=0;   // a tela mexe bem menos para o Jux (atrapalhava ver o golpe)
-  if(G.scene==='title'){if(G.encontro||ENC_PEND){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);}else drawTitle(ctx,t,dt);}else drawBattle(ctx,t,dt);   // vindo do mapa: tela preta em vez da tela inicial piscando
+  if(G.scene==='title'){if(G.encontro||ENC_PEND){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);}else drawTitle(ctx,t,dt);}else if(!cine)drawBattle(ctx,t,dt);   // (2026-11-23: com a cinematica na tela a luta nao e desenhada por baixo, ela cobre tudo) vindo do mapa: tela preta em vez da tela inicial piscando
   ctx.restore();
   if(flash>.01){ctx.fillStyle=`rgba(255,255,255,${flash*(hero.quem==='bino'?1:0)})`;ctx.fillRect(0,0,W,H);flash*=.9;}
   if(G.scene!=='title')fxDesenhaTela(ctx,dt);   // clarao colorido, quadro de impacto, faixas de cinema
@@ -2554,7 +2569,7 @@ const MUS_CINE_VOL=.6,fades=new Map();
 function volPara(a,alvo,ms,fim){clearInterval(fades.get(a));const v0=a.volume,n=Math.max(1,Math.round(ms/40));let k=0;
   fades.set(a,setInterval(()=>{k++;a.volume=clamp(v0+(alvo-v0)*k/n,0,1);if(k>=n){clearInterval(fades.get(a));if(fim)fim();}},40));}
 // musica propria de uma cinematica (CINES[id].musica): Era do Gelo = assets/musica/cine_final ("Fall of Nightmares", CC0)
-const MUS_PROPRIA={};for(const n of ['final','ragnarok','bino']){const a=new Audio();a.preload='auto';a.src='assets/musica/cine_'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');MUS_PROPRIA[n]=a;}
+const MUS_PROPRIA={};for(const n of ['final','ragnarok','bino','felipe']){const a=new Audio();a.preload='auto';a.src='assets/musica/cine_'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');MUS_PROPRIA[n]=a;}
 let musCineTocando=MUS_CINE;
 function cineMusica(liga,propria){
   if(liga){const a=propria&&MUS_PROPRIA[propria];if(!musicaLigada||(!musCine&&!a))return;musCineTocando=a||MUS_CINE;volPara(MUSICA,.05,400);musCineTocando.currentTime=0;musCineTocando.volume=a?.75:MUS_CINE_VOL;musCineTocando.play().catch(()=>{});}
@@ -2667,6 +2682,7 @@ if(TESTE){
   mk('Cinemática Ragnarök',()=>vendoCine('ragnarok'),'#e8d4ff');
   mk('Cinemática Ilha Viva (Tartarok)',()=>vendoCine('ilha'),'#c8ffc0');
   mk('Cinemática Bino: Fúria Bárbara',()=>vendoCine('bfuria'),'#ffd0c0');mk('Cinemática Bino: Esmaga-Montanhas',()=>vendoCine('besmaga'),'#ffd0c0');mk('Cinemática Bino: Queda da Montanha',()=>vendoCine('bqueda'),'#ffd0c0');
+  mk('Cinemática Felipe: Olho do Furacão',()=>vendoCine('ffuracao'),'#c8ffd8');mk('Cinemática Felipe: Flecha do Céu',()=>vendoCine('fceu'),'#c8ffd8');mk('Cinemática Felipe: Tempestade do Sul',()=>vendoCine('ftempestade'),'#c8ffd8');
   // troca a musica da cinematica (fica salva) e ja mostra a cena para ouvir
   const mb=mk('Música: '+musCine+' '+MUS_CINES[musCine],()=>{if(G.busy||cine)return;const n=trocaMusCine();mb.textContent='Música: '+musCine+' '+n;vendoCine('rei');},'#ffd9f0');
   // Eco em campo (Parte 3): mostra a criatura do Eco atras do Jux; por enquanto so o Fenrir (Eco da Lamina)
@@ -2719,6 +2735,8 @@ requestAnimationFrame(frame);
     setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
+<script src="felipe_cines.js?v=1795470600"></script>
+<script src="jux_sons.js?v=1795479884"></script>
 <script src="eco_tartarok.js?v=1795457045"></script>
 <script src="pausa_batalha.js?v=1795255300"></script>
 <script src="tela_cheia.js?v=1795247600"></script>

@@ -105,7 +105,7 @@ Felipe, o arqueiro do vento (Cap. 3, Parte C2) — fontes:
   felipe_solta: o primeiro estalo da corda de "Archers shooting" [AS] + whoosh ("RPG Sound Pack", artisticdude, CC0) mais agudo
   felipe_impacto: thwack-02 [TW] + wood_hit_03 [MW]
   felipe_impacto_forte: thwack-05 [TW] mais grave + wood_hit_03 [MW] + whoosh (artisticdude, CC0)
-  felipe_bocejo: Yawn [YW] um pouco mais grave
+  felipe_bocejo: "Male Yawn" - aldenroth2 - CC0 - https://freesound.org/s/272030/ (bocejo humano masculino, sem mudar o tom; silencio cortado e volume normalizado)
   felipe_acorda: bino_whoosh (deste jogo) mais agudo + magia_brilho ("RPG Sound Pack", artisticdude, CC0) mais agudo
   Habilidades novas do Felipe — fontes:
   [EG] "Bald Eagle Screams" - pla1554alaska (enviado por qubodup), from OpenGameArt - CC-BY 3.0 - https://opengameart.org/content/bald-eagle-screams
@@ -122,3 +122,181 @@ Felipe, o arqueiro do vento (Cap. 3, Parte C2) — fontes:
   felipe_chuva: tin-whistle-whoosh-01 e -02 [TS] em várias alturas (flechas assobiando) + "Archers shooting" [AS] + felipe_impacto (deste jogo) repetido 7 vezes (flechas caindo)
   felipe_perfura: 25_Wind_01 [MA] mais agudo + tube-plastic-whoosh-01 [TS] e megaswosh2 [WM] mais agudos + felipe_impacto_forte (deste jogo) no final
   felipe_brisa: short wind sound [SW] abafado e suave + 02_Heal_02 [HB] + magia_brilho ("RPG Sound Pack", artisticdude, CC0) bem mais agudo
+  Habilidades especiais do Felipe (Furacão, Céu, Tornado) — fontes, todas CC0 1.0 (freesound.org), 2026-11-23:
+  [VS] "Magic Vortex Swirl" - Qvantor - CC0 - https://freesound.org/s/880777/
+  [IW] "Instant Wind" - Raclure - CC0 - https://freesound.org/s/483599/
+  [WR] "E-wind-rise-and-fall.wav" - habdank - CC0 - https://freesound.org/s/702897/
+  [MS] "Message Sent Swoosh" - Qvantor - CC0 - https://freesound.org/s/879792/
+  [SG] "snd_swing_whoosh.wav" - gristi - CC0 - https://freesound.org/s/562191/
+  [FW] "Fast Whistle.mp3" - kmmediafactory - CC0 - https://freesound.org/s/486971/
+  [BW] "Toy Bow Whistle" - loganzsound - CC0 - https://freesound.org/s/774638/
+  [LS] "light slow swoosh.mp3" - Mikes-MultiMedia - CC0 - https://freesound.org/s/349698/
+  [ST] "Strong Wind" - florianreichelt - CC0 - https://freesound.org/s/459981/
+  [FB2] "Falling Bomb.wav" - Daleonfire - CC0 - https://freesound.org/s/506313/
+  [CB] "Cinematic Boom, Deep Synth Hit Stab" - DanJFilms - CC0 - https://freesound.org/s/845165/
+  [SB] "Subterranean Deep Sub-Bass Rumble Drop" - brktkrgll - CC0 - https://freesound.org/s/856174/
+  [DI] "DSGNImpt_Deep Cinematic Impact 1_ZAZZ" - zazz.sound.design - CC0 - https://freesound.org/s/754420/
+  [GS] "Wind Storm Gusts, Synthesized" - Qvantor - CC0 - https://freesound.org/s/877972/
+  [HT] "Wind - Hurricane Typhoon Storm" - Vrymaa - CC0 - https://freesound.org/s/735350/
+  [WH] "Wind Howling, Synthesized" - Qvantor - CC0 - https://freesound.org/s/877970/
+  [BR] "breath_01.wav" - Nightflame - CC0 - https://freesound.org/s/368615/
+  [GW] "Spectral Ghost Whisper Breeze Whoosh" - brktkrgll - CC0 - https://freesound.org/s/856169/
+  felipe_furacao: Magic Vortex Swirl [VS] mais grave e girando (tremolo) + Instant Wind [IW] com flanger + trecho subindo de [WR] + ronco de vento sintetizado (ffmpeg) crescendo
+  felipe_desvia: Message Sent Swoosh [MS] um pouco mais grave + snd_swing_whoosh [SG] mais agudo, cortados em 0,4 s
+  felipe_ceu_sobe: assobio sintetizado (ffmpeg) subindo de tom e sumindo + Fast Whistle [FW] e Toy Bow Whistle [BW] (soltura da flecha) + light slow swoosh [LS] bem mais agudo, com eco
+  felipe_ceu_cai: rajada de Strong Wind [ST] crescendo + Falling Bomb [FB2] acelerado (assobio caindo) + ronco grave sintetizado subindo rápido
+  felipe_ceu_impacto: Cinematic Boom [CB] + Sub-Bass Rumble [SB] + Deep Cinematic Impact 1 [DI] + estouro de vento de [GS] e [HT], graves reforçados
+  felipe_sussurro: breath_01 [BR] suavizado + Spectral Ghost Whisper Breeze [GW] mais agudo e bem baixinho, com eco curto
+  felipe_tornado: Hurricane Typhoon Storm [HT] + Wind Howling [WH] mais grave + rajadas de [GS] com flanger + ronco grave sintetizado pulsando, fade no fim
+
+  Sons do Jux (ataque básico e habilidades da espada de gelo: assets/sfx/novos/jux_*), 2026-11-23 — fontes, todas CC0 1.0 (freesound.org, previews):
+  [J01] "Metallic Whoosh.wav" - MissCellany - CC0 - https://freesound.org/s/240640/
+  [J02] "Clean fast Swoosh.aiff" - Danjocross - CC0 - https://freesound.org/s/507466/
+  [J03] "swoosh.wav" - PorkMuncher - CC0 - https://freesound.org/s/263595/
+  [J04] "Slash2.ogg" - Wenpire - CC0 - https://freesound.org/s/574820/
+  [J05] "ICEBrk_Break04_InMotionAudio_FREESampleSunday" - InMotionAudio - CC0 - https://freesound.org/s/719973/
+  [J06] "Sword Tap" - Foxfire- - CC0 - https://freesound.org/s/844258/
+  [J07] "ice_cracking_01.flac" - wwstudioswastaken - CC0 - https://freesound.org/s/624163/
+  [J08] "Hard Glass Impact" - deleted_user_3656686 - CC0 - https://freesound.org/s/418194/
+  [J09] "Breaking icicles 4" - AugustSandberg - CC0 - https://freesound.org/s/677718/
+  [J10] "ICEImpt_Ice Piece Drop On Frozen Puddle_Jaku5.wav" - jakubp.jp - CC0 - https://freesound.org/s/557110/
+  [J11] "unsheath_sword.wav" - Qat - CC0 - https://freesound.org/s/107589/
+  [J12] "Crystal Twinkle" - LaurenPonder - CC0 - https://freesound.org/s/639429/
+  [J13] "cymbal-reversed-glassy-resonance.wav" - burnttoys - CC0 - https://freesound.org/s/9523/
+  [J14] "ICEImpt_ImpactBreak01_InMotionAudio_FREESampleSunday" - InMotionAudio - CC0 - https://freesound.org/s/719169/
+  [J15] "Breaking icicles 2" - AugustSandberg - CC0 - https://freesound.org/s/677716/
+  [J16] "Deep Boom" - Za-Games - CC0 - https://freesound.org/s/539968/
+  [J17] "sword slash energy wave" - greyfeather - CC0 - https://freesound.org/s/724716/
+  [J18] "Icy Magic Cast" - DustyWind - CC0 - https://freesound.org/s/691005/
+  [J19] "FX Blizzard (JH).wav" - Johnnie_Holiday - CC0 - https://freesound.org/s/700233/
+  [J20] "Shock wave - wind.wav" - DanietzYT - CC0 - https://freesound.org/s/688085/
+  [J21] "Reverse Cymbal Shiny" - loganzsound - CC0 - https://freesound.org/s/774635/
+  [J22] "Glass panel shattering" - LukaCafuka - CC0 - https://freesound.org/s/758207/
+  [J23] "Bass Impact 3" - D4XX - CC0 - https://freesound.org/s/617043/
+  [J24] "Break something (ice/glass/...)" - Aurelon - CC0 - https://freesound.org/s/422633/
+  [J25] "imp_13.wav" - blaukreuz - CC0 - https://freesound.org/s/52147/
+  [J26] "Magical focus energy" - Iridiuss - CC0 - https://freesound.org/s/519415/
+  [J27] "Woosh" - florianreichelt - CC0 - https://freesound.org/s/683096/
+  [J28] "Far_Off_Boom_Without_Amplify.wav" - CaCtUs2003 - CC0 - https://freesound.org/s/147583/
+  [J29] "Unsheathed blade" - deleted_user_2906614 - CC0 - https://freesound.org/s/320521/
+  [J30] "Ice 6" - JarredGibb - CC0 - https://freesound.org/s/263918/
+  [J31] "Glass_Shards_Impact_05" - BlondPanda - CC0 - https://freesound.org/s/778608/
+  [J32] "quick woosh" - florianreichelt - CC0 - https://freesound.org/s/683101/
+  [J33] "Slash" - qubodup - CC0 - https://freesound.org/s/442903/
+  [J34] "Sword - Unsheathe" - Vrymaa - CC0 - https://freesound.org/s/770035/
+  [J35] "iceSpell.wav" - Relenzo2 - CC0 - https://freesound.org/s/160420/
+  [J36] "Sound Design Elements Impact SFX PS 016" - AudioPapkin - CC0 - https://freesound.org/s/754564/
+  [J37] "Ice 2 - Reverse" - JarredGibb - CC0 - https://freesound.org/s/263909/
+  [J38] "magicShield_block.wav" - rafaelzimrp - CC0 - https://freesound.org/s/570853/
+  [J39] "2022-01-14-crystal-bell-08.flac" - arseniiv - CC0 - https://freesound.org/s/614832/
+  [J40] "Glass Break" - unfa - CC0 - https://freesound.org/s/221528/
+  [J41] "Spell charge spin down" - Bertsz - CC0 - https://freesound.org/s/500913/
+  [J42] "wind_gust_short_sqeeeek.wav" - sqeeeek - CC0 - https://freesound.org/s/381853/
+  [J43] "Slow Motion Glass Shatter" - bevibeldesign - CC0 - https://freesound.org/s/349905/
+  [J44] "2022-01-14-crystal-bell-01.flac" - arseniiv - CC0 - https://freesound.org/s/614833/
+  [J45] "blizzard looped.aif" - m0ments - CC0 - https://freesound.org/s/679941/
+  [J46] "Quick Sword Draw.mp3" - FunWithSound - CC0 - https://freesound.org/s/417035/
+  [J47] "Shimmer" - adh.dreaming - CC0 - https://freesound.org/s/632344/
+  [J48] "ice sounds 10.wav" - creeeeak - CC0 - https://freesound.org/s/437324/
+  [J49] "swing.mp3" - GaussTheWizard - CC0 - https://freesound.org/s/367182/
+  [J50] "ski_04.wav" - blaukreuz - CC0 - https://freesound.org/s/52151/
+  [J51] "Ice Crack 1" - j_p_higgins - CC0 - https://freesound.org/s/262635/
+  [J52] "snd_fragment_retrieve.wav" - gristi - CC0 - https://freesound.org/s/562196/
+  [J53] "rock hitting icy lake" - ultraaxvii - CC0 - https://freesound.org/s/591152/
+  [J54] "Ice Magic Arrow_type 01" - lotteria001 - CC0 - https://freesound.org/s/709888/
+  [J55] "Heal - Rpg" - colorsCrimsonTears - CC0 - https://freesound.org/s/562292/
+  [J56] "Nice anime sword hit" - xkeril - CC0 - https://freesound.org/s/706204/
+  [J57] "Glass break hammer" - loganzsound - CC0 - https://freesound.org/s/784151/
+  [J58] "Sword_Clash (7).wav" - JohnBuhr - CC0 - https://freesound.org/s/326868/
+  Montagem (tools: ffmpeg; camadas cortadas, altura mudada, mixadas, ~-16 LUFS, pico -1.5 dBTP):
+  jux_corte_a: [J01] + [J02] x1.15
+  jux_corte_b: [J03] x1.05 + [J01] x0.90
+  jux_corte_c: [J04] x1.10 + [J02] x1.35
+  jux_acerto_1: [J05] + [J06]
+  jux_acerto_2: [J07] + [J08] + [J06] x1.12
+  jux_acerto_3: [J09] + [J10] + [J06] x0.90
+  jux_lamina_carga: [J11] + [J12]
+  jux_lamina_impacto: [J13] + [J14] + [J15] + [J16] x1.25
+  jux_lamina_corte: [J03] x0.95 + [J17] x0.95
+  jux_tempestade_conjura: [J18] x0.90
+  jux_tempestade_vento: [J19] + [J20] x1.30
+  jux_tempestade_explosao: [J21] + [J22] + [J09] + [J23]
+  jux_tempestade_acerto: [J24] x1.20 + [J25] x1.40
+  jux_rei_carga: [J26] + [J13] x1.10
+  jux_rei_queda: [J27] x0.80 + [J28] + [J14] x0.90 + [J29] x0.90
+  jux_rei_rachaduras: [J15] + [J30] x0.90
+  jux_rei_lascas: [J31] x1.20
+  jux_rei_estilhaca: [J09] + [J22] x0.95 + [J16] x1.30
+  jux_danca_1: [J32] x1.10 + [J01] x1.10
+  jux_danca_2: [J33] + [J01] x1.25
+  jux_danca_3: [J33] x0.88 + [J01] x1.05
+  jux_danca_4: [J04] x1.20 + [J02] x1.45
+  jux_danca_5: [J17] x0.85 + [J03] x0.90 + [J34]
+  jux_danca_acerto: [J35] + [J07] x1.25
+  jux_danca_x: [J05] + [J15] x1.05 + [J36] x1.20
+  jux_escudo_ergue: [J34]
+  jux_escudo_forma: [J37] + [J38] + [J39] x0.80
+  jux_escudo_crava: [J06] x0.75 + [J10] x0.90 + [J25]
+  jux_escudo_espinhos: [J17] x1.20 + [J35] x1.15
+  jux_escudo_espinho_acerto: [J07] + [J08] x1.10
+  jux_escudo_quebra: [J40] + [J15]
+  jux_zero_carga: [J41]
+  jux_zero_crava: [J29] x0.85 + [J10] x0.80
+  jux_zero_congela: [J30] x0.80
+  jux_zero_transforma: [J18] x0.75 + [J42]
+  jux_zero_onda: [J20] + [J43] x1.20
+  jux_zero_pilares: [J25] + [J14] x0.85 + [J23] x1.10
+  jux_zero_corte: [J17] x0.70 + [J32] x0.80
+  jux_zero_tempo: [J44] x0.70 + [J06] x1.30
+  jux_zero_explosao: [J43] + [J16] + [J09] x0.95 + [J14] x0.80
+  jux_zero_desfaz: [J45] x1.10 + [J12] x0.80
+  jux_nevasca_ergue: [J46] x0.90 + [J47]
+  jux_nevasca_vento: [J19] + [J45]
+  jux_nevasca_granizo: [J42] + [J48] + [J15]
+  jux_nevasca_acerto: [J48] + [J10] x1.30
+  jux_prisao_carga: [J13] x1.10
+  jux_prisao_corte: [J49] + [J01] x0.85
+  jux_prisao_rastro: [J50] x1.30 + [J51]
+  jux_prisao_forma: [J37] x1.10 + [J05] x0.90
+  jux_prisao_fecha: [J10] x0.90 + [J06] x0.65 + [J08] x0.90
+  jux_espelho_runas: [J06] + [J44] x1.20
+  jux_espelho_forma: [J12] + [J35] x1.30
+  jux_espelho_pronto: [J39] + [J52] x0.90
+  jux_espelho_reflete: [J53] + [J08]
+  jux_espelho_raio: [J54] x1.10 + [J14] x1.10
+  jux_espelho_quebra: [J22] x1.10
+  jux_coroa_carga: [J26] x1.20 + [J21]
+  jux_coroa_ergue: [J34] x1.15
+  jux_coroa_forma: [J47] + [J39] x0.75 + [J44] x0.90
+  jux_coroa_vira: [J29] x1.25 + [J13] x1.30
+  jux_coroa_cai: [J27] x1.10 + [J17] x0.90
+  jux_coroa_impacto: [J36] + [J15] + [J05] x0.95
+  jux_coroa_eco: [J31] + [J44] x0.60
+  jux_est_ergue: [J49] x1.05 + [J11] x1.20
+  jux_est_nuvem: [J45] x1.20 + [J37]
+  jux_est_crava_1: [J09] + [J16] x1.50
+  jux_est_crava_2: [J15] + [J10] + [J23] x1.60
+  jux_est_crava_3: [J09] + [J25] x0.80 + [J23] x1.40
+  jux_coracao_crava: [J10] + [J06] x0.80
+  jux_coracao_pulso: [J39] x0.65 + [J23] x1.60 + [J23] x1.60 + [J44] x0.80
+  jux_coracao_cura: [J55] + [J12]
+  jux_aurora_desce: [J47] x0.80
+  jux_aurora_ergue: [J29]
+  jux_aurora_coluna: [J12] + [J52] + [J36] x1.30
+  jux_aurora_runa: [J44] x1.40 + [J35] x0.80
+  jux_kelvin_aura: [J13] x1.20 + [J37]
+  jux_kelvin_avanco: [J32] x1.30 + [J42] x1.50
+  jux_kelvin_saque: [J11] x1.15 + [J04]
+  jux_kelvin_corte: [J56] + [J14] + [J28] x1.10
+  jux_kelvin_explode: [J57] + [J09] x0.85 + [J43] x1.30
+  jux_final_carga: [J26] x0.80 + [J21] + [J16]
+  jux_final_ergue: [J29] x0.75 + [J34] x0.80
+  jux_final_transforma: [J20] x0.90 + [J30] x0.70 + [J19]
+  jux_final_lua: [J12] x0.75 + [J47] x0.70
+  jux_final_cometa: [J27] x0.70 + [J13]
+  jux_final_explosao: [J43] + [J16] x0.90 + [J28] + [J09] x0.90 + [J14] x0.75
+  jux_final_estilhaco: [J15] + [J22] x0.80
+  jux_lanca_carga: [J54]
+  jux_lanca_arremesso: [J17] x1.10 + [J32] x1.50
+  jux_lanca_impacto: [J14] + [J24] + [J23] x1.20
+  jux_defender: [J58] x0.90 + [J06]

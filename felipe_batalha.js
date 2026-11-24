@@ -65,6 +65,10 @@ function autoEscolheFelipe() {
   {const hl = habFelipeLista(), k = autoEcoGolpe(hl, i => felipeHabEnabled(i), alvo, vivos, reserva); if (k) return k;}
   const pode = id => tem(id) && hero.mp - custo(id) >= reserva, time = aliados().filter(a => a.hp > 0 && !a.dead);
   if (pode('f_brisa') && time.filter(a => a.hp < a.max * .6).length >= 2) return {kind: 'f_brisa'};
+  // especiais: a Tempestade com 2+ inimigos (ou com bonus para apagar), o Furacao quando a vida baixa, a Flecha do Ceu num alvo forte
+  if (pode('f_tempestade') && (vivos.length >= 2 || vivos.some(e => Object.keys(e.est || {}).some(k => ESTADOS[k] && !ESTADOS[k].ruim)))) return {kind: 'f_tempestade'};
+  if (pode('f_furacao') && !temEst(hero, 'furacao') && hp < .6) return {kind: 'f_furacao'};
+  if (pode('f_ceu') && alvo.hp > alvo.max * .5) return {kind: 'f_ceu', alvo};
   if (pode('f_corrente') && !time.some(a => temEst(a, 'corrente')) && vivos.length > 1) return {kind: 'f_corrente'};
   if (vivos.length >= 3 && pode('f_chuva')) return {kind: 'f_chuva'};
   if (vivos.length >= 2 && pode('f_rajada')) return {kind: 'f_rajada'};
@@ -103,6 +107,39 @@ const fpsF = n => ((FELIPE_D && FELIPE_D.anims[n]) || {}).fps || 1;
 function fq(n, i) { setFrame(n, (i + .01) / fpsF(n)); }
 async function quadrosF(nome, lista) { for (const [i, ms, fn] of lista) { fq(nome, i); if (fn) fn(); await wait(ms); } }
 function usaCritico() { if (hero.critCerto) { hero.critCerto = false; if (hero.est) delete hero.est.soneca; } }
+
+// Olho do Furacao: enquanto o estado durar, todo golpe no Felipe passa desviado pelo vento e ele revida com uma flecha (GOLPES_JUX.f_contra)
+// chamado no comeco do hitHero (index.html): devolve true se desviou (nada de dano)
+function furacaoDesvia() {
+  if (hero !== FELIPE || !temEst(FELIPE, 'furacao') || FELIPE.hp <= 0) return false;
+  const F = FELIPE, x = F.x, y = F.y, lado = Math.random() < .5 ? 4 : 5;
+  setFrame('furacao', (lado + .01) / fpsF('furacao')); setTimeout(() => { if (F.anim === 'furacao') { F.anim = 'parado'; F.at = 0; F.hold = false; } }, 420);
+  F.lunge = lado === 4 ? 26 : -18; tween(F, 'lunge', 0, 380, easeOut);
+  fxiPlay('felipe_furacao', x - 10, y - 95, 520, {de: 4, escala: 1.25}); som('felipe_desvia', .9); som('whoosh', .4);
+  pop(x, y - 200, 'DESVIOU!', '#c8ffd8');
+  const atk = enemy;   // quem bateu leva a flecha de volta (uma por golpe)
+  if (atk && !atk.revidado) {
+    atk.revidado = true; setTimeout(() => { atk.revidado = false; }, 900);
+    setTimeout(() => {
+      if (!atk || atk.hp <= 0 || F.hp <= 0) return;
+      const h0 = hero, e0 = enemy, a0 = G.acao; hero = F; enemy = atk; G.acao = 'f_contra';
+      const x0 = F.x - 70, y0 = F.y - 92; somFlecha(); fxiPlay('felipe_flecha', x0, y0, 420, {x1: atk.x + 40, y1: atk.y - 95, fim: .38, flip: true, escala: 1});
+      setTimeout(() => { if (atk.hp > 0) { const h1 = hero, e1 = enemy, a1 = G.acao; hero = F; enemy = atk; G.acao = 'f_contra';
+        hitEnemy(dmg(30, .1), false); somImpactoVento(); pop(F.x, F.y - 240, 'REVIDE!', '#d8ffb0'); hero = h1; enemy = e1; G.acao = a1; } }, 170);
+      hero = h0; enemy = e0; G.acao = a0;
+    }, 380);
+  }
+  return true;
+}
+// Tempestade do Sul: apaga os bonus dos inimigos (estados bons, vapor da Salamandra, neve acumulada do Bolotao)
+function apagaBonus(e) {
+  let tinha = false;
+  for (const k of Object.keys(e.est || {})) if (ESTADOS[k] && !ESTADOS[k].ruim) { delete e.est[k]; tinha = true; }
+  if (e.vapor > 0) { e.vapor = 0; tinha = true; }
+  if (e.acumulo) { e.forca /= Math.pow(1.1, e.acumulo); e.acumulo = 0; tinha = true; }
+  return tinha;
+}
+async function cineFelipe(id) { if (typeof CINES === 'undefined' || !CINES[id] || !CIN.cenas[id + '_1']) return; cineMusica(true, 'felipe'); await cinematica(id); cineMusica(false); }
 
 const ACOES_FELIPE = {
   // ataque normal (de graça): pega a flecha, mira, solta no quadro 5 (400 ms a 10 qps); devolve um pouco de MP
@@ -209,6 +246,43 @@ const ACOES_FELIPE = {
     await wait(650);
     for (const a of aliados()) if (a.hp > 0 && !a.dead) { const n = Math.min(Math.round(a.max * .18), a.max - a.hp); a.hp += n; limpaRuins(a, ['lento', 'cego', 'sono']); pop(a.x, a.y - 200, '+' + n, '#7dffa8'); }
     await quadrosF('brisa', [[5, 200], [6, 240], [7, 300]]); setAnim('parado');
+  },
+  // ---------- C2c: as especiais (cada uma com a sua cinematica: felipe_cines.js) ----------
+  // Olho do Furacao (nv 74): fecha os olhos, o vento gira, os olhos acendem: por 2 turnos desvia de tudo e revida cada desvio
+  async f_furacao() {
+    await cineFelipe('ffuracao'); const x = fx_(), y = fy_();
+    await quadrosF('furacao', [[0, 100], [1, 380], [2, 300, () => { som('felipe_furacao', 1); fxiPlay('felipe_furacao', x - 10, y - 95, 1400, {escala: 1.3}); }],
+      [3, 420, () => { fxBrilho(x - 30, y - 150, {raio: 70, ms: 500, cor: C_VENTO, a: .9}); fxAnel(x, y + 4, {raio: 160, achata: .3, ms: 600, esp: 10, cor: C_VENTO, a: .8}); }], [7, 400]]);
+    poeEstado(hero, 'furacao', 2); pop(x, y - 215, 'OLHO DO FURACÃO', '#c8ffd8'); setAnim('parado'); await wait(200);
+  },
+  // Flecha do Ceu (nv 86): ajoelha, mira para cima, solta nas nuvens, aponta o inimigo: a lanca de vento cai nele (dano colossal)
+  async f_ceu() {
+    await cineFelipe('fceu'); const e = enemy, x = fx_(), y = fy_();
+    await quadrosF('ceu', [[0, 90], [1, 260], [2, 220, somCorda], [3, 320, () => { fxBrilho(x - 40, y - 200, {raio: 60, ms: 400, cor: C_VENTO, a: .9}); fxAnel(x - 30, y - 110, {raio: 120, achata: .6, ms: 500, esp: 8, cor: C_VENTO, a: .7}); }],
+      [4, 300, () => { somFlecha(true); som('felipe_ceu_sobe', 1); fxCorte(x - 40, y - 230, x + 40, -60, {ms: 380, esp: 6, cor: C_VENTO_CLARO, risca: .3}); }], [5, 420], [6, 260]]);
+    som('felipe_ceu_cai', 1); fxiPlay('felipe_ceu', e.x + 10, e.y - 200, 1700, {escala: 3.2, brilho: true});
+    await wait(1700 * 3 / 8);
+    som('felipe_ceu_impacto', 1); shake = Math.max(shake, 30); fxFlash('225,255,215', .45, 500);
+    for (let k = 0; k < 3; k++) setTimeout(() => fxAnel(e.x, e.y + 6, {raio: 320 + k * 110, achata: .28, ms: 650, esp: 16, cor: k ? C_VENTO_CLARO : C_VENTO, a: .9}), k * 120);
+    spark(e.x, e.y - 60, 26, '#c8ffb8', 640, 1, 6); spark(e.x, e.y - 40, 14, '#8a7f74', 520, 1.1, 7);
+    hitEnemy(dmg(150, .08), false); usaCritico(); e.kx = -70; tween(e, 'kx', 0, 520, easeOut);
+    await wait(500); await quadrosF('ceu', [[7, 520]]); setAnim('parado'); await wait(150);
+  },
+  // Tempestade do Sul (nv 100, suprema): tudo para, ele sussurra, gira o arco e empurra um furacao gigante pelo campo:
+  // dano enorme em todos (2 ondas) e apaga os bonus deles
+  async f_tempestade() {
+    await cineFelipe('ftempestade'); const c = centroInimigos(), x = fx_(), y = fy_();
+    await quadrosF('tempestade', [[0, 90], [1, 380], [2, 420, () => som('felipe_sussurro', .9)], [3, 260], [4, 380, () => { som('felipe_furacao', 1); fxiPlay('felipe_furacao', x - 10, y - 95, 900, {escala: 1.5}); }]]);
+    fq('tempestade', 5); som('felipe_tornado', 1); shake = Math.max(shake, 14);
+    fxiPlay('felipe_tempestade', c.x + 170, c.y - 150, 2200, {x1: c.x - 30, y1: c.y - 150, fim: .55, escala: 3.6, brilho: true});   // o furacao varre o campo para a esquerda
+    await wait(700);
+    for (let w = 0; w < 2; w++) {
+      shake = Math.max(shake, 22); fxFlash('225,255,215', .25, 300);
+      for (const e of inimigos()) { spark(e.x, e.y - 80, 16, '#c8ffb8', 600, 1, 5); spark(e.x, e.y - 40, 8, '#8a7f74', 480, 1.1, 6); e.kx = -50; tween(e, 'kx', 0, 420, easeOut); }
+      acertaTodos(72); await wait(520);
+    }
+    for (const e of inimigos()) if (e.hp > 0 && apagaBonus(e)) pop(e.x, e.y - 235, 'BÔNUS APAGADOS', '#d8ffb0');
+    await quadrosF('tempestade', [[6, 420], [7, 700, () => som('felipe_bocejo', .9)]]); setAnim('parado'); await wait(150);
   },
 };
 // cada habilidade gasta o MP dela e mostra o nome na faixa de cima (o ataque normal e de graca)

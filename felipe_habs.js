@@ -13,9 +13,9 @@ const HAB_FELIPE = [
   {id: 'f_chuva', nome: 'Chuva de Flechas', mp: 24, nivel: 44, alvo: 'todos', feito: true, desc: 'Três ondas de flechas caem em todos os inimigos.'},
   {id: 'f_perfurante', nome: 'Flecha Perfurante', mp: 22, nivel: 52, alvo: 'um', feito: true, desc: 'Ignora metade da defesa e enche muito a barra de Quebra.'},
   {id: 'f_brisa', nome: 'Brisa Leve', mp: 26, nivel: 62, alvo: 'time', feito: true, desc: 'Cura leve no time inteiro e tira Lento, Cegueira e Sono.'},
-  {id: 'f_furacao', nome: 'Olho do Furacão', mp: 30, nivel: 74, alvo: 'eu', feito: false, especial: true, desc: 'Por 2 turnos desvia de todo golpe e revida cada desvio com uma flecha.'},
-  {id: 'f_ceu', nome: 'Flecha do Céu', mp: 40, nivel: 86, alvo: 'um', feito: false, especial: true, desc: 'Uma lança de vento cai do céu em um inimigo: dano colossal.'},
-  {id: 'f_tempestade', nome: 'Tempestade do Sul', mp: 60, nivel: 100, alvo: 'todos', feito: false, especial: true, suprema: true, desc: 'Um furacão gigante varre todos os inimigos: dano enorme e apaga os bônus deles.'},
+  {id: 'f_furacao', nome: 'Olho do Furacão', mp: 30, nivel: 74, alvo: 'eu', feito: true, especial: true, desc: 'Por 2 turnos desvia de todo golpe e revida cada desvio com uma flecha.'},
+  {id: 'f_ceu', nome: 'Flecha do Céu', mp: 40, nivel: 86, alvo: 'um', feito: true, especial: true, desc: 'Uma lança de vento cai do céu em um inimigo: dano colossal.'},
+  {id: 'f_tempestade', nome: 'Tempestade do Sul', mp: 60, nivel: 100, alvo: 'todos', feito: true, especial: true, suprema: true, desc: 'Um furacão gigante varre todos os inimigos: dano enorme e apaga os bônus deles.'},
 ];
 // tipo de cada golpe e quanto enche a barra de Quebra (combate.js GOLPES_JUX: mesmo formato). O ataque normal é físico, as habilidades são Vento
 if (typeof GOLPES_JUX !== 'undefined') Object.assign(GOLPES_JUX, {
