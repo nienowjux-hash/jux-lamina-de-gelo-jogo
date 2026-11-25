@@ -25,7 +25,7 @@
       fx: [{t: 'brilho', pts: [[.37, .1, .1]], v: 3, cor: 'rgba(200,240,255,.5)'}, {t: 'anel', x: .75, y: .62, r: 1, per: .45, ach: .3}, fa([0, 0, 1, .9], 14, 0, B, {estrela: true}), fa([.6, .4, .95, .7], 40, -50, G)]},
   ]});
   // RESSONANCIA II: ZERO ABSOLUTO. A mao crava ("Kooritsuke!"), o gelo sobe pelo corpo, os olhos, o tempo parado, o corte ("Zettai Reido!")
-  if (tem('zero')) CINES.zero = Object.assign({}, CINES.zero, {barra: 14, tomadas: [
+  if (tem('zero')) CINES.zero = Object.assign({}, CINES.zero, {barra: 14, musica: 'zero', tomadas: [
     {cena: 'jzero_1', som: ['crava'], voz: 'kooritsuke', legenda: ['凍りつけ！', 'Congele!'], d: 2.0, z: [1.0, 1.15], f: [[.55, .55], [.56, .62]], clarao: .7, tremor: [.1, .45, 8],
       fx: [{t: 'anel', x: .57, y: .85, r: .7, per: .5, ach: .22}, {t: 'brilho', pts: [[.57, .82, .1]], v: 12}, fa([.2, .6, .95, .98], 55, -130, G, {vx: 35})]},
     {cena: 'jzero_2', som: ['vento', 'brilho'], entra: 'chicote', d: 2.0, z: [1.12, 1.0], f: [[.45, .35], [.45, .5]], tremor: [.6, .95, 5],

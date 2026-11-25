@@ -27,7 +27,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="jogo.js?v=1795443901"></script>
 <script src="formacao.js?v=1795453632"></script>
 <script src="tutorial.js?v=1795226200"></script>
-<script src="combate.js?v=1795330100"></script>
+<script src="combate.js?v=1795569224"></script>
 <script src="bino_habs.js?v=1795225300"></script>
 <script src="felipe_habs.js?v=1795470609"></script>
 <script src="jux_habs.js?v=1795117438"></script>
@@ -44,7 +44,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="sprites_cine.js?v=1795265000"></script>
 <script src="sprites_bino.js?v=1795457045"></script>
 <script src="sprites_felipe.js?v=1795470609"></script>
-<script src="sprites_batalha.js?v=1795556720"></script>
+<script src="sprites_batalha.js?v=1795583055"></script>
 <script src="ecos_sprites.js?v=1795457045"></script>
 <script src="inimigos_sprites.js?v=1795456067"></script>
 <script src="efeitos_fx.js?v=1795457045"></script>
@@ -1108,7 +1108,7 @@ async function actEscudo(){
 // Quem sobrevive fica congelado (combo com a Lanca Boreal)
 async function actZero(){
   hero.res=0;som('carga_gelo',.8);frostSfx(.6,2000);
-  cineMusica(true);await cinematica('zero');   // a cinematica mostra a mao, o tempo parando, o campo de gelo e o corte
+  cineMusica(true,'zero');await cinematica('zero');   // a cinematica mostra a mao, o tempo parando, o campo de gelo e o corte
   banner('RESSONÂNCIA II: Zero Absoluto');fxCinema(true,'200,230,255');
   const alvos=inimigos(),alvo=enemy;
   // crava a espada: o gelo sobe pelas pernas
@@ -1352,7 +1352,7 @@ async function actFinal(){
   for(const e of alvos){fxPilar(e.x,e.y+12,{larg:160,ms:1200});fxEstrela(e.x,e.y-120,{raio:380,ms:500});}
   for(const e of alvos){playFx('fin_geleira',e.x,yPes('fin_geleira',e.x,e.y+10,2.4),1100,{escala:2.4,alpha:.9});enemy=e;hitEnemy(dmg(240,.08),true,e!==alvos[0]);if(e.hp>0)poeEstado(e,'lento',2,1,e.tipo);}
   await wait(700);for(let i=0;i<70;i++)spark(cx+rnd(-420,420),rnd(-200,420),1,i%3?'#e8fbff':'#9fe8ff',rnd(40,120),rnd(1,2),rnd(2,5));for(const e of alvos)playFx('zero_cristais',e.x,e.y-150,1200,{escala:1.6});await wait(900);
-  hero.charge=0;fxCinema(false);await backHome();G.dim=0;setFrame('final',7);await wait(700);hero.branco=true;pop(hero.x,hero.y-215,'FORMA ZERO','#e8fbff');setAnim('parado');   // fica branco ate o fim da luta
+  hero.charge=0;fxCinema(false);await backHome();G.dim=0;setFrame('final',7);await wait(700);hero.branco=true;pop(hero.x,hero.y-215,'FORMA ZERO','#e8fbff','DANO +30% · DEFESA +25% · VELOCIDADE +25%');setAnim('parado');   // fica branco ate o fim da luta
 }
 const ESC_CUP=3.6;   // tamanho da cupula do Escudo de Cristal (folha de efeitos nova)
 async function actLanca(){
@@ -2570,7 +2570,7 @@ const MUS_CINE_VOL=.6,fades=new Map();
 function volPara(a,alvo,ms,fim){clearInterval(fades.get(a));const v0=a.volume,n=Math.max(1,Math.round(ms/40));let k=0;
   fades.set(a,setInterval(()=>{k++;a.volume=clamp(v0+(alvo-v0)*k/n,0,1);if(k>=n){clearInterval(fades.get(a));if(fim)fim();}},40));}
 // musica propria de uma cinematica (CINES[id].musica): Era do Gelo = assets/musica/cine_final ("Fall of Nightmares", CC0)
-const MUS_PROPRIA={};for(const n of ['final','ragnarok','bino','felipe']){const a=new Audio();a.preload='auto';a.src='assets/musica/cine_'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');MUS_PROPRIA[n]=a;}
+const MUS_PROPRIA={};for(const n of ['final','ragnarok','bino','felipe','zero']){const a=new Audio();a.preload='auto';a.src='assets/musica/cine_'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');MUS_PROPRIA[n]=a;}
 let musCineTocando=MUS_CINE;
 function cineMusica(liga,propria){
   if(liga){const a=propria&&MUS_PROPRIA[propria];if(!musicaLigada||(!musCine&&!a))return;musCineTocando=a||MUS_CINE;volPara(MUSICA,.05,400);musCineTocando.currentTime=0;musCineTocando.volume=a?.75:MUS_CINE_VOL;musCineTocando.play().catch(()=>{});}
@@ -2623,6 +2623,8 @@ cv.addEventListener('pointerdown',e=>{
 // abre pelo #teste (na pagina publicada no claude.ai so o #nome passa; ?teste continua valendo no local)
 // window.LAB_FIXO: a copia publicada so do laboratorio abre sempre nele (sem depender do #teste no endereco)
 const TESTE=!!window.LAB_FIXO||location.hash==='#teste'||new URLSearchParams(location.search).has('teste');
+// lab: a musica da batalha toca tambem no modo de teste (comeca no primeiro clique, o navegador so deixa tocar depois de um clique)
+if(TESTE)addEventListener('pointerdown',()=>{if(G.scene==='battle'&&MUSICA.paused&&!cine)musicaToca();},true);
 function trocaModo(teste){try{location.hash=teste?'teste':'';}catch(e){}location.reload();}
 if(!window.LAB_FIXO)addEventListener('hashchange',()=>{if((location.hash==='#teste')!==TESTE)location.reload();});
 // botao na tela inicial: abrir o laboratorio de testes
@@ -2716,7 +2718,7 @@ if(TESTE){
   const cb=mk('Campo cheio: não',()=>{if(G.busy)return;G.campoCheio=!G.campoCheio;cb.textContent='Campo cheio: '+(G.campoCheio?'sim':'não');newBattle();G.bannerT=0;},'#d4dcff');
   // luta de verdade: menu na sua vez, alvo, inimigos atacando sozinhos e morrendo, EXP; nada e salvo
   const lb=mk('Luta de verdade: não',()=>{if(G.busy)return;G.lutaReal=!G.lutaReal;lb.textContent='Luta de verdade: '+(G.lutaReal?'sim':'não');
-    newBattle();if(G.lutaReal)musicaToca();else{G.bannerT=0;musicaSome(500);}st.textContent=G.lutaReal?'luta de verdade':'pronto';},'#7dffa8');
+    newBattle();if(!G.lutaReal)G.bannerT=0;musicaToca();st.textContent=G.lutaReal?'luta de verdade':'pronto';},'#7dffa8');
   const nb=mk('Nível '+prog.nivel,()=>{},'#ffe27a');nb.style.cursor='default';
   const muda=d=>{if(G.busy)return;prog.nivel=clamp(prog.nivel+d,1,NIVEL_MAX);prog.exp=0;nb.textContent='Nível '+prog.nivel;newBattle();G.bannerT=0;st.textContent='pronto';};
   mk('Nível \u2212',()=>muda(-1),'#ffe27a');mk('Nível +',()=>muda(1),'#ffe27a');
@@ -2737,7 +2739,7 @@ requestAnimationFrame(frame);
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
 <script src="felipe_cines.js?v=1795470600"></script>
-<script src="jux_cines.js?v=1795541158"></script>
+<script src="jux_cines.js?v=1795565457"></script>
 <script src="jux_sons.js?v=1795479884"></script>
 <script src="eco_tartarok.js?v=1795457045"></script>
 <script src="pausa_batalha.js?v=1795255300"></script>

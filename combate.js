@@ -229,9 +229,11 @@ function poeEstado(alvo,nome,turnos,chance,tipoInim){
   const T=tipoInim&&TIPOS_INIMIGO[tipoInim];if(T&&T.imuneEst&&T.imuneEst.includes(nome))return false;
   alvo.est=alvo.est||{};alvo.est[nome]=Math.max(alvo.est[nome]||0,turnos);return true;}
 const temEst=(alvo,n)=>!!(alvo.est&&alvo.est[n]>0);
-function multDanoEst(alvo){let m=1;for(const k in alvo.est||{})if(alvo.est[k]>0&&ESTADOS[k]&&ESTADOS[k].dano)m*=ESTADOS[k].dano;return m;}
-function multRecebidoEst(alvo){let m=1;for(const k in alvo.est||{})if(alvo.est[k]>0&&ESTADOS[k]&&ESTADOS[k].recebido)m*=ESTADOS[k].recebido;return m;}
-function multVelEst(alvo){let m=1;for(const k in alvo.est||{})if(alvo.est[k]>0&&ESTADOS[k]&&ESTADOS[k].vel)m*=ESTADOS[k].vel;return m;}
+// FORMA ZERO (Jux branco depois da Era do Gelo, ate o fim da luta): +30% de dano, -25% de dano recebido, +25% de velocidade
+const FORMA_ZERO={dano:1.3,recebido:.75,vel:1.25};
+function multDanoEst(alvo){let m=alvo&&alvo.branco?FORMA_ZERO.dano:1;for(const k in alvo.est||{})if(alvo.est[k]>0&&ESTADOS[k]&&ESTADOS[k].dano)m*=ESTADOS[k].dano;return m;}
+function multRecebidoEst(alvo){let m=alvo&&alvo.branco?FORMA_ZERO.recebido:1;for(const k in alvo.est||{})if(alvo.est[k]>0&&ESTADOS[k]&&ESTADOS[k].recebido)m*=ESTADOS[k].recebido;return m;}
+function multVelEst(alvo){let m=alvo&&alvo.branco?FORMA_ZERO.vel:1;for(const k in alvo.est||{})if(alvo.est[k]>0&&ESTADOS[k]&&ESTADOS[k].vel)m*=ESTADOS[k].vel;return m;}
 // começo do turno do alvo: devolve {vida: +/-, perde: nome do estado que faz perder o turno ou null}
 function tickEstados(alvo,max){const r={vida:0,perde:null};
   for(const k in alvo.est||{}){if(!(alvo.est[k]>0))continue;const E=ESTADOS[k];if(!E)continue;
