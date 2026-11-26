@@ -132,3 +132,8 @@ brasaria.ogg/.mp3 — "At Work" (loop), HorrorPen (OpenGameArt.org), CC-BY 3.0 (
 
 Cinematicas do Felipe (2026-11-23):
 cine_felipe: "Winds Of Stories" (trecho 1:44.2-2:01.7, fade-out de 1,5 s no fim) - HorrorPen (OpenGameArt.org), sobre a melodia de "The Field Of Dreams" de pauliuw - CC-BY 3.0 (credito obrigatorio: "Winds Of Stories" por HorrorPen) - https://opengameart.org/content/winds-of-stories - https://creativecommons.org/licenses/by/3.0/
+
+Cinematicas do Felipe, uma musica para cada (2026-11-25; a cine_felipe antiga ficou sem uso):
+cine_felipe_furacao: "Heroic Moment" (trecho 0:39-0:50.5) - Stefan Grossmann (Stefan_Composer, OpenGameArt.org) - CC-BY 4.0 - https://opengameart.org/content/heroic-moment - https://creativecommons.org/licenses/by/4.0/
+cine_felipe_ceu: "Beyond The Clouds (Orchestral Theme)" (trecho 1:26-1:38) - Matthew Pablo (www.matthewpablo.com) - CC-BY 3.0 - https://opengameart.org/content/beyond-the-clouds-orchestral-theme - https://creativecommons.org/licenses/by/3.0/
+cine_felipe_tempestade: "The Fall of Arcana (Epic Game Theme Music)" (trecho 1:23.5-1:37.5) - Matthew Pablo (www.matthewpablo.com) - CC-BY 3.0 - https://opengameart.org/content/the-fall-of-arcana-epic-game-theme-music - https://creativecommons.org/licenses/by/3.0/

@@ -59,7 +59,7 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;image-rendering:p
 <script src="jux_fx_golpes.js?v=1795117438"></script>
 <script src="fx_vento.js?v=1795117438"></script>
 <script src="bino_batalha.js?v=1795443614"></script>
-<script src="felipe_batalha.js?v=1795470609"></script>
+<script src="felipe_batalha.js?v=1795658651"></script>
 <script>const jp=p=>p+(p.includes('?')?'&':'?')+'t='+Date.now();</script>
 <script>
 'use strict';
@@ -2570,7 +2570,7 @@ const MUS_CINE_VOL=.6,fades=new Map();
 function volPara(a,alvo,ms,fim){clearInterval(fades.get(a));const v0=a.volume,n=Math.max(1,Math.round(ms/40));let k=0;
   fades.set(a,setInterval(()=>{k++;a.volume=clamp(v0+(alvo-v0)*k/n,0,1);if(k>=n){clearInterval(fades.get(a));if(fim)fim();}},40));}
 // musica propria de uma cinematica (CINES[id].musica): Era do Gelo = assets/musica/cine_final ("Fall of Nightmares", CC0)
-const MUS_PROPRIA={};for(const n of ['final','ragnarok','bino','felipe','zero']){const a=new Audio();a.preload='auto';a.src='assets/musica/cine_'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');MUS_PROPRIA[n]=a;}
+const MUS_PROPRIA={};for(const n of ['final','ragnarok','bino','felipe','zero','felipe_furacao','felipe_ceu','felipe_tempestade']){const a=new Audio();a.preload='auto';a.src='assets/musica/cine_'+n+(a.canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3');MUS_PROPRIA[n]=a;}
 let musCineTocando=MUS_CINE;
 function cineMusica(liga,propria){
   if(liga){const a=propria&&MUS_PROPRIA[propria];if(!musicaLigada||(!musCine&&!a))return;musCineTocando=a||MUS_CINE;volPara(MUSICA,.05,400);musCineTocando.currentTime=0;musCineTocando.volume=a?.75:MUS_CINE_VOL;musCineTocando.play().catch(()=>{});}
@@ -2671,7 +2671,8 @@ if(TESTE){
   mk('Bino: Ataque',()=>rodaBino('b_atq','Ataque'),'#ffb27a');
   // FELIPE no lab (felipe_batalha.js): liga/desliga e um botao por golpe pronto
   const bf=mk('Felipe no time: não',()=>{if(G.busy)return;G.labFelipe=!G.labFelipe;bf.textContent='Felipe no time: '+(G.labFelipe?'sim':'não');newBattle();G.bannerT=0;},'#a8f0a0');
-  const rodaFelipe=async(kind,txt)=>{if(!temFelipe()){st.textContent='Ligue "Felipe no time".';return;}if(G.busy)return;hero=FELIPE;FELIPE.mp=FELIPE.mmax;FELIPE.dead=false;st.textContent=txt+'...';
+  const rodaFelipe=async(kind,txt)=>{if(G.busy)return;if(!temFelipe()){G.labFelipe=true;bf.textContent='Felipe no time: sim';newBattle();G.bannerT=0;await new Promise(r=>setTimeout(r,600));if(!temFelipe()){st.textContent='Ligue "Felipe no time".';return;}}   // liga o Felipe sozinho (antes o botao nao fazia nada com ele fora do time)
+    if(G.busy)return;hero=FELIPE;FELIPE.mp=FELIPE.mmax;FELIPE.dead=false;st.textContent=txt+'...';
     await heroTurn(kind);ENEMIES.forEach(e=>e.hp=e.max);FELIPE.atb=0;menu.open=false;st.textContent='pronto';};
   mk('Felipe: Ataque',()=>rodaFelipe('f_atq','Ataque'),'#a8f0a0');
   for(const h of HAB_FELIPE.filter(h=>h.feito))mk('Felipe: '+h.nome,()=>rodaFelipe(h.id,h.nome),'#a8f0a0');
@@ -2738,7 +2739,7 @@ requestAnimationFrame(frame);
     setTimeout(()=>{if(G.scene==='title')startOrRestart();},200);}}catch(e){}})();
 </script>
 <script src="bino_cines.js?v=1795120505"></script>
-<script src="felipe_cines.js?v=1795470600"></script>
+<script src="felipe_cines.js?v=1795658533"></script>
 <script src="jux_cines.js?v=1795565457"></script>
 <script src="jux_sons.js?v=1795479884"></script>
 <script src="eco_tartarok.js?v=1795457045"></script>

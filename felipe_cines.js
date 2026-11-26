@@ -23,7 +23,7 @@
   const fa = (area, n, vy, cor, o) => Object.assign({t: 'faiscas', area, n, vy, vx: 0, cor, s: [2, 4]}, o || {});
   const folhas = (n, vx, o) => fa([0, 0, 1, 1], n, 20, V, Object.assign({corre: vx, risco: 26}, o || {}));
   // Olho do Furacao (nv 74): a grama ao vento, o silencio, os olhos verdes, as flechas desviando, o revide sem olhar
-  CINES.ffuracao = {barra: 14, nome: 'OLHO DO FURACÃO', sub: 'Felipe', tomadas: [
+  CINES.ffuracao = {musica: 'felipe_furacao', barra: 14, nome: 'OLHO DO FURACÃO', sub: 'Felipe', tomadas: [
     {cena: 'ffuracao_1', som: ['f_vento'], d: 2.0, z: [1, 1.12], f: [[.5, .55], [.5, .5]], fx: [folhas(40, -260)]},
     {cena: 'ffuracao_2', voz: 'felipe_furacao_1', legenda: ['風が…止まった。', 'O vento… parou.'], som: [], d: 2.0, z: [1.05, 1.15], f: [[.5, .45], [.5, .42]],
       fx: [fa([0, 0, 1, 1], 10, -4, B, {estrela: true})]},
@@ -35,7 +35,7 @@
       fx: [fa([.4, .3, 1, .7], 60, 0, V, {corre: 700, risco: 60}), {t: 'raios', x: .7, y: .5, n: 10, L: .9, giro: .6, a: .12, cor: V}]},
   ]};
   // Flecha do Ceu (nv 86): o penhasco, a flecha nas nuvens, o ceu em espiral, a lanca descendo, o impacto
-  CINES.fceu = {barra: 14, nome: 'FLECHA DO CÉU', sub: 'Felipe', tomadas: [
+  CINES.fceu = {musica: 'felipe_ceu', barra: 14, nome: 'FLECHA DO CÉU', sub: 'Felipe', tomadas: [
     {cena: 'fceu_1', voz: 'felipe_ceu_1', legenda: ['空よ、ちょっと借りるぞ。', 'Céu, vou pegar emprestado.'], som: ['f_vento'], d: 2.2, z: [1, 1.1], f: [[.5, .6], [.5, .5]], fx: [fa([0, .4, 1, 1], 20, -30, O)]},
     {cena: 'fceu_2', som: ['f_solta', 'f_sobe'], entra: 'chicote', d: 1.5, z: [1.0, 1.2], f: [[.5, .7], [.5, .3]],
       fx: [{t: 'varre', de: [.5, .9], ate: [.5, .05], v: 1.4}, fa([0, 0, 1, 1], 40, -320, V, {risco: 40})]},
@@ -47,7 +47,7 @@
       fx: [{t: 'anel', x: .5, y: .8, r: 1.1, per: .4, ach: .3, cor: V}, {t: 'raios', x: .5, y: .7, n: 20, L: 1.1, giro: .8, a: .2, cor: V}, fa([.3, .5, .7, .9], 150, 0, B, {radial: 600})]},
   ]};
   // Tempestade do Sul (nv 100, suprema): tudo parado, o sussurro, o furacao nascendo, o furacao varrendo, o bocejo nos destrocos
-  CINES.ftempestade = {barra: 14, nome: 'TEMPESTADE DO SUL', sub: 'Felipe', tomadas: [
+  CINES.ftempestade = {musica: 'felipe_tempestade', barra: 14, nome: 'TEMPESTADE DO SUL', sub: 'Felipe', tomadas: [
     {cena: 'ftempestade_1', som: [], d: 2.2, z: [1, 1.08], f: [[.5, .55], [.5, .5]], fx: [fa([0, 0, 1, 1], 6, -6, B, {estrela: true})]},
     {cena: 'ftempestade_2', voz: 'felipe_tempestade_1', legenda: ['南の風よ…起きろ。', 'Vento do sul… acorda.'], som: ['f_sussurro'], d: 2.3, z: [1.05, 1.18], f: [[.45, .5], [.42, .5]],
       fx: [fa([.2, .3, .6, .7], 14, -20, V, {corre: 60})]},

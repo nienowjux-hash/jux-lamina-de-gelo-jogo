@@ -139,7 +139,8 @@ function apagaBonus(e) {
   if (e.acumulo) { e.forca /= Math.pow(1.1, e.acumulo); e.acumulo = 0; tinha = true; }
   return tinha;
 }
-async function cineFelipe(id) { if (typeof CINES === 'undefined' || !CINES[id] || !CIN.cenas[id + '_1']) return; cineMusica(true, 'felipe'); await cinematica(id); cineMusica(false); }
+// cada cutscene com a sua musica (2026-11-25)
+async function cineFelipe(id) { if (typeof CINES === 'undefined' || !CINES[id] || !CIN.cenas[id + '_1']) return; cineMusica(true, {ffuracao: 'felipe_furacao', fceu: 'felipe_ceu', ftempestade: 'felipe_tempestade'}[id] || 'felipe'); await cinematica(id); cineMusica(false); }
 
 const ACOES_FELIPE = {
   // ataque normal (de graça): pega a flecha, mira, solta no quadro 5 (400 ms a 10 qps); devolve um pouco de MP
