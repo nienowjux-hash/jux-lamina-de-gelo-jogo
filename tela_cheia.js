@@ -13,7 +13,7 @@
     Promise.resolve(f.call(el)).catch(() => { if (topo) { const g = document.documentElement; (g.requestFullscreen || g.webkitRequestFullscreen).call(g).catch(() => {}); } });
   };
   b.onclick = e => { e.stopPropagation(); alterna(); b.blur(); };
-  addEventListener('keydown', e => { if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) alterna(); });
+  addEventListener('keydown', e => { if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) { if (window.JUX_F_INTERAGE && window.JUX_F_INTERAGE()) return; alterna(); } });   // perto de algo que da para interagir (o cachorro), o F e para interagir
   // ESC NAO SAI da tela cheia (2026-11-20, pedido: 'atrapalha muito', o jogo usa ESC nos menus): trava a tecla Esc para o jogo
   // (Keyboard Lock do Chrome/Edge). Para sair: F, o botao, ou SEGURAR o Esc por 2 segundos.
   const trava = () => { try { const nav = (topo || window).navigator; if (doc.fullscreenElement && nav.keyboard && nav.keyboard.lock) nav.keyboard.lock(['Escape']).catch(() => {}); } catch (e) {} };

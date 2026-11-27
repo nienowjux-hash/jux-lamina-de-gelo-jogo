@@ -137,3 +137,15 @@ Cinematicas do Felipe, uma musica para cada (2026-11-25; a cine_felipe antiga fi
 cine_felipe_furacao: "Heroic Moment" (trecho 0:39-0:50.5) - Stefan Grossmann (Stefan_Composer, OpenGameArt.org) - CC-BY 4.0 - https://opengameart.org/content/heroic-moment - https://creativecommons.org/licenses/by/4.0/
 cine_felipe_ceu: "Beyond The Clouds (Orchestral Theme)" (trecho 1:26-1:38) - Matthew Pablo (www.matthewpablo.com) - CC-BY 3.0 - https://opengameart.org/content/beyond-the-clouds-orchestral-theme - https://creativecommons.org/licenses/by/3.0/
 cine_felipe_tempestade: "The Fall of Arcana (Epic Game Theme Music)" (trecho 1:23.5-1:37.5) - Matthew Pablo (www.matthewpablo.com) - CC-BY 3.0 - https://opengameart.org/content/the-fall-of-arcana-epic-game-theme-music - https://creativecommons.org/licenses/by/3.0/
+
+Vila do mundo novo (praça e casas), músicas calmas (2026-11-26; "Village of Snow" foi trocada a pedido):
+assets/vila/musica_vila_snowland: "Snowland Town" (Snowland Loop) - Matthew Pablo (www.matthewpablo.com) - CC-BY 3.0 - https://opengameart.org/content/snowland-town - https://creativecommons.org/licenses/by/3.0/
+assets/vila/musica_vila_nevada: "snowy village" - Louswan (OpenGameArt.org) - CC-BY 3.0 - https://opengameart.org/content/snowy-village - https://creativecommons.org/licenses/by/3.0/
+assets/vila/fogueira (som da fogueira da praça): "fireplace sound loop" - StarNinjas (OpenGameArt.org) - CC0 - https://opengameart.org/content/fireplace-sound-loop
+assets/vila/passaros_amb e assets/vila/piado_0..4 (pardais da praça; recortes e filtro): "Ambient Bird Sounds" - isaiah658 (OpenGameArt.org) - CC0 - https://opengameart.org/content/ambient-bird-sounds
+assets/vila/revoada (pardais levantando voo): "bird_flap" de "Flap, Splat, Poo (Yo Frankie!)" - Blender Foundation (enviado por Lamoot, OpenGameArt.org) - CC-BY 3.0 - https://opengameart.org/content/flap-splat-poo-yo-frankie - https://creativecommons.org/licenses/by/3.0/
+assets/vila/latido_0..2 e latido_duplo (cachorro da praça; recortes): "Dog Barking (mono)" - Brandon Morris (enviado por HaelDB, OpenGameArt.org) - CC0 - https://opengameart.org/content/dog-barking-mono
+assets/vila/cao_contente (cachorro ganhando carinho): "Dog grunt" - qubodup (OpenGameArt.org) - CC0 - https://opengameart.org/content/dog-grunt
+assets/vila/miado_0..2 (gato da praça; recortes): "Cat purr & meow" - Kerzoven (OpenGameArt.org) - CC0 - https://opengameart.org/content/cat-purr-meow
+assets/vila/gato_bravo_0..1 (gato assustado fugindo): "Cat SFX" - SFX by Dan Knoflicek (enviado por Macro, OpenGameArt.org) - CC-BY 3.0 - https://opengameart.org/content/cat-sfx - https://creativecommons.org/licenses/by/3.0/
+assets/vila/machado_0..2 (Oskar rachando lenha; o primeiro golpe recortado, 3 tons): "Tree chop, fall & thud" - kheetor (OpenGameArt.org) - CC0 - https://opengameart.org/content/tree-chop-fall-thud
