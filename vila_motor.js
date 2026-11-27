@@ -17,7 +17,7 @@ const hc=document.createElement('canvas');hc.width=W*HD;hc.height=H*HD;const hct
 const sc=document.createElement('canvas');sc.width=W*HD;sc.height=H*HD;const sctx=sc.getContext('2d');
 const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';
-const NOVO2=['praca','casas'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
+const NOVO2=['praca','casas','forja'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MAPA=new Image();MAPA.src=V.mapa;
 // ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
@@ -540,7 +540,7 @@ const VOV=(window.JUX_NPC||{}).vovo||null;const VOVI=new Image();if(VOV)VOVI.src
 const vovo={x:300,y:588,olha:'baixo',dist:0,acao:'cha',at:0,ad:4,anda:false,alvo:null,fila:[],brava:0};
 const VOVO_PONTO=V.pontos.find(p=>p.id==='vovo');
 const baloes=[];   // falinhas rapidas em cima da cabeca: {quem, txt, v}
-function balao(quem,txt){if(baloes.some(b=>b.quem===quem&&b.v<1.6))return;baloes.push({quem,txt,v:0});}
+function balao(quem,txt){if(baloes.some(b=>b.quem===quem&&b.v<1.6))return;baloes.push({quem,txt,v:0,dur:Math.max(2.6,1.4+txt.length*.065)});}   // fica o tempo de ler
 const BRONCAS=['Devagar, menino!','Não se corre na frente dos mais velhos!','Quer escorregar e quebrar a bacia?','Eu tenho 90 anos e ando mais reto que você!'];
 function vovoAcoes(lista){vovo.fila=lista.slice();vovoProxima();}
 function vovoProxima(){const a=vovo.fila.shift();if(!a){vovo.acao='respira';vovo.ad=rnd(2,4);vovo.at=0;return;}vovo.acao=a[0];vovo.ad=a[1];vovo.at=0;
@@ -567,7 +567,7 @@ function vovoPasso(dt){
       if(livre(nx,ny)){vovo.dist+=Math.hypot(nx-vovo.x,ny-vovo.y);vovo.x=nx;vovo.y=ny;vovo.anda=true;
         vovo.olha=Math.abs(ax)>Math.abs(ay)*1.1?(ax<0?'esquerda':'direita'):(ay<0?'cima':'baixo');}else vovo.alvo=null;}}
   if(!vovo.anda){vovo.at+=dt;if(vovo.fila.length&&vovo.at>=vovo.ad)vovoProxima();}
-  for(const b of baloes)b.v+=dt;for(let i=baloes.length-1;i>=0;i--)if(baloes[i].v>2.6)baloes.splice(i,1);
+  for(const b of baloes)b.v+=dt;for(let i=baloes.length-1;i>=0;i--)if(baloes[i].v>(baloes[i].dur||2.6))baloes.splice(i,1);
   if(VOVO_PONTO){VOVO_PONTO.x=vovo.x;VOVO_PONTO.y=vovo.y-4;VOVO_PONTO.r=vovo.fila.length?40:48;}
 }
 function desenhaVovo(){if(desenhaFesta(vovo))return;
@@ -579,7 +579,7 @@ function desenhaVovo(){if(desenhaFesta(vovo))return;
   desenhaNpc(VOV,VOVI,vovo.x,vovo.y+oy,q,esp,10,36);
 }
 function desenhaBaloes(){   // em coordenadas de tela (letra legivel em qualquer zoom)
-  for(const b of baloes){const q=b.v,a=q<.15?q/.15:q>2.2?(2.6-q)/.4:1;
+  for(const b of baloes){const q=b.v,D=b.dur||2.6,a=q<.15?q/.15:q>D-.4?(D-q)/.4:1;
     const x=W/2+(b.quem.x-cam.x)*Z,y=H/2+(b.quem.y-(b.quem===hero?50:b.quem.alt||48)-cam.y)*Z-Math.min(q,.3)*14;
     if(NOVO2){ctx.save();ctx.globalAlpha=a*.92;ctx.font='italic bold 15px "Trebuchet MS"';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,20,.8)';ctx.strokeText(b.txt,x,y);ctx.fillStyle='#eef6ff';ctx.fillText(b.txt,x,y);ctx.restore();continue;}   // mundo novo: falinha sutil, sem balao
     ctx.save();ctx.globalAlpha=a;ctx.font='bold 13px "Trebuchet MS"';ctx.textAlign='center';const w=ctx.measureText(b.txt).width+14;
@@ -1234,9 +1234,24 @@ const ACOES_INGRID={espera:[[0,.7],[1,.7]],oi:[[2,.35],[3,.7],[2,.3],[4,.3],[5,.
 const ACOES_HALVARD={espera:[[0,.9],[1,.9]],oi:[[2,.3],[3,.7],[2,.3],[4,.6],[5,.7]],
   pele:[[6,.45],[7,.45],[8,.45],[9,.45],[6,.45],[7,.45],[8,.45],[9,.45],[6,.45],[7,.45],[10,.9],[11,1]],
   armas:[[12,.4],[13,.3],[14,.3],[13,.3],[14,.3],[12,.4],[13,.3],[14,.4],[15,.8],[16,1.1],[15,.5],[17,1.2]]};
-const ACOES_POR={oskar:ACOES_OSKAR,tico:ACOES_TICO,ingrid:ACOES_INGRID,halvard:ACOES_HALVARD};
+// VOVO HILDA (ref/vila2/vovo_acoes.png 3x6): 0-1 parada na bengala, 2-3 "hmpf", 4-5 ri; 6-7 bate a bengala, 8-9 sacode no ar,
+// 10-11 aponta; 12-14 toma cha, 15-17 pensando. Fica ao pe da escadaria do casarao (a casa dela, fixo)
+const ACOES_VOVO={espera:[[0,.9],[1,.9]],oi:[[2,.5],[3,.6],[2,.4],[0,.5]],ri:[[4,.4],[5,.4],[4,.4],[5,.5]],
+  bronca:[[6,.25],[7,.3],[6,.25],[7,.3],[8,.3],[9,.3],[8,.3],[9,.35],[10,.5],[11,.6]],
+  cha:[[12,.9],[13,.8],[14,1.2],[13,.8],[12,.9]],pensa:[[15,1],[16,.9],[17,1.1],[16,.9]]};
+// BORIN (ref/vila2/borin_acoes.png 3x6): 0-5 martelando de lado (3 = o martelo bate: faiscas + som); 6-7 parado com o martelo
+// no ombro, 8-9 acena, 10-11 ri; 12-13 enxuga o suor, 14-15 confere a espada, 16-17 mergulha na agua (vapor)
+// 2026-11-27: o Borin vem desenhado JUNTO com a bigorna (ref/vila2/borin_bigorna.png 1x6): 0 parado com o martelo no tampo,
+// 1 levanta, 2 no alto, 3 BATE no meio do tampo (faiscas + som), 4 volta, 5 descansa. A bigorna do mapa foi tirada
+const MART=[[0,.35],[1,.22],[2,.3],[3,.22],[4,.2],[5,.35]];
+const ACOES_BORIN={espera:[[0,1.2],[5,1]],martela:[...MART,...MART,...MART,...MART,...MART,[0,.8]],oi:[[0,1.4]]};
+// MERCADORES da Forja (ref/vila2/mercadores.png 3x6, uma pessoa por fileira; o.lin = a fileira): 0-1 parado, 2-3 chama /
+// joga a maca / oferece o pao, 4-5 mostra o pote / acena / bate a farinha. Quadros 0-5 + 6*o.lin
+const ACOES_MERC={espera:[[0,.7],[1,.7]],chama:[[2,.35],[3,.45],[2,.35],[3,.45],[2,.35],[3,.6]],mostra:[[4,.6],[5,.8],[4,.6],[5,.9]],oi:[[4,.4],[5,.5],[4,.4],[5,.6]]};
+const ACOES_POR={oskar:ACOES_OSKAR,tico:ACOES_TICO,ingrid:ACOES_INGRID,halvard:ACOES_HALVARD,vovo:ACOES_VOVO,borin:ACOES_BORIN,miudezas:ACOES_MERC,verdureiro:ACOES_MERC,padeiro_f:ACOES_MERC};
+const FAISCAS_B=[];   // faiscas da bigorna: pontinhos laranjas que pulam e caem
 function acaoLista(o){return (ACOES_POR[o.id]||ACOES_OSKAR)[o.acao];}
-function acaoQuadro(o){const L=acaoLista(o);let a=0;const tot=L.reduce((x,y)=>x+y[1],0),tt=o.acao==='espera'?o.t%tot:o.t;for(const [q,d] of L){a+=d;if(tt<a)return q;}return null;}
+function acaoQuadro(o){const L=acaoLista(o);let a=0;const tot=L.reduce((x,y)=>x+y[1],0),tt=o.acao==='espera'?o.t%tot:o.t;for(const [q,d] of L){a+=d;if(tt<a)return q+6*(o.lin||0);}return null;}
 function acaoDur(n,o){return ((o&&ACOES_POR[o.id])||ACOES_OSKAR)[n].reduce((a,b)=>a+b[1],0);}
 // neve no chao das Casas (camada + onde e neve: canal verde do terreno)
 const NEVEC=V.neve_chao||null;   // a neve ja vem desenhada no mapa; aqui so os pontos onde o Tico brinca
@@ -1244,34 +1259,49 @@ function desenhaNeveChao(){}
 const naNeve=(x,y)=>!!(ter(x,y)&2);
 const halvardMorto=()=>!!(typeof JOGO!=='undefined'&&JOGO.cap2&&JOGO.cap2.halvardMorreu);   // historia: depois do Cap. 2 o Halvard nao aparece
 function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvardMorto())continue;o.t+=dt;const dx=hero.x-o.x,dy=hero.y-o.y,dh=Math.hypot(dx,dy*1.2);
+  if(o.id==='vovo'&&hero.corre&&dh<70&&(o.est!=='acao'||o.acao!=='bronca')&&t-(o.bronca||-99)>6){o.bronca=t;o.est='acao';o.acao='bronca';o.t=0;o.dur=acaoDur('bronca',o);o.dir='frente';
+    o.alt=40;baloes.length=0;balao(o,BRONCAS[Math.floor(Math.random()*BRONCAS.length)]);o.falou=t;continue;}   // a Vovo: correr perto dela = bronca
   if(dh<42&&!hero.carinho){o.rota=null;
     if(o.ac&&o.est!=='acao'&&t-(o.acenou||-99)>15){o.est='acao';o.t=0;o.acenou=t;o.dir='frente';
-      if(o.id==='halvard'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=48;balao(o,Math.random()<.5?'Que bom que voltou inteiro, Jux.':'Viu o Tico por aí? Ele não para quieto.');o.falou=t;}}
+      if(ACOES_POR[o.id]===ACOES_MERC){o.acao=o.id==='padeiro_f'?'chama':'oi';o.dur=acaoDur(o.acao,o);const OI={miudezas:'Potes, agulhas, linha! Tudo o que falta na sua casa!',verdureiro:'Maçã fresquinha, Jux! Pega uma!',padeiro_f:'Pão quente! Olha o tamanho desse!'};if(!baloes.length&&!fala){o.alt=46;balao(o,OI[o.id]);o.falou=t;}}
+      else if(o.id==='borin'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=48;balao(o,Math.random()<.5?'Ha! O forasteiro! Quer uma espada nova?':'Cuidado, as faíscas pulam longe!');o.falou=t;}}
+      else if(o.id==='vovo'){o.acao=Math.random()<.25?'ri':'oi';o.dur=acaoDur(o.acao,o);if(!baloes.length&&!fala){o.alt=40;balao(o,o.acao==='ri'?'Hehe. Até que você é bonzinho, forasteiro.':(Math.random()<.5?'Hmpf. Voltaram inteiros. Ótimo.':'Hmpf. Limpe as botas antes de entrar.'));o.falou=t;}}
+      else if(o.id==='halvard'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=48;balao(o,Math.random()<.5?'Que bom que voltou inteiro, Jux.':'Viu o Tico por aí? Ele não para quieto.');o.falou=t;}}
       else if(o.id==='ingrid'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=46;balao(o,Math.random()<.5?'Leva pão, Jux! Tá quentinho.':'Oi, Jux! Fiz pão de mel de novo.');o.falou=t;}}
       else if(o.id==='tico'){o.acao=Math.random()<.35?'bola':'oi';o.alvoJux=o.acao==='bola';o.dur=acaoDur(o.acao,o);if(!baloes.length&&!fala){o.alt=40;balao(o,o.acao==='bola'?'Pega essa, Jux!':'JUX! Oi, Jux!');o.falou=t;}}
       else{o.acao='acena';o.dur=acaoDur('acena',o);if(!baloes.length&&!fala){o.alt=48;balao(o,'Hm.');o.falou=t;}}
       continue;}
     if(o.est==='acao'&&o.acao!=='espera')continue;   // no meio de uma acao: termina ela
     o.est='para';if(Math.abs(dx)>Math.abs(dy)){o.dir='lado';o.esq=dx<0;}else o.dir=dy>0?'frente':'costas';o.t=0;o.dur=rnd(1.5,3);continue;}
+  if(o.id==='borin'&&o.est==='acao'){const q=acaoQuadro(o);if(q===3&&o.qAnt!==3){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(BIGORNA[Math.floor(Math.random()*3)],.75*clamp(1-d/320,.05,1));
+      const fx=o.x,fy=o.y-32;for(let k=0;k<9;k++)FAISCAS_B.push({x:fx,y:fy,vx:rnd(-30,45),vy:rnd(-70,-25),v:0,l:rnd(.3,.7)});}o.qAnt=q;}
   if(o.est==='acao'&&o.acao==='racha'){const q=acaoQuadro(o);if(q===9&&o.qAnt!==9){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(MACHADO[Math.floor(Math.random()*3)],.8*clamp(1-d/330,.06,1));}o.qAnt=q;}   // o machado bate na tora
   if(o.est==='acao'&&o.acao==='bola'&&o.alvoJux){const q=acaoQuadro(o);if(q===10&&o.qAnt!==10)setTimeout(()=>{if(!fala&&!baloes.length){balao(hero,'Ei!');}},300);o.qAnt=q;}
   if(o.est==='acao'){if(o.t>=o.dur){o.est='para';o.t=0;o.dur=rnd(1,3);o.dir='frente';}continue;}
   if(o.est==='para'&&o.t>o.dur&&o.ac&&!o.fezAcao){o.fezAcao=true;const r=Math.random();
-    const n=o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(naNeve(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
+    const n=ACOES_POR[o.id]===ACOES_MERC?(r<.45?'chama':r<.8?'mostra':'espera'):o.id==='borin'?(r<.8?'martela':'espera'):o.id==='vovo'?(r<.35?'cha':r<.65?'pensa':r<.8?'oi':'espera'):o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(naNeve(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
     o.est='acao';o.acao=n;o.alvoJux=false;o.t=0;o.dur=n==='espera'?rnd(2,4):acaoDur(n,o);o.dir='frente';continue;}
-  if(o.est==='para'&&o.fixo){if(o.t>o.dur){o.fezAcao=false;o.t=0;o.dur=rnd(2,5);}continue;}   // fixo (Ingrid): fica na porta
+  if(o.est==='para'&&o.fixo){if(o.id==='borin'&&o.dur>1)o.dur=.4;   // o Borin quase nao para: logo escolhe a proxima acao (martelar na maior parte)
+    if(o.t>o.dur){o.fezAcao=false;o.t=0;o.dur=rnd(2,5);}continue;}   // fixo (Ingrid): fica na porta
   if(o.est==='para'){const PS=o.passeio||(CAO&&CAO.passeio);if(o.t>o.dur&&PS){o.fezAcao=false;const p=(o.id==='tico'&&NEVEC&&Math.random()<.45)?NEVEC.pontos[Math.floor(Math.random()*NEVEC.pontos.length)]:PS[Math.floor(Math.random()*PS.length)];o.rota=caoCaminho(o.x,o.y,p[0],p[1]);if(o.rota){o.est='anda';o.t=0;}else o.dur+=2;}continue;}
   if(!o.rota||!o.rota.length){o.rota=null;o.est='para';o.t=0;o.dur=rnd(3,7);continue;}
   const [tx,ty]=o.rota[0],ax=tx-o.x,ay=ty-o.y,d=Math.hypot(ax,ay);if(d<2.5){o.rota.shift();continue;}
   const st=Math.min(d,(o.vel||24)*dt);o.x+=ax/d*st;o.y+=ay/d*st;o.dist+=st;
   o.dir=Math.abs(ay)>Math.abs(ax)*1.15?(ay>0?'frente':'costas'):Math.abs(ax)>Math.abs(ay)*.87?'lado':o.dir;if(o.dir==='lado')o.esq=ax<0;}}
+// quem fica ATRAS de um objeto (o Borin atras da bigorna): o objeto e redesenhado por cima dele, so da linha 'corte' para
+// baixo (o tampo da bigorna fica livre para o martelo bater em cima dele)
+function frenteSobre(o,A,q){if(o.na_frente==null)return;const f=V.frentes[o.na_frente];if(!f)return;const F=FR.find(z=>z.x===f.x&&z.y===f.y)||null;const im=F?F.i:null;if(!im||!im.complete)return;
+  ctx.drawImage(im,f.x,f.y,f.w,f.h);   // a bigorna inteira na frente do corpo dele...
+  if(A&&(q===0||q===3)){ctx.save();ctx.beginPath();ctx.rect(o.x+o.mao,f.y-40,60,o.corte-f.y+40);ctx.clip();   // ...e o martelo (a direita do corpo, acima do tampo) por cima dela
+    ctx.drawImage(A.i,q*A.w,0,A.w,A.h,o.x-A.ax*A.s,o.y-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();}}
 function desenhaAndarilho(o){if(o.id==='halvard'&&halvardMorto())return;
-  if(o.est==='para'&&o.ac&&o.ac.i.complete){const A=o.ac,L=o.id==='oskar'?[0,1,2,1]:[0,1],q=L[Math.floor(o.t/(o.id==='oskar'?.9:.6))%L.length];   // parado: pose de parado da folha de acoes (a de corrida congelada ficava estranha)
-    A.x=o.x;A.y=o.y;A.esq=false;A.cao=o.id==='tico';A.deitado=false;sombraVendedor(A,q);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,o.x-A.ax*A.s,o.y-A.ay*A.s,A.w*A.s,A.h*A.s);return;}
+  if(o.est==='para'&&o.ac&&o.ac.i.complete){const A=o.ac,L=o.id==='oskar'?[0,1,2,1]:o.id==='borin'?[0]:[0,1],q=6*(o.lin||0)+L[Math.floor(o.t/(o.id==='oskar'?.9:.6))%L.length];   // parado: pose de parado da folha de acoes (a de corrida congelada ficava estranha)
+    A.x=o.x;A.y=o.y;A.esq=false;A.cao=o.id==='tico';A.deitado=false;sombraVendedor(A,q);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,o.x-A.ax*A.s,o.y-A.ay*A.s,A.w*A.s,A.h*A.s);frenteSobre(o,A,q);return;}
   if(o.est==='acao'&&o.ac&&o.ac.i.complete){const A=o.ac;let q=acaoQuadro(o);if(q==null)q=o.acao==='espera'?[0,1,2,1][Math.floor(o.t/.9)%4]:0;
     if(o.acao==='espera'&&o.id==='oskar')q=[0,1,2,1][Math.floor(o.t/.9)%4];
     const vira=o.acao==='bola'&&o.alvoJux&&hero.x<o.x;   // joga para o lado do Jux
-    A.x=o.x;A.y=o.y;A.esq=vira;A.cao=o.id==='tico';A.deitado=o.id==='tico'&&q>=12&&q<=15;sombraVendedor(A,q);ctx.save();ctx.translate(o.x,o.y);if(vira)ctx.scale(-1,1);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,-A.ax*A.s,-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();return;}
+    A.x=o.x;A.y=o.y;A.esq=vira;A.cao=o.id==='tico';A.deitado=o.id==='tico'&&q>=12&&q<=15;sombraVendedor(A,q);ctx.save();ctx.translate(o.x,o.y);if(vira)ctx.scale(-1,1);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,-A.ax*A.s,-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();
+    frenteSobre(o,A,q);return;}
   if(!o.i.complete)return;const lin={frente:0,costas:1,lado:2}[o.dir]||0,q=lin*6+(o.est==='anda'?Math.floor(o.dist/(o.passo||4.5))%6:0);
   sombraVendedor({...o,esq:o.dir==='lado'&&o.esq,cao:o.id==='tico'},q);   // Tico: sombra colada nos pes (a deitada para a frente ficava solta)
   ctx.save();ctx.translate(o.x,o.y);if(o.dir==='lado'&&o.esq)ctx.scale(-1,1);
@@ -1283,15 +1313,28 @@ const FALAS_PRACA={pao:['Ensopado de raiz-de-neve! Quentinho!','Pão de centeio,
   velho_cachimbo:['Hm… no meu tempo a neve chegava no telhado.','A lenha do Oskar pega bem.','Senta aí. O fogo é de todo mundo.','Lobo uivando de noite… não gosto disso.'],
   moca_trico:['Esse cachecol é pro Tico. Não conta pra ele.','Ai… perdi um ponto.','O fogo tá tão bom hoje.','A Vovó Hilda disse que vai nevar mais.'],
   oskar:['Hm.','…Lenha.','Hm. Frio.','…'],
+  miudezas:['Pote de barro, feito no inverno passado!','Agulha, linha e botão… quem vai?','No meu tempo, um pote durava a vida inteira.'],
+  verdureiro:['Nabo, repolho e maçã! O frio deixa tudo mais doce!','Essa maçã veio lá do sul, viu?','Hm… quem roubou meu repolho? Foi aquele porco de novo?'],
+  padeiro_f:['Pão de centeio pra viagem!','A Ingrid faz o pão de mel. Eu faço o pão GRANDE.','Sente o cheiro, Jux? É de hoje!'],
+  borin:['Mais um golpe… e mais um… e mais um.','A Vovó me fez pendurar bandeirinha. Caí duas vezes.','Essa lâmina sua… nunca vi gelo que não derrete.','Ferro bom é ferro batido no frio!'],
+  vovo:['Hmpf.','Na minha época a gente carregava lenha descalço.','O festival não se prepara sozinho, sabia?','Esse chá tá frio. Tudo nessa vila tá frio.','Tico! Sai da neve antes que pegue uma gripe!'],
   halvard:['O Tico não me solta nem para dormir. Eu não reclamo.','Couro bom de alce. Vai virar bota pro inverno.','Os lobos andam inquietos lá no vale.','Tico! Não corre na neve de meia!'],
   ingrid:['Aquele porco levou meu melhor pão de mel!','Se achar o Sir Bacon, me avisa!','O forno tá quentinho hoje.','Pão de centeio pra festa… e mais um pra você.'],
   tico:['Ei, Jux! Aposto que você não me pega!','O Oskar falou que vai ter uma fogueira GIGANTE!','A Vovó Hilda tá de olho em mim…','Jux! Me ensina a lutar com espada?']};
-let falaPracaT=4;
-function falasPracaAtualiza(dt){if(fala||baloes.length){return;}falaPracaT-=dt;if(falaPracaT>0)return;
-  const quem=[...VEND,...ANDV].filter(o=>FALAS_PRACA[o.id]&&Math.hypot(hero.x-o.x,hero.y-o.y)<95);
-  if(!quem.length){falaPracaT=1.5;return;}
-  quem.sort((a,b)=>(a.falou||0)-(b.falou||0));const o=quem[0],L=FALAS_PRACA[o.id];o.fi=((o.fi==null?Math.floor(Math.random()*L.length):o.fi)+1)%L.length;
-  o.alt=o.id==='velho_cachimbo'||o.id==='moca_trico'?36:48;balao(o,L[o.fi]);o.falou=t;falaPracaT=rnd(7,12);}
+let falaPracaT=2.5;
+// 2026-11-27 ("tô sentindo falta das falas"): 1) quem o Jux ENCONTRA (chega a < 55) fala na hora, uma vez a cada 25 s;
+// 2) conversa de fundo: alguem por perto (< 150) fala a cada 3,5-6 s. Continua UM por vez e sem cobrir a fala do Jux
+function falasPracaAtualiza(dt){if(fala||uiAberto())return;
+  const fal=baloes.some(b=>b.quem!==hero&&b.v<(b.dur||2.6)-.3);
+  const todos=[...VEND,...ANDV].filter(o=>FALAS_PRACA[o.id]&&!(o.id==='halvard'&&halvardMorto()));
+  const diz=o=>{const L=FALAS_PRACA[o.id];o.fi=((o.fi==null?Math.floor(Math.random()*L.length):o.fi)+1)%L.length;
+    o.alt=o.id==='velho_cachimbo'||o.id==='moca_trico'?36:o.id==='tico'||o.id==='vovo'?40:48;for(let k=baloes.length-1;k>=0;k--)if(baloes[k].quem!==hero)baloes.splice(k,1);balao(o,L[o.fi]);o.falou=t;};
+  if(!fal){const novo=todos.find(o=>Math.hypot(hero.x-o.x,(hero.y-o.y)*1.2)<55&&t-(o.encontro||-99)>25&&t-(o.falou||-99)>4);
+    if(novo){novo.encontro=t;diz(novo);falaPracaT=rnd(3.5,6);return;}}
+  falaPracaT-=dt;if(falaPracaT>0||fal)return;
+  const quem=todos.filter(o=>Math.hypot(hero.x-o.x,hero.y-o.y)<150);
+  if(!quem.length){falaPracaT=1;return;}
+  quem.sort((a,b)=>(a.falou||0)-(b.falou||0));diz(quem[0]);falaPracaT=rnd(3.5,6);}
 function quadroCao(c){const e=c.est,t_=c.t;
   if(e==='dorme')return 12+Math.floor(t_*1.2)%3;
   if(e==='carinho')return t_<.3?7:15+(Math.floor(t_*4)%2?2:1);   // sentado olhando, depois a cabeca erguida abanando (contente)
@@ -1327,6 +1370,9 @@ function desenhaVendedor(v){if(!v.i.complete)return;
 // FUMVACA da fogueira (V5, 2026-11-26; ref/vila2/fumaca.png 2x4, fundo preto tirado pelo brilho): sobe do topo das chamas,
 // semi-transparente; cada quadro se mistura no seguinte (sem pulo) e balanca de leve com o vento
 const FUMV=V.fumaca?(()=>{const i=new Image();i.src=V.fumaca.atlas;return {...V.fumaca,i};})():null;
+function desenhaFaiscasB(){if(!FAISCAS_B.length)return;const dt=1/60;ctx.save();ctx.globalCompositeOperation='lighter';
+  for(let i=FAISCAS_B.length-1;i>=0;i--){const f=FAISCAS_B[i];f.v+=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=160*dt;if(f.v>f.l){FAISCAS_B.splice(i,1);continue;}
+    const a=1-f.v/f.l;ctx.fillStyle=`rgba(255,${170+Math.floor(80*a)},60,${a})`;ctx.fillRect(f.x-.6,f.y-.6,1.3,1.3);}ctx.restore();}
 function desenhaFumacaV(){const F=FUMV;if(!F||!F.i.complete)return;const f=t*3.2,q=Math.floor(f)%8,q2=(q+1)%8,m=f-Math.floor(f);
   const bal=Math.sin(t*.7)*.04;ctx.save();ctx.translate(F.x,F.y);ctx.transform(1,0,bal,1,0,0);
   for(const [qq,a] of [[q,1-m],[q2,m]]){ctx.globalAlpha=a*.95;ctx.drawImage(F.i,qq*F.w,0,F.w,F.h,-F.ax*F.s,-F.ay*F.s,F.w*F.s,F.h*F.s);}
@@ -1335,7 +1381,7 @@ function desenhaFumacaV(){const F=FUMV;if(!F||!F.i.complete)return;const f=t*3.2
 // cada uma num ponto diferente do ciclo; desenhada por cima de tudo (sobe acima dos telhados)
 const CHAMV=V.chamines?(()=>{const i=new Image();i.src=V.chamines.atlas;return {...V.chamines,i};})():null;
 function desenhaChaminesV(){const F=CHAMV;if(!F||!F.i.complete)return;F.lugares.forEach(([x,y],k)=>{const f=t*2.6+k*2.3,q=Math.floor(f)%8,q2=(q+1)%8,m=f-Math.floor(f);
-  ctx.save();ctx.translate(x,y);ctx.transform(1,0,Math.sin(t*.6+k)*.05-.06,1,0,0);
+  ctx.save();ctx.translate(x,y);ctx.transform(1,0,Math.sin(t*.6+k)*.05+(F.inclina||-.06),F.achata||1,0,0);   // forja: chamine colada no alto da tela -> a fumaca deita com o vento
   for(const [qq,a] of [[q,1-m],[q2,m]]){ctx.globalAlpha=Math.min(1,a*1.15);ctx.drawImage(F.i,qq*F.w,0,F.w,F.h,-F.ax*F.s,-F.ay*F.s,F.w*F.s,F.h*F.s);}ctx.restore();});}
 const LUZ_V=V.luz?(()=>{const i=new Image();i.src=V.luz.atlas;return {...V.luz,i};})():null;
 function desenhaLuzV(){const L=LUZ_V;if(!L||!L.i.complete)return;const q=Math.floor(t*9)%8,w=L.w*L.s,h=L.h*L.s;
@@ -2389,7 +2435,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);desenhaBancoFrente();
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
