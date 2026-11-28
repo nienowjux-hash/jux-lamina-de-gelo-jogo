@@ -1653,11 +1653,11 @@ function raposaAtualiza(dt){const R=RAP;if(!R)return;const S=rapEstado();R.t+=dt
   if(R.est==='dentro'){R.x=B.x;R.y=B.y;if(R.cool<=0&&dh<115){rapVai('espia');rapSom(RAP_SOM.espia,.45);}return;}
   if(R.est==='espia'){
     if(mexe&&dh<55||dh>135){rapVai('some');rapSom(RAP_SOM.susto,.4);return;}
-    if(R.t>1.2&&R.quieto>2.2&&dh>24){const dx=hero.x-B.x,dy=hero.y-B.y,d=Math.hypot(dx,dy)||1,k=Math.min(26,Math.max(8,d-24))/d;
-      R.alvo={x:B.x+dx*k,y:Math.max(B.y+7,B.y+dy*k)};R.esq=R.alvo.x<B.x;R.x=B.x;R.y=B.y+2;
+    if(R.t>2&&R.quieto>2.2&&dh>24){const dx=hero.x-B.x,dy=hero.y-B.y,d=Math.hypot(dx,dy)||1,k=Math.min(8,Math.max(3,d-24))/d;
+      R.alvo={x:B.x+dx*k,y:B.y+16};   // sai para a FRENTE da toca (no meio dela), so um pouquinho virada para o JuxR.esq=R.alvo.x<B.x;R.x=B.x;R.y=B.y+2;
       rapVai(S.conf>=2&&!S.presente?'traz':'sai');}
     return;}
-  if(R.est==='some'){if(R.t>.35){R.est='dentro';R.cool=5;}return;}
+  if(R.est==='some'){if(R.t>.45){R.est='dentro';R.cool=5;}return;}
   if(R.est==='sai'||R.est==='traz'){if(mexe&&dh<70){foge();return;}
     if(anda(R.est==='sai'?11:13,R.alvo)){if(R.est==='sai'){rapVai('cheira');rapSom(RAP_SOM.fareja,.55);}else rapVai('solta');}return;}
   if(R.est==='cheira'){if(mexe&&dh<70){foge();return;}
@@ -1670,8 +1670,8 @@ function raposaAtualiza(dt){const R=RAP;if(!R)return;const S=rapEstado();R.t+=dt
 function desenhaRaposa(){const R=RAP;if(!R||!R.i.complete)return;const S=rapEstado();
   if(S.pedra&&R.pi.complete){const P=S.pedra,w=R.pedra.w/1.8,h=R.pedra.h/1.8;ctx.drawImage(R.pi,P[0]-w/2,P[1]-h,w,h);}
   if(R.est==='dentro')return;const tt=R.t;let lin,q;
-  if(R.est==='espia'){lin=0;q=tt<.18?0:tt<.36?1:[2,2,4,4,2,3,3,2][Math.floor((tt-.36)*3)%8];}
-  else if(R.est==='some'){lin=0;q=tt<.18?5:0;}
+  if(R.est==='espia'){lin=0;q=tt<.7?0:tt<1.1?1:[2,2,3,3,2,4,4,2][Math.floor((tt-1.1)*2.5)%8];}   // espiada nova (raposa_espia.png): os olhinhos no escuro, o rosto saindo da sombra, olha para os lados
+  else if(R.est==='some'){lin=0;q=tt<.25?5:0;}
   else if(R.est==='sai'){lin=1;q=Math.floor(tt*7)%6;}
   else if(R.est==='cheira'){lin=2;q=Math.min(5,Math.floor(tt*2.2));}
   else if(R.est==='fica'){lin=2;q=[0,0,0,1,0,0,5,0][Math.floor(tt*2)%8];}
