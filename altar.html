@@ -13,12 +13,14 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;touch-action:none
 #carregando{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:radial-gradient(#0f2440,#03050c 70%);color:#bff0ff;font:bold 20px "Trebuchet MS",sans-serif;letter-spacing:2px}
 #carregando .floco{font-size:64px;line-height:1;color:#e8fbff;text-shadow:0 0 18px #5fd8ff,0 0 40px #2a8fd0;animation:gira 2.4s linear infinite}
 @keyframes gira{to{transform:rotate(360deg)}}
+#carregando.troca{background:#000}#carregando.troca>*{display:none}
 .bt{position:fixed;top:10px;z-index:9;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;background:#7fd6f5;color:#0c1a2a;font:bold 14px "Trebuchet MS",sans-serif}
 </style>
 </head>
 <body>
 <div id="wrap"><canvas id="c" width="960" height="540"></canvas></div>
 <div id="carregando"><div class="floco">&#10052;</div><div>CARREGANDO&hellip;</div></div>
+<script>try{if(sessionStorage.getItem('chega2'))document.getElementById('carregando').className='troca';}catch(e){}</script>
 <button class="bt" id="voltar" style="left:10px">&#9664; Voltar ao jogo</button>
 <button class="bt" id="abertura" style="left:180px">&#9654; Abertura</button>
 <button class="bt" id="musica" style="right:10px">&#9835; Música: ligada</button>
@@ -56,10 +58,11 @@ canvas{width:min(100vw,177.78vh);height:auto;aspect-ratio:16/9;touch-action:none
 <script src="vila_npc_bino.js?v=1795662564"></script>
 <script src="vila2_parado.js?v=p8"></script>
 <script src="vila2_rastro.js?v=r2"></script>
-<script src="vila_motor.js?v=q78"></script>
+<script src="vila2_bino_andar.js?v=b4"></script>
+<script src="vila_motor.js?v=q84"></script>
 <script>// teste do mundo novo: comeca no patamar de baixo da subida do altar, com o Bino junto
 setTimeout(()=>{try{if(typeof OPC==='object')OPC.dicas=false;window.__tut=false;document.querySelectorAll('[id*=tut]').forEach(e=>e.remove());}catch(e){}},300);   // pagina de teste: sem as dicas do tutorial (pausavam o jogo)
-setTimeout(()=>{try{let c=null;try{c=sessionStorage.getItem('chega2');sessionStorage.removeItem('chega2');}catch(e){}const p=(c&&V.chegadas&&V.chegadas[c])||V.inicio;hero.x=p[0];hero.y=p[1];SEG.cena=false;SEG.ativo=false;hero.espada=!/semespada/.test(location.search);}catch(e){}},1500);   // ?semespada: testa o Jux do comeco (sem a espada)   // veio de outro bairro: aparece na entrada dele
+(()=>{try{let c=null;try{c=sessionStorage.getItem('chega2');sessionStorage.removeItem('chega2');}catch(e){}const p=(c&&V.chegadas&&V.chegadas[c])||V.inicio;hero.x=p[0];hero.y=p[1];cam.x=hero.x;cam.y=hero.y;hero.alvo=null;SEG.cena=false;SEG.ativo=false;hero.espada=!/semespada/.test(location.search);window.__chegou2=!!c;}catch(e){}})();   // 2026-11-28 ('o load entre bairros ta esquisito'): JA na entrada, antes da tela de carregar sair (antes: aparecia no meio e pulava 1,5 s depois)   // ?semespada: testa o Jux do comeco (sem a espada)   // veio de outro bairro: aparece na entrada dele
 // as folhas de correr ainda sao chibi: ate chegarem as novas, correr usa a caminhada adulta mais rapida
 try{folhaCorrida=()=>null;}catch(e){}</script>
 <script src="tela_cheia.js?v=1795738921"></script>

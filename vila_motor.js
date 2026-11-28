@@ -701,6 +701,7 @@ function desenhaBorin(){if(desenhaFesta(borin))return;if(emPreparo()&&prepCena&&
    (cada trecho conferido com livre()), param nas paradas fazendo poses; quando o Jux chega perto viram e cumprimentam */
 /* ---------- BINO acompanha o Jux (so depois que entra no time, JOGO.bino.ativo): anda pelo mesmo caminho que o Jux fez ---------- */
 // O Bino NAO anda mais atras do Jux o mapa todo (como no Final Fantasy): so aparece do lado dele nas falas importantes (SEG.cena = true), com gestos
+const BAND=typeof BINO_ANDAR!=='undefined'?BINO_ANDAR:null,BANDI=new Image();if(BAND)BANDI.src=BAND.atlas;const BINO_PASSO=4.5;   // medido na folha: passo ~18 un. de chao, 8 quadros = 2 passos (com 6,5 os pes escorregavam)
 const SEG={cena:false,ativo:false,x:0,y:0,olha:'baixo',dist:0,anda:false,trilha:[]},BIN=(window.JUX_NPC||{}).bino||null,BINI=new Image();if(BIN)BINI.src=BIN.atlas;
 function seguidorPasso(dt){
   if(!BIN||!SEG.cena){SEG.ativo=false;SEG.vel=null;return;}
@@ -744,6 +745,8 @@ function desenhaSeguidor(){if(!SEG.ativo||!BIN||!BINI.complete||SEG.oculto)retur
   const fb=fala&&fala.linhas&&fala.linhas[fala.i]&&fala.linhas[fala.i][0]==='Bino',pulo=(SEG.cena&&fb&&!SEG.anda)?-Math.abs(Math.sin(t*7))*3.2:0;   // gesto: quando e a fala dele, ele da um leve pulo/aceno de corpo
   const c=BIN.quadros[SEG.olha],q=SEG.anda?c[Math.floor(SEG.dist/(hero.corre?10:11))%c.length]:BIN.quadros.baixo[0],oy=pulo+(SEG.anda?-Math.abs(Math.sin(SEG.dist/(hero.corre?10:11)*Math.PI))*1.1:0);
   if(!SEG.anda&&PAR2.bino&&PAR2.bino.i.complete){const P=PAR2.bino,ps=P.quadros[SEG.olha]||P.quadros.baixo;desenhaNpc(P,P.i,SEG.x,SEG.y+oy-(SEG.alt||0),ps[Math.floor(t*2.4)%ps.length],false,14,54);return;}
+  if(SEG.anda&&BAND&&BANDI.complete){const lado=SEG.olha==='esquerda'?'direita':SEG.olha,L=BAND.quadros[lado];   // BINO ANDANDO no formato novo (vila2_bino_andar.js): esquerda = espelho da direita
+    if(L){const qb=L[Math.floor(SEG.dist/BINO_PASSO)%L.length];desenhaNpc(BAND,BANDI,SEG.x,SEG.y-(SEG.alt||0),qb,SEG.olha==='esquerda',14,54);return;}}
   desenhaNpc(BIN,BINI,SEG.x,SEG.y+oy-(SEG.alt||0),SEG.anda?q:(SEG.olha==='baixo'?q:c[0]),false,14,54);}
 const ANDARILHOS=[];
 function criaAndarilho(id,o){const D=(window.JUX_NPC||{})[id];if(!D)return null;const img=new Image();img.src=D.atlas;
@@ -1070,6 +1073,7 @@ function folhasChaoAtualiza(dt){if(!FCH)return;const DIR={baixo:[0,1],cima:[0,-1
   const mov=(o,f,r)=>{if(o.px!=null){const dx=o.x-o.px,dy=o.y-o.py,dd=Math.hypot(dx,dy);if(dd>.05)pis.push({x:o.x,y:o.y,d:[dx/dd,dy/dd],f,r});}o.px=o.x;o.py=o.y;};
   if(typeof CAO!=='undefined'&&CAO)mov(CAO,1.2,.9);if(typeof GATO!=='undefined'&&GATO)mov(GATO,GATO.est==='corre'?1.6:1,.6);
   if(typeof ANDV!=='undefined')for(const o of ANDV)mov(o,1,1);
+  if(typeof BINM!=='undefined'&&BINM&&!SEG.ativo)mov(BINM,1.3,1.2);   // o Bino (pe grande) tambem chuta as folhas
   for(const m of FCH.m){m.calma=Math.max(0,m.calma-dt);
     if(m.a<0){const p=m.calma?null:pis.find(p=>Math.abs(p.x-m.x)<(7+m.v*1.4)*p.r&&Math.abs(p.y-m.y)<(5+m.v*.6)*p.r);
       if(p){const d=p.d,f=p.f;
@@ -1322,6 +1326,9 @@ function acaoDur(n,o){return ((o&&ACOES_POR[o.id])||ACOES_OSKAR)[n].reduce((a,b)
 const NEVEC=V.neve_chao||null;   // a neve ja vem desenhada no mapa; aqui so os pontos onde o Tico brinca
 function desenhaNeveChao(){}
 const naNeve=(x,y)=>!!(ter(x,y)&2);
+// 2026-11-28 ("o Tico ta se deitando onde nao tem neve"): o canal da neve agora tambem marca a neve FINA do mapa (pegadas);
+// o anjo e a bola so no MONTE de neve de verdade (V.neve_chao), com folga para o corpo deitado caber dentro dele
+const neveTico=(x,y)=>!!NEVEC&&x>NEVEC.x+16&&x<NEVEC.x+NEVEC.w-16&&y>NEVEC.y+8&&y<NEVEC.y+NEVEC.h-6&&naNeve(x,y)&&naNeve(x-14,y)&&naNeve(x+14,y);
 const halvardMorto=()=>!!(typeof JOGO!=='undefined'&&JOGO.cap2&&JOGO.cap2.halvardMorreu);   // historia: depois do Cap. 2 o Halvard nao aparece
 function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvardMorto())continue;o.t+=dt;const dx=hero.x-o.x,dy=hero.y-o.y,dh=Math.hypot(dx,dy*1.2);
   if(o.id==='vovo'&&hero.corre&&dh<70&&(o.est!=='acao'||o.acao!=='bronca')&&t-(o.bronca||-99)>6){o.bronca=t;o.est='acao';o.acao='bronca';o.t=0;o.dur=acaoDur('bronca',o);o.dir='frente';
@@ -1335,7 +1342,7 @@ function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvar
       else if(o.id==='ingrid'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=46;balao(o,Math.random()<.5?'Leva pão, Jux! Tá quentinho.':'Oi, Jux! Fiz pão de mel de novo.');o.falou=t;}}
       else if(o.id==='guarda'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=50;const F=['O portão só abre com ordem do conselho, Jux.','Frio de rachar, hein? Mas a vigia não para.','Lá fora só tem lobo e neve. Fica aqui dentro.','Tudo calmo por aqui. Do jeito que eu gosto.'];balao(o,F[Math.floor(Math.random()*F.length)]);o.falou=t;}}
       else if(o.id==='fazendeiro'){o.tarefa=null;o.acao='oi';o.esq=hero.x<o.x;o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=44;const F=['Bom dia, Jux! O Sir Bacon tá com fome de novo.','Cuidado com as galinhas, elas são medrosas!','Essa lama não congela nem no inverno, acredita?','Ô, rapaz! Veio ajudar na fazenda?'];balao(o,F[Math.floor(Math.random()*F.length)]);o.falou=t;}}
-      else if(o.id==='tico'){o.acao=Math.random()<.35?'bola':'oi';o.alvoJux=o.acao==='bola';o.dur=acaoDur(o.acao,o);if(!baloes.length&&!fala){o.alt=40;balao(o,o.acao==='bola'?'Pega essa, Jux!':'JUX! Oi, Jux!');o.falou=t;}}
+      else if(o.id==='tico'){o.acao=(neveTico(o.x,o.y)&&Math.random()<.35)?'bola':'oi';o.alvoJux=o.acao==='bola';o.dur=acaoDur(o.acao,o);if(!baloes.length&&!fala){o.alt=40;balao(o,o.acao==='bola'?'Pega essa, Jux!':'JUX! Oi, Jux!');o.falou=t;}}
       else{o.acao='acena';o.dur=acaoDur('acena',o);if(!baloes.length&&!fala){o.alt=48;balao(o,'Hm.');o.falou=t;}}
       continue;}
     if(o.est==='acao'&&o.acao!=='espera')continue;   // no meio de uma acao: termina ela
@@ -1362,7 +1369,7 @@ function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvar
     const r=Math.random(),P=o.passeio;let p,tf=null;if(r<.35){p=o.cocho;tf='cocho';}else if(r<.75){p=P[Math.floor(Math.random()*P.length)];tf='milho';}else p=P[Math.floor(Math.random()*P.length)];
     o.rota=fazCaminho(o.x,o.y,p[0],p[1]);if(o.rota&&o.rota.length){o.est='anda';o.t=0;o.tarefa=tf;}else o.dur=o.t+2;continue;}
   if(o.est==='para'&&o.t>o.dur&&o.ac&&!o.fezAcao){o.fezAcao=true;const r=Math.random();
-    const n=ACOES_POR[o.id]===ACOES_MERC?(r<.45?'chama':r<.8?'mostra':'espera'):o.id==='borin'?(r<.8?'martela':'espera'):o.id==='vovo'?(r<.35?'cha':r<.65?'pensa':r<.8?'oi':'espera'):o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(naNeve(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):o.id==='guarda'?(r<.35?'sopra':r<.7?'bate':'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
+    const n=ACOES_POR[o.id]===ACOES_MERC?(r<.45?'chama':r<.8?'mostra':'espera'):o.id==='borin'?(r<.8?'martela':'espera'):o.id==='vovo'?(r<.35?'cha':r<.65?'pensa':r<.8?'oi':'espera'):o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(neveTico(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):o.id==='guarda'?(r<.35?'sopra':r<.7?'bate':'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
     o.est='acao';o.acao=n;o.alvoJux=false;o.t=0;o.dur=n==='espera'?rnd(2,4):acaoDur(n,o);o.dir='frente';continue;}
   if(o.est==='para'&&o.fixo){if(o.id==='borin'&&o.dur>1)o.dur=.4;   // o Borin quase nao para: logo escolhe a proxima acao (martelar na maior parte)
     if(o.t>o.dur){o.fezAcao=false;o.t=0;o.dur=rnd(2,5);}continue;}   // fixo (Ingrid): fica na porta
@@ -1683,6 +1690,30 @@ function desenhaRaposa(){const R=RAP;if(!R||!R.i.complete)return;const S=rapEsta
   if(lin!==0&&R.sil){ctx.save();ctx.filter='blur(1.2px)';ctx.globalAlpha=.42;ctx.translate(R.x,R.y);ctx.transform(1,0,0,.2,0,0);if(vira)ctx.scale(-1,1);
     ctx.drawImage(R.sil,q*fw,lin*fh,fw,fh,-R.ax*s,-R.ay*s,fw*s,fh*s);ctx.restore();}
   ctx.save();ctx.translate(R.x,R.y);if(vira)ctx.scale(-1,1);ctx.drawImage(R.i,q*fw,lin*fh,fw,fh,-R.ax*s,-R.ay*s,fw*s,fh*s);ctx.restore();}
+// ---------- BINO MORADOR DA PRACA (2026-11-28, "o Bino pode ficar na vila, mas nao quero que ele fique me seguindo"):
+// anda devagar em volta da fogueira (pontos do passeio do cachorro perto do fogo), para um tempo com a folha parado e,
+// quando o Jux chega perto, vira para ele e solta uma palavra (ele e calado). Folhas: vila2_bino_andar.js + vila2_parado.js
+const BINM=(REGIAO==='praca'&&BAND&&PAR2.bino&&CAO&&CAO.passeio&&FOGOS_V&&FOGOS_V[0])?(()=>{const F=FOGOS_V[0].lugares[0];
+  const P=CAO.passeio.filter(p=>{const d=Math.hypot(p[0]-F[0],p[1]-F[1]);return d>45&&d<125;});if(P.length<3)return null;
+  const silDe=img=>{const k=document.createElement('canvas');k.width=img.width;k.height=img.height;const x=k.getContext('2d');x.drawImage(img,0,0);x.globalCompositeOperation='source-in';x.fillStyle='#0b0f1c';x.fillRect(0,0,k.width,k.height);return k;};
+  const o={P,x:P[0][0],y:P[0][1],olha:'baixo',est:'para',t:0,dur:2,rota:null,dist:0,silA:null,silP:null,falou:-99};
+  const a=()=>{if(BANDI.complete&&!o.silA)o.silA=silDe(BANDI);if(PAR2.bino.i.complete&&!o.silP)o.silP=silDe(PAR2.bino.i);};a();BANDI.addEventListener('load',a);PAR2.bino.i.addEventListener('load',a);return o;})():null;
+const BINO_FALAS=['Hm.','...','Jux.','Fogo bom.','*acena com a cabeça*'];
+function binoMoradorAtualiza(dt){const B=BINM;if(!B||SEG.ativo)return;B.t+=dt;const dx=hero.x-B.x,dy=hero.y-B.y,dh=Math.hypot(dx,dy*1.2);
+  if(dh<40){B.rota=null;B.est='para';B.olha=Math.abs(dx)>Math.abs(dy)?(dx<0?'esquerda':'direita'):(dy>0?'baixo':'cima');B.t=0;B.dur=rnd(1.5,3);
+    if(t-B.falou>14&&!baloes.length&&!fala){B.falou=t;B.alt=56;balao(B,BINO_FALAS[Math.floor(Math.random()*BINO_FALAS.length)]);}return;}
+  if(B.est==='para'){if(B.t>B.dur){const p=B.P[Math.floor(Math.random()*B.P.length)];B.rota=caoCaminho(B.x,B.y,p[0],p[1]);if(B.rota&&B.rota.length){B.est='anda';B.t=0;}else B.dur+=2;}return;}
+  if(!B.rota||!B.rota.length){B.rota=null;B.est='para';B.t=0;B.dur=rnd(4,9);B.olha='baixo';return;}
+  const [tx,ty]=B.rota[0],ax=tx-B.x,ay=ty-B.y,d=Math.hypot(ax,ay);if(d<2.5){B.rota.shift();return;}
+  const st=Math.min(d,22*dt);B.x+=ax/d*st;B.y+=ay/d*st;B.dist+=st;
+  if(Math.abs(ax)>Math.abs(ay)*1.3)B.olha=ax<0?'esquerda':'direita';else if(Math.abs(ay)>Math.abs(ax)*1.3)B.olha=ay<0?'cima':'baixo';}
+function desenhaBinoMorador(){const B=BINM;if(!B||SEG.ativo)return;const anda=B.est==='anda';let D,img,sil,q,esp=false;
+  if(anda){D=BAND;img=BANDI;sil=B.silA;const L=BAND.quadros[B.olha==='esquerda'?'direita':B.olha];q=L[Math.floor(B.dist/BINO_PASSO)%L.length];esp=B.olha==='esquerda';}
+  else{D=PAR2.bino;img=D.i;sil=B.silP;const ps=D.quadros[B.olha]||D.quadros.baixo;q=ps[Math.floor(t*2.4)%ps.length];}
+  if(!img.complete)return;
+  if(sil){const s=D.escala;ctx.save();ctx.filter='blur(1.4px)';ctx.globalAlpha=.42;ctx.translate(B.x,B.y);ctx.transform(1,0,0,.22,0,0);ctx.scale(esp?-s:s,s);
+    ctx.drawImage(sil,q*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1],D.w,D.h);ctx.restore();}
+  desenhaNpc(D,img,B.x,B.y,q,esp,14,54);}
 function desenhaFaiscasB(){if(!FAISCAS_B.length)return;const dt=1/60;ctx.save();ctx.globalCompositeOperation='lighter';
   for(let i=FAISCAS_B.length-1;i>=0;i--){const f=FAISCAS_B[i];f.v+=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=160*dt;if(f.v>f.l){FAISCAS_B.splice(i,1);continue;}
     const a=1-f.v/f.l;ctx.fillStyle=`rgba(255,${170+Math.floor(80*a)},60,${a})`;ctx.fillRect(f.x-.6,f.y-.6,1.3,1.3);}ctx.restore();}
@@ -2068,7 +2099,13 @@ addEventListener('pagehide',paraAudio);
 {let tocavam=[];document.addEventListener('visibilitychange',()=>{
   if(document.hidden){tocavam=[MUS,VENTO,musAtual,...Object.values(VOZES)].filter(a=>a&&!a.paused);paraAudio();try{if(AC&&AC.state==='running')AC.suspend();}catch(e){}}
   else if(!window.__morta){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const a of tocavam)a.play().catch(()=>{});tocavam=[];}});}
-function vaiPara(pagina){salvaVila();paraAudio();setTimeout(()=>{location.href=jp(pagina);},250);}
+// adianta o download dos bairros vizinhos (o mapa de cada um e um arquivo grande): 4 s depois de entrar, baixa em segundo
+// plano os _dados.js das saidas, e a proxima troca ja abre do cache
+if(NOVO2&&V.saidas)setTimeout(()=>{const vistos=new Set();for(const sd of V.saidas){const pg=(sd.pagina||'').split('?')[0];if(!pg||vistos.has(pg))continue;vistos.add(pg);
+  fetch(pg).then(r=>r.text()).then(h=>{const m=h.match(/src="([a-z0-9_]+_dados\.js[^"]*)"/i);if(m)fetch(m[1]).catch(()=>{});}).catch(()=>{});}},4000);
+let saindo2=0;   // mundo novo: a tela escurece aos poucos antes de trocar de bairro (2026-11-28, 'o load entre bairros ta esquisito')
+function vaiPara(pagina){salvaVila();if(NOVO2){saindo2=performance.now();setTimeout(()=>{paraAudio();location.href=jp(pagina);},420);return;}paraAudio();setTimeout(()=>{location.href=jp(pagina);},250);}
+function desenhaSaindo2(){if(!saindo2)return;const k=Math.min(1,(performance.now()-saindo2)/360);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=k;ctx.fillStyle='#000';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);ctx.restore();}
 /* ---------- entrada */
 /* ---------- ABERTURA: como o Jux foi parar em Elyria (8 cenas em assets/cine_intro, prompts em PROMPTS_CINE_INTRO.md).
    Toca na primeira visita (ou pelo botao "Abertura"). Cada cena: camera que anda/aproxima, legendas digitando,
@@ -2505,7 +2542,7 @@ function passo(dt){
   // mundo novo: SENTAR no banco (V.bancos): ENTER perto de um banco senta; qualquer direcao levanta
   if(hero.carinho){hero.carinho.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.carinho.t>=CAR_DUR){hero.olha=hero.carinho.esp?'esquerda':'direita';hero.carinho=null;}}
   if(hero.poco){hero.poco.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.poco.t>=4.6){hero.olha='cima';hero.poco=null;}}
-  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);raposaAtualiza(dt);bolasVAtualiza(dt);ondasAtualiza(dt);aguaAtualiza(dt);falasPracaAtualiza(dt);}
+  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);raposaAtualiza(dt);binoMoradorAtualiza(dt);bolasVAtualiza(dt);ondasAtualiza(dt);aguaAtualiza(dt);falasPracaAtualiza(dt);}
   if(V.saidas&&!hero.saiu&&!transicao&&t>2.2)for(const sd of V.saidas)if(sd.pagina&&Math.hypot(sd.x-hero.x,sd.y-hero.y)<sd.r){hero.saiu=true;try{sessionStorage.setItem('chega2',sd.chega);}catch(e){}vaiPara(sd.pagina);break;}   // mundo novo: andou ate a borda -> o bairro vizinho
   if(hero.vaiPoco){if(teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d'])hero.vaiPoco=false;else if(!hero.alvo||Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4){pocoJa();dx=0;dy=0;}}   // anda ate a frente do poco e so entao bebe   // bebendo agua no poco
   if(hero.vaiSentar){const b=hero.vaiSentar;if((teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d']))hero.vaiSentar=null;else if(!hero.alvo||Math.hypot(b[0]-hero.x,b[1]-hero.y)<50){sentaJa(b);dx=0;dy=0;}}   // dx/dy deste quadro ainda eram da caminhada: levantava na hora   // anda ate a frente do banco e senta (ou senta se travou perto)
@@ -2845,7 +2882,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(RAP?[[RAP.est==='dentro'||RAP.est==='espia'||RAP.est==='some'?RAP.boca.y-12:RAP.y,desenhaRaposa]]:[]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(MT&&MT.tufos&&MATO&&MATO.tufos?MT.tufos.map(u=>[u[1],()=>desenhaTufo(u)]):[]),...(ESPV?[[ESPV.y,desenhaEspadaAltar]]:[]),...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(BINM?[[BINM.y,desenhaBinoMorador]]:[]),...(RAP?[[RAP.est==='dentro'||RAP.est==='espia'||RAP.est==='some'?RAP.boca.y-12:RAP.y,desenhaRaposa]]:[]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(MT&&MT.tufos&&MATO&&MATO.tufos?MT.tufos.map(u=>[u[1],()=>desenhaTufo(u)]):[]),...(ESPV?[[ESPV.y,desenhaEspadaAltar]]:[]),...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);desenhaBancoFrente();
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -2902,7 +2939,7 @@ function desenha(){
   if(clarao>0){ctx.fillStyle=`rgba(220,245,255,${clarao})`;ctx.fillRect(0,0,W,H);clarao=Math.max(0,clarao-.02);}
   if(fala)caixaFala();
   uiDesenha();
-  desenhaTransicao();
+  desenhaTransicao();desenhaSaindo2();
 }
 // AVISO DA BORDA (pedido 2026-11-20: 'senao o jogador acha que esta bugado'): perto de uma borda de subir/descer (pulos 'v'),
 // aparece 'Aperte ↑ para subir' / 'Aperte ↓ para descer' em cima do Jux e setas piscando na beirada
