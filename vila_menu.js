@@ -73,7 +73,7 @@ function uiCarrega(){
   pontosColeta();if(typeof halvardVila==='function')halvardVila();
   if(typeof colheBestiario==='function')setTimeout(colheBestiario,1200);
   if(typeof pontosChefes==='function'&&!NA_VILA){pontosChefes();setTimeout(()=>{if(typeof colheChefe==='function'&&!fala)colheChefe();},900);}
-  if(JOGO.vila){const v=JOGO.vila;if(v.x&&NA_VILA){hero.x=v.x;hero.y=v.y;}if(v.espada){hero.espada=true;espadaSobe=99;}}
+  if(JOGO.vila){const v=JOGO.vila;if(v.x&&NA_VILA){hero.x=v.x;hero.y=v.y;}if(v.espada&&window.__espada2!==false){hero.espada=true;espadaSobe=99;}}
   if(!NA_VILA&&!(typeof NOVO2!=='undefined'&&NOVO2)&&JOGO[REGIAO]&&JOGO[REGIAO].x){hero.x=JOGO[REGIAO].x;hero.y=JOGO[REGIAO].y;cam.x=hero.x;cam.y=hero.y;}
 }
 function pegaTesouro(id){
@@ -121,7 +121,7 @@ function uiMundo(){   // desenho no mapa (antes do heroi)
 
 // ---------- save
 function salvaVila(){if(NA_VILA)JOGO.vila={x:Math.round(hero.x),y:Math.round(hero.y),espada:!!hero.espada,abertura:true};
-  else{JOGO[REGIAO]={x:Math.round(hero.x),y:Math.round(hero.y)};JOGO.vila=Object.assign(JOGO.vila||{},{espada:!!hero.espada});}JOGO.local=REGIAO;salvaJogo();}
+  else{JOGO[REGIAO]={x:Math.round(hero.x),y:Math.round(hero.y)};JOGO.vila=Object.assign(JOGO.vila||{},{espada:!!hero.espada});if(typeof NOVO2!=='undefined'&&NOVO2&&typeof comecou!=='undefined'&&comecou)JOGO.vila.abertura=true;}JOGO.local=REGIAO;salvaJogo();}
 function uiPasso(dt){
   for(const a of UI.avisos)a.v+=dt;UI.avisos=UI.avisos.filter(a=>a.v<2.4);
   if(UI.msgSalvo>0)UI.msgSalvo-=dt;

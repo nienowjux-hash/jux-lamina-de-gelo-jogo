@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>END GAME</title>
+<!-- ENTRADA DO JOGO (2026-11-28, pedido: "nome legal, menu legal, entrada legal"). Nome escolhido pelo usuario: END GAME.
+     Fundo: a cena 4 da abertura (o Jux sendo puxado para dentro do celular) ate chegar a arte da capa propria.
+     Novo jogo -> chiqueiro.html?novojogo (apaga o save e comeca no mundo novo). Continuar -> o lugar do save. -->
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:"Trebuchet MS",sans-serif;color:#e8fbff}
+#capa{position:fixed;inset:0;background:#000 url('assets/cine_intro/cena_4.jpg') center/cover no-repeat}
+#capa::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,4,14,.92) 0%,rgba(0,4,14,.72) 34%,rgba(0,4,14,.05) 62%),linear-gradient(0deg,rgba(0,0,0,.65),rgba(0,0,0,0) 30%)}
+#menu{position:fixed;left:6vw;top:50%;transform:translateY(-50%);z-index:2;display:flex;flex-direction:column;gap:2.2vh;width:min(36vw,520px)}
+h1{margin:0;font:900 clamp(56px,9vw,150px)/.9 "Impact","Arial Black",sans-serif;letter-spacing:.04em;color:#f2fdff;
+   text-shadow:0 0 18px rgba(95,216,255,.65),0 6px 0 #0b2a44}
+.sub{margin:.4vh 0 3.5vh;font:600 clamp(13px,1.35vw,20px)/1.35 "Trebuchet MS",sans-serif;color:#9fdcff;letter-spacing:.06em}
+button{all:unset;cursor:pointer;display:block;padding:1.2vh 1.4vw;border-left:3px solid transparent;font:700 clamp(18px,1.9vw,28px) "Trebuchet MS",sans-serif;color:#cfeeff;letter-spacing:.08em;transition:color .15s,border-color .15s,background .15s}
+button:hover,button.sel{color:#fff;border-left-color:#7fe3ff;background:linear-gradient(90deg,rgba(127,227,255,.18),rgba(127,227,255,0))}
+button[disabled]{opacity:.35;cursor:default}
+#info{font:13px "Trebuchet MS",sans-serif;color:#7fa6c6;margin-top:1vh;min-height:18px}
+#aviso{position:fixed;inset:0;z-index:5;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72)}
+#aviso div{background:#071527;border:2px solid #3f86b8;border-radius:10px;padding:26px 30px;max-width:460px;text-align:center;font-size:18px;line-height:1.5}
+#aviso button{display:inline-block;margin:16px 10px 0;border:2px solid #3f86b8;border-radius:6px;font-size:18px;padding:8px 18px}
+#rodape{position:fixed;right:2vw;bottom:2vh;z-index:2;font-size:12px;color:#6f93b3}
+</style>
+</head>
+<body>
+<div id="capa"></div>
+<div id="menu">
+  <h1>END GAME</h1>
+  <div class="sub">Três da manhã. A tela congelou.<br>E o jogo resolveu jogar de volta.</div>
+  <button id="b_cont">Continuar</button>
+  <button id="b_novo">Novo jogo</button>
+  <button id="b_cred">Créditos</button>
+  <div id="info"></div>
+</div>
+<div id="aviso"><div id="aviso_txt"></div></div>
+<div id="rodape">versão de teste · mundo novo</div>
+<audio id="mus" src="assets/musica/intro_piano.mp3" loop preload="auto"></audio>
+<script>
+'use strict';
+const lugares={praca:'Praça',casas:'Casas',forja:'Forja',chiqueiro:'Chiqueiro',portao:'Portão',altar:'Altar',floresta:'Floresta',vila:'Invernália',trilha:'A trilha',vale:'O Vale',garganta:'A Garganta',pico:'O Pico',caverna:'A caverna',rio:'O rio',cinzas:'As cinzas',brasaria:'Brasária'};
+let save=null;try{save=JSON.parse(localStorage.getItem('jux_save')||'null');}catch(e){}
+const bc=document.getElementById('b_cont'),bn=document.getElementById('b_novo'),bcr=document.getElementById('b_cred'),info=document.getElementById('info');
+if(!save){bc.disabled=true;}else{info.textContent='Jogo salvo: '+(lugares[save.local]||'Invernália')+' · nível '+(save.nivel||1);}
+const botoes=[bc,bn,bcr].filter(b=>!b.disabled);let sel=0;
+function marca(i){sel=(i+botoes.length)%botoes.length;botoes.forEach((b,k)=>b.classList.toggle('sel',k===sel));}
+marca(0);botoes.forEach((b,k)=>b.addEventListener('mouseenter',()=>marca(k)));
+const mus=document.getElementById('mus');mus.volume=.45;let tocou=false;
+function liga(){if(tocou)return;tocou=true;mus.play().catch(()=>{tocou=false;});}
+addEventListener('pointerdown',liga);addEventListener('keydown',liga);
+function vai(url){document.body.style.transition='opacity .45s';document.body.style.opacity='0';
+  let v=mus.volume;const f=setInterval(()=>{v-=.05;if(v<=0){clearInterval(f);mus.pause();}else mus.volume=v;},40);
+  setTimeout(()=>{location.href=url;},480);}
+function aviso(html,botoesAviso){const a=document.getElementById('aviso'),t=document.getElementById('aviso_txt');t.innerHTML=html;a.style.display='flex';
+  for(const [txt,fn] of botoesAviso){const b=document.createElement('button');b.textContent=txt;b.onclick=()=>{a.style.display='none';fn&&fn();};t.appendChild(b);}}
+bc.onclick=()=>{if(!save)return;const l=save.local&&lugares[save.local]?save.local:'vila';vai(l+'.html?t='+Date.now());};
+bn.onclick=()=>{if(save)aviso('Começar um jogo novo?<br><span style="color:#ff9a9a">O jogo salvo neste navegador será apagado.</span>',[['Começar',()=>vai('chiqueiro.html?novojogo')],['Voltar',null]]);
+  else vai('chiqueiro.html?novojogo');};
+bcr.onclick=()=>aviso('<b>END GAME</b><br>Ideia e herói: Jux<br>Desenhos: feitos para o jogo<br>Músicas e sons livres: veja assets/musica/CREDITOS.txt e assets/vila/CREDITOS.txt',[['Fechar',null]]);
+addEventListener('keydown',e=>{if(document.getElementById('aviso').style.display==='flex'){if(e.key==='Escape')document.getElementById('aviso').style.display='none';return;}
+  if(e.key==='ArrowDown'||e.key==='s')marca(sel+1);else if(e.key==='ArrowUp'||e.key==='w')marca(sel-1);else if(e.key==='Enter'||e.key===' ')botoes[sel].click();});
+</script>
+</body>
+</html>

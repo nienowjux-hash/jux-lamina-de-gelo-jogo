@@ -2103,6 +2103,23 @@ addEventListener('pagehide',paraAudio);
 // plano os _dados.js das saidas, e a proxima troca ja abre do cache
 if(NOVO2&&V.saidas)setTimeout(()=>{const vistos=new Set();for(const sd of V.saidas){const pg=(sd.pagina||'').split('?')[0];if(!pg||vistos.has(pg))continue;vistos.add(pg);
   fetch(pg).then(r=>r.text()).then(h=>{const m=h.match(/src="([a-z0-9_]+_dados\.js[^"]*)"/i);if(m)fetch(m[1]).catch(()=>{});}).catch(()=>{});}},4000);
+// ---------- COMECO NOS BAIRROS (P7 parte 1, 2026-11-28): onde o Jux aparece ao abrir um bairro, e o NOVO JOGO no mundo novo.
+// ?novojogo: apaga o save e abre o Chiqueiro do zero (abertura -> acorda na lama ao lado do Sir Bacon, sem espada).
+// Veio de outro bairro: a entrada dele. Carregou um save neste bairro: onde parou. Jogo novo no Chiqueiro: V.acorda. Senao: V.inicio.
+// A espada vem do save (?semespada / ?comespada forcam, para testar).
+const ACORDA2={chiqueiro:[628,182]};   // dentro do chiqueiro, na lama, ao lado do Sir Bacon (perto do inicio dele, 665,188)
+function mundo2Inicio(){if(!NOVO2)return;const q=location.search;try{const bv=document.getElementById('voltar');if(bv)bv.remove();}catch(e){}   // o botao 'Voltar ao jogo' levava para o jogo antigo
+  
+  if(/[?&]novojogo/.test(q)){novoJogo();window.__semSalvar=true;location.replace('chiqueiro.html?t='+Date.now());return;}
+  let c=null;try{c=sessionStorage.getItem('chega2');sessionStorage.removeItem('chega2');}catch(e){}
+  const J=JOGO,novo=!(J.vila&&J.vila.abertura),P=J[REGIAO];let p;
+  if(c&&V.chegadas&&V.chegadas[c])p=V.chegadas[c];
+  else if(P&&P.x&&J.local===REGIAO)p=[P.x,P.y];
+  else if(novo&&ACORDA2[REGIAO])p=ACORDA2[REGIAO];
+  else p=V.inicio;
+  hero.x=p[0];hero.y=p[1];cam.x=hero.x;cam.y=hero.y;hero.alvo=null;SEG.cena=false;SEG.ativo=false;
+  window.__espada2=/semespada/.test(q)?false:/comespada/.test(q)?true:!!(J.vila&&J.vila.espada);hero.espada=window.__espada2;
+  window.__chegou2=!!c;window.__novo2=novo;}
 let saindo2=0;   // mundo novo: a tela escurece aos poucos antes de trocar de bairro (2026-11-28, 'o load entre bairros ta esquisito')
 function vaiPara(pagina){salvaVila();if(NOVO2){saindo2=performance.now();setTimeout(()=>{paraAudio();location.href=jp(pagina);},420);return;}paraAudio();setTimeout(()=>{location.href=jp(pagina);},250);}
 function desenhaSaindo2(){if(!saindo2)return;const k=Math.min(1,(performance.now()-saindo2)/360);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=k;ctx.fillStyle='#000';ctx.fillRect(0,0,ctx.canvas.width,ctx.canvas.height);ctx.restore();}
@@ -2462,7 +2479,7 @@ function abDesenha(){
     for(const f of ab.neve){ctx.fillStyle='rgba(230,248,255,.7)';ctx.fillRect(f.x,f.y,f.s,f.s);}
     if(Math.random()<.6)ab.neve.push({x:rnd(-20,W),y:-6,v:rnd(25,70),s:rnd(1,3),o:rnd(0,6)});for(const f of ab.neve){f.y+=f.v/60;f.x+=.3;}ab.neve=ab.neve.filter(f=>f.y<H+8);
     ctx.textAlign='center';ctx.fillStyle='#bff0ff';ctx.font='bold 34px "Trebuchet MS"';ctx.shadowColor='#2a8fd0';ctx.shadowBlur=18;
-    ctx.fillText('JUX E A LÂMINA DE GELO',W/2,H/2-20);ctx.shadowBlur=0;
+    ctx.fillText(NOVO2?'END GAME':'JUX E A LÂMINA DE GELO',W/2,H/2-20);ctx.shadowBlur=0;
     ctx.globalAlpha=.6+.4*Math.sin(t*3);ctx.font='bold 17px "Trebuchet MS"';ctx.fillStyle='#e8f6ff';ctx.fillText('Aperte ENTER ou toque para começar',W/2,H/2+30);ctx.globalAlpha=1;
     return;
   }
@@ -2598,7 +2615,7 @@ function passo(dt){
       hero.pulo=PULO;hero.puloD=CER?PULO_C:PULO;hero.pulo=hero.puloD;hero.esc=null;hero.escN=0;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;hero.alvo=null;
       if(ESCALAR&&hero.espada&&Math.abs(pp.y-hero.y)>Math.abs(pp.x-hero.x)){hero.esc=pp.y<hero.y?'subir':'descer';hero.puloD=hero.pulo=hero.esc==='subir'?1.05:.8;hero.olha=hero.esc==='subir'?'cima':'baixo';som(SOM.whoosh,.4);}
       else{if(Math.abs(dx)>.5){hero.dir=dx<0?-1:1;}hero.olha=(PAR2.mov&&PAR2.mov.quadros.pulo&&Math.abs(pp.y-hero.y)*1.4>Math.abs(pp.x-hero.x))?(pp.y<hero.y?'cima':'baixo'):hero.dir<0?'esquerda':'direita';som(SOM.whoosh,.55);
-      if(!puloFalado&&NA_VILA){puloFalado=true;setTimeout(()=>abreFala('pulo'),450);}}
+      if(!puloFalado&&(NA_VILA||(NOVO2&&!JOGO.puloVisto))){puloFalado=true;if(NOVO2){JOGO.puloVisto=true;salvaJogo();}setTimeout(()=>abreFala('pulo'),450);}}
     }else if(segura){}   // encostado na cerca: um instante parado antes de pular (nao escorrega pelo lado)
     else if(livre(nx,ny)){hero.x=nx;hero.y=ny;moveu=true;hero.direto=true;}
     else if(dx&&livre(nx,hero.y)){hero.x=nx;moveu=true;}
@@ -3043,7 +3060,7 @@ function quadro0(now){if(window.__carregando){ult=now;requestAnimationFrame(quad
   if(noiteFade)noiteFadePasso(Math.min(.05,Math.max(0,(now-ult)/1000)));   // 'Naquela noite...' (depois do limite de quadros: conta o tempo uma vez so)
   tutChecaMapa();const dt=Math.max(0,Math.min(.05,(now-ult)/1000));ult=now;
   ultRAF=performance.now();if(semRAF){semRAF=false;if(!window.__morta&&!document.hidden){try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}for(const x of tocavamRAF)x.play().catch(()=>{});}tocavamRAF=[];}
-  if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();abVista=true;comecou=true;
+  if(!uiCarregado&&TER&&!NA_VILA){uiCarregado=true;uiCarrega();if(NOVO2&&window.__novo2){/* jogo novo no mundo novo: deixa a abertura tocar (abVista vem do localStorage) e depois a fala 'inicio' */}else{abVista=true;comecou=true;}
     if(lobosPendentes())setTimeout(()=>aviso('Vasculhe a trilha até achar os lobos de olhos roxos: '+((JOGO.cap1||{}).lobos||0)+'/3','#ffe27a'),1800);
     try{const vl=JSON.parse(localStorage.getItem('jux_volta_luta')||'null');if(vl&&vl.res==='lose_chefe'&&Date.now()-vl.t<120000){localStorage.removeItem('jux_volta_luta');setTimeout(()=>abreFala('derrota_chefe'),700);}}catch(e){}
     if(REGIAO==='pico'&&!JOGO.picoVista){JOGO.picoVista=true;setTimeout(()=>abreFala('pico_chega'),600);}

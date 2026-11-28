@@ -8,7 +8,8 @@
    Usa o menu da vila (vila_menu.js): UI, painel, linhaSel, texto, aviso, som/SOM. Carregar depois do vila_menu.js. */
 'use strict';
 const SLOTS_SAVE = [1, 2, 3];
-const NOME_LUGAR = { vila: 'Invernália', trilha: 'A trilha', vale: 'O Vale dos Lobos', garganta: 'A Garganta', pico: 'O Pico do Uivo', caverna: 'A caverna', rio: 'O rio', cinzas: 'A trilha das cinzas', brasaria: 'Brasária' };
+const NOME_LUGAR = { vila: 'Invernália', trilha: 'A trilha', vale: 'O Vale dos Lobos', garganta: 'A Garganta', pico: 'O Pico do Uivo', caverna: 'A caverna', rio: 'O rio', cinzas: 'A trilha das cinzas', brasaria: 'Brasária',
+  praca: 'Invernália · Praça', casas: 'Invernália · Casas', forja: 'Invernália · Forja', chiqueiro: 'Invernália · Chiqueiro', portao: 'Invernália · Portão', altar: 'Invernália · Altar', floresta: 'Invernália · Floresta' };   // mundo novo (2026-11-28)
 const lerJ = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 function capituloDe(J) {
   if (J.cap3 && J.local === 'brasaria') return 'Cap. 3 — Brasária';
