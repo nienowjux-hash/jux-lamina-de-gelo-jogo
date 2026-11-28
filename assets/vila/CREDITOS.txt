@@ -14,3 +14,6 @@ Sons:
 - porco_0..3, porco_guincho: "Pig SFX Pack" - vinrax - CC-BY 3.0 - opengameart.org/content/pig-sfx-pack
 
 musica_caverna.ogg/.mp3 — "Dark Ambience Loop", Iwan Gabovitch (qubodup), OpenGameArt.org, CC-BY 3.0. Música tensa do interior da caverna do lobo.
+- galinha_0, galinha_1, galinha_susto (galinhas do Chiqueiro; recortes): "Chicken Sound Effect" - IMadeIt - CC-BY 3.0 - opengameart.org/content/chicken-sound-effect
+- lama_passo_0..3 (Jux andando na lama do Chiqueiro; mud_10/13/19/20 cortados e normalizados): "25 CC0 mud sfx" - rubberduck - CC0 - opengameart.org/content/25-cc0-mud-sfx
+- bola_neve.png: recortada da folha do Tico (ref/vila2/tico_acoes.png), desenho do proprio jogo

@@ -149,3 +149,4 @@ assets/vila/cao_contente (cachorro ganhando carinho): "Dog grunt" - qubodup (Ope
 assets/vila/miado_0..2 (gato da praça; recortes): "Cat purr & meow" - Kerzoven (OpenGameArt.org) - CC0 - https://opengameart.org/content/cat-purr-meow
 assets/vila/gato_bravo_0..1 (gato assustado fugindo): "Cat SFX" - SFX by Dan Knoflicek (enviado por Macro, OpenGameArt.org) - CC-BY 3.0 - https://opengameart.org/content/cat-sfx - https://creativecommons.org/licenses/by/3.0/
 assets/vila/machado_0..2 (Oskar rachando lenha; o primeiro golpe recortado, 3 tons): "Tree chop, fall & thud" - kheetor (OpenGameArt.org) - CC0 - https://opengameart.org/content/tree-chop-fall-thud
+assets/vila/galinha_0..1 e galinha_susto (galinhas do Chiqueiro; recortes): "Chicken Sound Effect" - IMadeIt (OpenGameArt.org) - CC-BY 3.0 (credito obrigatorio) - https://opengameart.org/content/chicken-sound-effect - https://creativecommons.org/licenses/by/3.0/

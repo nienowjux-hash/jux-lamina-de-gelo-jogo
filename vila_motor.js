@@ -17,7 +17,7 @@ const hc=document.createElement('canvas');hc.width=W*HD;hc.height=H*HD;const hct
 const sc=document.createElement('canvas');sc.width=W*HD;sc.height=H*HD;const sctx=sc.getContext('2d');
 const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';
-const NOVO2=['praca','casas','forja'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
+const NOVO2=['praca','casas','forja','chiqueiro'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MAPA=new Image();MAPA.src=V.mapa;
 // ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
@@ -129,7 +129,7 @@ function raioX(tr,px,py,forca,desenha){
   ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=.95*forca;
   for(const [ox,oy] of [[-2*HD,0],[2*HD,0],[0,-2*HD],[0,2*HD]])ctx.drawImage(sc,bx,by,bw,bh,bx+ox,by+oy,bw,bh);
   ctx.globalAlpha=.6*forca;ctx.drawImage(hc,bx,by,bw,bh,bx,by,bw,bh);ctx.restore();}
-function cobre(f,px,py){if(!f.al)return true;px=px==null?hero.x:px;py=py==null?hero.y:py;let n=0;for(const[dx,dy]of[[0,-6],[0,-14],[0,-22],[0,-30],[0,-38],[-6,-18],[6,-18],[-5,-30],[5,-30]]){const x=Math.floor((px+dx-f.x)*f.aw/f.w),y=Math.floor((py+dy-f.y)*f.ah/f.h);if(x>=0&&y>=0&&x<f.aw&&y<f.ah&&f.al[y*f.aw+x])n++;}return n>=1;}   // qualquer pedaço do Jux coberto já liga o raio-x (antes 2: na beirada do telhado ele sumia)
+function cobre(f,px,py){if(!f.al)return true;px=px==null?hero.x:px;py=py==null?hero.y:py;let n=0;for(const[dx,dy]of[[0,-6],[0,-14],[0,-22],[0,-30],[0,-38],[-6,-18],[6,-18],[-5,-30],[5,-30]]){const x=Math.floor((px+dx-f.x)*f.aw/f.w),y=Math.floor((py+dy-f.y)*f.ah/f.h);if(x>=0&&y>=0&&x<f.aw&&y<f.ah&&f.al[y*f.aw+x])n++;}return n>=(f.h<70?4:1);}   // 2026-11-28: so coisas BAIXAS (cerca, cocho) pedem 4 pontos; o paiol (h 102) cortava o Jux ao meio sem silhueta   // qualquer pedaço do Jux coberto já liga o raio-x (antes 2: na beirada do telhado ele sumia)
 let TER=null;   // terreno por pixel do mapa: bit 1 andavel, 2 neve, 4 rio
 const rioPx=[];
 {const m=new Image();m.onload=()=>{const c=document.createElement('canvas');c.width=V.w;c.height=V.h;const g=c.getContext('2d');g.drawImage(m,0,0);
@@ -144,6 +144,33 @@ const naGelo=(x,y)=>REGIAO==='trilha'?((x-GELO.x)/GELO.rx)**2+((y-GELO.y)/GELO.r
 const ENTR_GELO=[[730,636,810,692],[648,628,722,684],[832,628,925,692],[972,536,1040,602],[440,540,565,604]];
 const naEntrada=(x,y)=>REGIAO==='trilha'&&ENTR_GELO.some(r=>x>=r[0]&&x<=r[2]&&y>=r[1]&&y<=r[3]);
 function livre(x,y){if(festAplicado&&POSTES_FEST.some(([a,b,c,d])=>x+6>=a&&x-6<=c&&y+2>=b&&y-4<=d))return false;if(naGelo(x,y)||naEntrada(x,y))return true;for(let dy=-4;dy<=2;dy+=2)for(let dx=-6;dx<=6;dx+=2)if(!(ter(x+dx,y+dy)&1))return false;return true;}
+// CERCAS PULAVEIS (2026-11-27, chiqueiro: "em toda volta da cerca"): V.cerca = mascara da faixa das cercas. Empurrando
+// uma delas (o primeiro obstaculo na frente e a cerca), o Jux pula reto para o primeiro chao livre do outro lado (curto:
+// no maximo PULO_MAX); se ali tem coisa (cocho), tenta um pouco para os lados
+let CER=null;if(V.cerca){const m=new Image();m.onload=()=>{const c=document.createElement('canvas');c.width=V.w;c.height=V.h;const g=c.getContext('2d');g.drawImage(m,0,0,V.w,V.h);
+  const d=g.getImageData(0,0,V.w,V.h).data;CER=new Uint8Array(V.w*V.h);for(let i=0;i<CER.length;i++)CER[i]=d[i*4]>127?1:0;};m.src=V.cerca;}
+const cer=(x,y)=>{if(!CER)return 0;x=Math.round(x);y=Math.round(y);return x>=0&&y>=0&&x<V.w&&y<V.h?CER[y*V.w+x]:0;};
+const PULO_MAX=40;
+function rumoCerca(x,y){let sx=0,sy=0,n=0;for(let a=-10;a<=10;a+=2)for(let b=-10;b<=10;b+=2)if(a*a+b*b<=100&&cer(x+a,y+b)){sx+=a;sy+=b;n++;}const d=Math.hypot(sx,sy);return n&&d?[sx/d,sy/d]:null;}   // para onde fica a cerca, visto do Jux
+// cerca inclinada: a linha do chao dela na altura x do Jux (antes uma linha reta so pelo ponto mais baixo: cobria ele na frente)
+function baseF(f,x){if(!f.linha)return f.base;const [a,b,c,d]=f.linha,u=clamp((x-a)/((c-a)||1),0,1);return b+(d-b)*u+1;}
+// lugar de pouso sem cerca logo na frente dele (senao parece sentado no poste)
+function pousoLimpo(x,y){for(let k=2;k<=20;k+=2)for(const o of [-5,0,5])if(cer(x+o,y+k))return false;for(const o of [-8,8])if(cer(x+o,y))return false;return true;}
+// ANDANDO NA LAMA (2026-11-27, ref/vila2/jux_lama.png): dentro do contorno da lama do chiqueiro o Jux anda com a folha
+// da lama (passo pesado, bota afundando), mais devagar e sem correr
+const LAMA_POL=V.chiqueiro_poligono||null;
+function naLamaJux(x,y){if(!LAMA_POL)return false;let d=false;for(let i=0,j=LAMA_POL.length-1;i<LAMA_POL.length;j=i++){const [xi,yi]=LAMA_POL[i],[xj,yj]=LAMA_POL[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)d=!d;}return d;}
+function puloCerca(x,y,ux,uy){return puloCerca0(x,y,ux,uy,true)||puloCerca0(x,y,ux,uy,false);}
+function puloCerca0(x,y,ux,uy,limpo){if(!CER)return null;const n=Math.hypot(ux,uy);if(!n)return null;ux/=n;uy/=n;
+  {const rc=rumoCerca(x,y);if(rc&&ux*rc[0]+uy*rc[1]>.5){ux=rc[0];uy=rc[1];}}   // atravessa reto pela cerca (de frente para ela), nao na diagonal
+  let s0=-1,fora=0;for(let s=1;s<=14;s++){const px=x+ux*s,py=y+uy*s;if(cer(px,py)){s0=s;break;}if(!(ter(px,py)&1)&&++fora>5)return null;}   // o que trava tem que ser a cerca (tolera a beirada do chao)
+  if(s0<0)return null;
+  for(const o of [0,-4,4,-8,8,-13,13,-18,18,-24,24,-31,31,-38,38]){const bx=x-uy*o,by=y+ux*o;let s=s0;
+    let bloq=false,nc=0;while(s<=PULO_MAX&&cer(bx+ux*s,by+uy*s)){if(!livre(bx+ux*s,by+uy*s))bloq=true;s++;nc++;}   // atravessa a cerca
+    const s1=s;while(s<=PULO_MAX&&s-s1<=7&&!livre(bx+ux*s,by+uy*s)){bloq=true;s++;}   // e so um pouco depois dela (nunca por cima de moita/cocho)
+    if(!bloq||nc<3||s<9||s>PULO_MAX||!livre(bx+ux*s,by+uy*s))continue;   // tem que ter passado POR CIMA da cerca (nao um pulinho no mesmo lado)
+    for(const e of (limpo?[26,22,18,16,14,12]:[16,14,12,10,8,6,4,2])){const lx=bx+ux*(s+e),ly=by+uy*(s+e);if(livre(lx,ly)&&!cer(lx,ly)&&(!limpo||pousoLimpo(lx,ly)))return {x:lx,y:ly};}}   // pousa bem longe da cerca (nao colado nela)
+  return null;}
 // cerca que da para pular: devolve o x de pouso do outro lado (ou null)
 // cercas que da para pular: [x0,y0,x1,y1,'h'|'v'] -> ponto de pouso do outro lado (ou null)
 function pouso(x,y,dx){const z=V.pulos.find(([a,b,c,d,t])=>t!=='v'&&x+dx*12>=a&&x+dx*12<=c&&y>=b&&y<=d);if(!z)return null;const px=dx>0?z[2]+9:z[0]-9;return livre(px,y)?{x:px,y}:null;}
@@ -162,7 +189,7 @@ const ogg=new Audio().canPlayType('audio/ogg; codecs="vorbis"')?'.ogg':'.mp3';
 const arq=n=>{const a=new Audio();a.src=n+ogg;a.preload='auto';return a;};
 const SOM={ui_mover:arq('assets/sfx/novos/ui_mover'),ui_vez:arq('assets/sfx/novos/ui_vez'),whoosh:arq('assets/sfx/novos/whoosh2')};
 const SOM_DESL=[0,1,2,3].map(i=>arq('assets/vila/deslize_'+i));let tDesl=0;   // raspadas de bota no gelo (amostras reais de passos, mais graves e lentas), uma a cada 0,25-0,45 s enquanto desliza
-const PASSOS=[0,1,2,3].map(i=>arq('assets/vila/passo_'+i)),PASSOS_NEVE=[0,1,2,3].map(i=>arq('assets/vila/passo_neve_'+i)),PASSOS_MAD=[0,1,2,3].map(i=>arq('assets/vila/passo_madeira_'+i));
+const PASSOS=[0,1,2,3].map(i=>arq('assets/vila/passo_'+i)),PASSOS_NEVE=[0,1,2,3].map(i=>arq('assets/vila/passo_neve_'+i)),PASSOS_MAD=[0,1,2,3].map(i=>arq('assets/vila/passo_madeira_'+i));const PASSOS_LAMA=[0,1,2,3].map(i=>arq('assets/vila/lama_passo_'+i));   // passo na lama do chiqueiro (CC0, rubberduck, ver CREDITOS.txt)
 const naPonte=(x,y)=>(REGIAO==='trilha'&&x>722&&x<894&&y>340&&y<402)||(REGIAO==='garganta'&&x>588&&x<872&&y>370&&y<436);   // tabuas da ponte: som de madeira
 const som=(a,v)=>{try{const c=a.cloneNode();c.volume=clamp(v,0,1);c.play().catch(()=>{});}catch(e){}};
 const MUSICAS=[REGIAO==='brasaria'?['Brasária','../musica/brasaria']:REGIAO==='cinzas'?['Trilha das Cinzas','../musica/cinzas']:REGIAO==='pico'?['Vento do Pico (sem música)','vento_pico']:REGIAO==='caverna'?['Escuridão','musica_caverna']:REGIAO==='vale'?['Sussurro da Floresta','musica_trilha']:REGIAO==='garganta'?['Catedral na Floresta','musica_garganta']:REGIAO==='trilha'?['Sussurro da Floresta','musica_trilha']:NOVO2?['Terra da Neve','musica_vila_snowland']:['Manhã Gelada','musica_vila_2']];   // mundo novo: musica calma de ambiente (pedido do usuario 2026-11-26)   // cada regiao tem a sua musica (a trilha NAO usa a da vila)   // musica unica da vila (as outras foram removidas a pedido); o botao so liga/desliga
@@ -366,7 +393,7 @@ const COR={Jux:'#bff0ff',Aurora:'#c9b8ff','Sir Bacon':'#ffb6c8',Vendedora:'#ffd8
 
 /* ---------- estado */
 // mapa novo (1448 px, objetos maiores): heroi, velocidades e passadas 1,3x
-const Z=window.ZOOM_MAPA||.8,VEL=70,VELC=125,PULO=.62,PASSO_A=9,PASSO_C=8.5,PASSO_R=10.5,ESC_H=.37;   // andar e correr (px do mapa por segundo), duracao do pulo (s)
+const Z=window.ZOOM_MAPA||.8,VEL=70,VELC=125,PULO=.62,PULO_C=.78,PULO_AG=.17,PULO_AT=.17,PASSO_A=9,PASSO_C=8.5,PASSO_R=10.5,ESC_H=.37;   // andar e correr (px do mapa por segundo), duracao do pulo (s)
 const hero={x:V.inicio[0],y:V.inicio[1],dir:1,olha:'baixo',espada:false,dist:0,rastro:[],anda:false,t:0,alvo:null,pontoAlvo:null,pulo:0,passo:0,lado:1};
 const cam={x:hero.x,y:hero.y};
 let fala=null,perto=null,t=0,puloFalado=false;
@@ -667,7 +694,9 @@ function seguidorPasso(dt){
     if(u>=1){SEG.salto=null;SEG.alt=0;poeiraNeve(SEG.x,SEG.y,6);}return;}
   // o pulo usa a MESMA regra do Jux (faixa de pulo da cerca + pousoV): so pula se o Jux esta do outro lado da cerca,
   // e cai sempre num chao livre (nunca em cima da madeira)
-  if(alvo&&NA_VILA&&V.pulos){const dyH=hero.y-SEG.y,dir=dyH>0?1:-1;
+  if(alvo&&NA_VILA&&CER){const ax=alvo.x-SEG.x,ay=alvo.y-SEG.y,d=Math.hypot(ax,ay)||1;
+    if(d>6&&!livre(SEG.x+ax/d*5,SEG.y+ay/d*5)){const p=puloCerca(SEG.x,SEG.y,ax,ay);if(p){SEG.salto={t:0,x0:SEG.x,y0:SEG.y,x1:p.x,y1:p.y};SEG.olha=Math.abs(ay)*1.4>Math.abs(ax)?(ay>0?'baixo':'cima'):(ax<0?'esquerda':'direita');som(SOM.whoosh,.35);return;}}}
+  else if(alvo&&NA_VILA&&V.pulos){const dyH=hero.y-SEG.y,dir=dyH>0?1:-1;
     if(Math.abs(dyH)>24){const ax=alvo.x-SEG.x,ay=alvo.y-SEG.y,d=Math.hypot(ax,ay)||1;
       const trava=!livre(SEG.x+ax/d*5,SEG.y+ay/d*5)||!livre(SEG.x,SEG.y+dir*6);
       const p=trava?pousoV(SEG.x,SEG.y,dir):null;
@@ -1141,11 +1170,11 @@ function caoGrade(){if(CGR)return CGR;if(!CAO_CHAO)return null;CGW=Math.ceil(V.w
   for(let gy=0;gy<CGH;gy++)for(let gx=0;gx<CGW;gx++)CGR[gy*CGW+gx]=caoLivre(gx*CG+CG/2,gy*CG+CG/2)?1:0;return CGR;}
 function caoCelula(x,y){const G=caoGrade();if(!G)return -1;const gx=clamp(Math.floor(x/CG),0,CGW-1),gy=clamp(Math.floor(y/CG),0,CGH-1);
   if(G[gy*CGW+gx])return gy*CGW+gx;let m=-1,md=1e9;for(let r=1;r<6&&m<0;r++)for(let yy=gy-r;yy<=gy+r;yy++)for(let xx=gx-r;xx<=gx+r;xx++){if(xx<0||yy<0||xx>=CGW||yy>=CGH||!G[yy*CGW+xx])continue;const dd=Math.hypot(xx-gx,yy-gy);if(dd<md){md=dd;m=yy*CGW+xx;}}return m;}
-function caoCaminho(x0,y0,x1,y1){const G=caoGrade();const a=caoCelula(x0,y0),b=caoCelula(x1,y1);if(!G||a<0||b<0)return null;if(a===b)return [[x1,y1]];
+function caoCaminho(x0,y0,x1,y1,ev){const G=caoGrade();const a=caoCelula(x0,y0),b=caoCelula(x1,y1);if(!G||a<0||b<0)return null;if(a===b)return [[x1,y1]];
   const vem=new Int32Array(CGW*CGH).fill(-1);vem[a]=a;const fila=[a];let h=0;
   const viz=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
   while(h<fila.length){const k=fila[h++];if(k===b)break;const kx=k%CGW,ky=(k/CGW)|0;
-    for(const [ex,ey] of viz){const nx=kx+ex,ny=ky+ey;if(nx<0||ny<0||nx>=CGW||ny>=CGH)continue;const n=ny*CGW+nx;if(vem[n]>=0||!G[n])continue;
+    for(const [ex,ey] of viz){const nx=kx+ex,ny=ky+ey;if(nx<0||ny<0||nx>=CGW||ny>=CGH)continue;const n=ny*CGW+nx;if(vem[n]>=0||!G[n])continue;if(ev){const de=Math.hypot(nx*CG+CG/2-ev[0],ny*CG+CG/2-ev[1]);if(de<ev[2]&&(ev[3]==null||de<ev[3]))continue;}
       if(ex&&ey&&(!G[ky*CGW+nx]||!G[ny*CGW+kx]))continue;vem[n]=k;fila.push(n);}}
   if(vem[b]<0)return null;const pts=[];for(let k=b;k!==a;k=vem[k])pts.push(k);pts.reverse();
   const out=[];let ld=null;for(let i=0;i<pts.length;i++){const k=pts[i],nk=pts[i+1];const dd=nk==null?null:(nk-k);if(dd!==ld||nk==null)out.push([(k%CGW)*CG+CG/2,((k/CGW)|0)*CG+CG/2]);ld=dd;}
@@ -1158,6 +1187,8 @@ function caoPerto(){const c=CAO;return c&&!fala&&!hero.senta&&!hero.poco&&!hero.
 // deles; Jux a esquerda como na folha, ou espelhada se ele veio pela direita. O Jux continua sem sombra (lore).
 // v2 (2026-11-26): o cachorro e o PROPRIO cachorro do jogo; a folha e so o Jux agachado, com as cores do Jux do jogo
 const CAR=V.carinho_jux?(()=>{const i=new Image();i.src=V.carinho_jux.atlas;return {...V.carinho_jux,i};})():null;
+const CAR_SEM=V.carinho_jux_sem?(()=>{const i=new Image();i.src=V.carinho_jux_sem.atlas;return {...V.carinho_jux_sem,i};})():null;   // carinho SEM ESPADA (antes de pegar a espada)
+function carJux(){return (!hero.espada&&CAR_SEM)?CAR_SEM:CAR;}
 const CAR_TEMPOS=[[0,.35],[1,.3],[2,.4],[3,.4],[4,.4],[3,.4],[4,.4],[5,.8],[6,.9],[7,.5]];
 const CAR_DUR=CAR_TEMPOS.reduce((a,b)=>a+b[1],0);
 function carinhoQuadro(tt){let a=0;for(const [q,d] of CAR_TEMPOS){a+=d;if(tt<a)return q;}return 7;}
@@ -1276,7 +1307,8 @@ function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvar
   if(o.id==='borin'&&o.est==='acao'){const q=acaoQuadro(o);if(q===3&&o.qAnt!==3){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(BIGORNA[Math.floor(Math.random()*3)],.75*clamp(1-d/320,.05,1));
       const fx=o.x,fy=o.y-32;for(let k=0;k<9;k++)FAISCAS_B.push({x:fx,y:fy,vx:rnd(-30,45),vy:rnd(-70,-25),v:0,l:rnd(.3,.7)});}o.qAnt=q;}
   if(o.est==='acao'&&o.acao==='racha'){const q=acaoQuadro(o);if(q===9&&o.qAnt!==9){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(MACHADO[Math.floor(Math.random()*3)],.8*clamp(1-d/330,.06,1));}o.qAnt=q;}   // o machado bate na tora
-  if(o.est==='acao'&&o.acao==='bola'&&o.alvoJux){const q=acaoQuadro(o);if(q===10&&o.qAnt!==10)setTimeout(()=>{if(!fala&&!baloes.length){balao(hero,'Ei!');}},300);o.qAnt=q;}
+  if(o.est==='acao'&&o.acao==='bola'&&o.alvoJux){const q=acaoQuadro(o);if(q===10&&o.qAnt!==10){   // 2026-11-28 ("a bola nao vai para lugar nenhum"): a bola SAI da mao dele e voa ate o Jux
+      const sg=hero.x<o.x?-1:1,bx=o.x+sg*16.5,by=o.y-21;BOLAS_V.push({x0:bx,y0:by,x1:hero.x+rnd(-3,3),y1:hero.y-14,v:0,d:clamp(Math.hypot(hero.x-bx,hero.y-by)/170,.35,.8)});som(SOM.whoosh,.3);}o.qAnt=q;}
   if(o.est==='acao'){if(o.t>=o.dur){o.est='para';o.t=0;o.dur=rnd(1,3);o.dir='frente';}continue;}
   if(o.est==='para'&&o.t>o.dur&&o.ac&&!o.fezAcao){o.fezAcao=true;const r=Math.random();
     const n=ACOES_POR[o.id]===ACOES_MERC?(r<.45?'chama':r<.8?'mostra':'espera'):o.id==='borin'?(r<.8?'martela':'espera'):o.id==='vovo'?(r<.35?'cha':r<.65?'pensa':r<.8?'oi':'espera'):o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(naNeve(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
@@ -1288,6 +1320,143 @@ function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvar
   const [tx,ty]=o.rota[0],ax=tx-o.x,ay=ty-o.y,d=Math.hypot(ax,ay);if(d<2.5){o.rota.shift();continue;}
   const st=Math.min(d,(o.vel||24)*dt);o.x+=ax/d*st;o.y+=ay/d*st;o.dist+=st;
   o.dir=Math.abs(ay)>Math.abs(ax)*1.15?(ay>0?'frente':'costas'):Math.abs(ax)>Math.abs(ay)*.87?'lado':o.dir;if(o.dir==='lado')o.esq=ax<0;}}
+// SIR BACON na lama do Chiqueiro (2026-11-27): anda pela lama com a folha do time (ref/brasaria/bacon_time.png: frente,
+// esquerda, direita, costas, farejar) e faz as acoes da ref/vila2/bacon_lama.png (3x6): 0-5 rola de barriga para cima,
+// 6-11 dorme respirando, 12-17 se sacode de frente. Anda em linha reta entre pontos da lama (V.bacon_lama.area: longe das
+// cercas e do cocho). O Jux chegando perto: acorda e se sacode, ou para e olha para ele com um "oinc"
+const BLD=V.bacon_lama||null;
+function folhaSil(d){const i=new Image();const o={...d,i,sil:null};i.onload=()=>{const k=document.createElement('canvas');k.width=i.width;k.height=i.height;const g=k.getContext('2d');g.drawImage(i,0,0);g.globalCompositeOperation='source-in';g.fillStyle='#0b0f1c';g.fillRect(0,0,k.width,k.height);o.sil=k;};i.src=d.atlas;return o;}
+const BACON_L=BLD?{id:'bacon',x:BLD.inicio[0],y:BLD.inicio[1],A:folhaSil(BLD.anda),L:folhaSil(BLD.acoes),est:'dorme',t:0,dur:rnd(5,9),dir:'esquerda',esq:true,alvo:null,dist:0,area:null}:null;
+if(BLD){const i=new Image();i.onload=()=>{const k=document.createElement('canvas');k.width=i.width;k.height=i.height;const g=k.getContext('2d');g.drawImage(i,0,0);BACON_L.area={d:g.getImageData(0,0,i.width,i.height).data,w:i.width};};i.src=BLD.area;}
+function naLamaB(x,y){const a=BACON_L.area;if(!a)return true;const xi=Math.round(x),yi=Math.round(y);if(xi<0||yi<0||xi>=a.w)return false;const k=(yi*a.w+xi)*4;return k<a.d.length&&a.d[k]>128;}
+function retoLama(x0,y0,x1,y1){const n=Math.ceil(Math.hypot(x1-x0,y1-y0)/2);for(let k=1;k<=n;k++)if(!naLamaB(x0+(x1-x0)*k/n,y0+(y1-y0)*k/n))return false;return true;}
+const ACOES_BACON={rola:[[0,.4],[1,.3],[2,.3],[3,.3],[2,.3],[1,.3],[2,.3],[3,.3],[4,.4],[5,.7]],
+  dorme:[[6,.8],[7,.8],[8,1],[7,.8],[6,.8],[7,.8],[8,1],[7,.8],[10,.45],[11,.6],[7,.8]],
+  sacode:[[12,.4],[13,.15],[14,.12],[15,.12],[14,.12],[15,.12],[14,.12],[15,.12],[16,.3],[17,.7]],
+  fareja:[[16,.4],[17,.4],[16,.4],[17,.4],[18,.8],[19,.45],[19,.45]]};   // fareja: quadros 16-19 da folha de andar
+const durB=n=>ACOES_BACON[n].reduce((a,b)=>a+b[1],0);
+function quadroB(n,tt){const L=ACOES_BACON[n];if(n==='dorme')tt%=durB(n);let a=0;for(const [q,d] of L){a+=d;if(tt<a)return q;}return L[L.length-1][0];}
+function oincB(v){const b=BACON_L,d=Math.hypot(hero.x-b.x,hero.y-b.y);som(OINC[Math.floor(Math.random()*OINC.length)],v*clamp(1-d/300,.05,1));}
+function acaoB(n,dur){const b=BACON_L;b.est=n;b.t=0;b.dur=dur||durB(n);b.alvo=null;}
+function baconLamaAtualiza(dt){const b=BACON_L;if(!b)return;b.t+=dt;const dx=hero.x-b.x,dy=hero.y-b.y,dh=Math.hypot(dx,dy*1.2);
+  if(dh<75&&t-(b.viu||-99)>14&&b.est!=='rola'&&b.est!=='sacode'){b.viu=t;   // o Jux chegou perto
+    if(b.est==='dorme'){acaoB('sacode');oincB(.55);}
+    else{acaoB('olha',rnd(1.6,2.6));oincB(.7);if(Math.abs(dx)>Math.abs(dy)){b.dir=dx<0?'esquerda':'direita';b.esq=dx<0;}else b.dir=dy>0?'frente':'costas';}
+    return;}
+  if(b.est==='rola'){const q=quadroB('rola',b.t);if(q===2&&b.qAnt!==2&&Math.random()<.5)oincB(.45);b.qAnt=q;if(b.t>=b.dur)acaoB('sacode');return;}
+  if(b.est==='dorme'){if(b.t>=b.dur){acaoB('sacode');oincB(.4);}return;}
+  if(b.est==='sacode'||b.est==='fareja'||b.est==='olha'){if(b.t>=b.dur){acaoB('para',rnd(.8,2.5));if(b.dir==='costas')b.dir='frente';}return;}
+  if(b.est==='para'){if(b.t<b.dur)return;const r=Math.random();
+    if(r<.2){acaoB('rola');oincB(.5);return;}
+    if(r<.32){acaoB('dorme',rnd(10,18));return;}
+    if(r<.47){acaoB('fareja');b.esq=Math.random()<.5;return;}
+    const P=[...BLD.pontos].sort(()=>Math.random()-.5).find(p=>Math.hypot(p[0]-b.x,p[1]-b.y)>18&&retoLama(b.x,b.y,p[0],p[1]));
+    if(P){b.est='anda';b.alvo=P;b.t=0;}else b.dur=rnd(1,2);return;}
+  if(b.est==='anda'){const [tx,ty]=b.alvo,ax=tx-b.x,ay=ty-b.y,d=Math.hypot(ax,ay);if(d<1.5){acaoB('para',rnd(1,3));return;}
+    const st=Math.min(d,20*dt);b.x+=ax/d*st;b.y+=ay/d*st;b.dist+=st;
+    if(Math.abs(ax)>Math.abs(ay)*.8){b.dir=ax<0?'esquerda':'direita';b.esq=ax<0;}else b.dir=ay>0?'frente':'costas';}}
+function desenhaBaconLama(){const b=BACON_L;if(!b)return;let F,q,vira=false,deit=false;
+  if(b.est==='rola'||b.est==='dorme'){F=b.L;q=quadroB(b.est,b.t);vira=!b.esq;deit=true;}   // a folha da lama olha para a esquerda
+  else if(b.est==='sacode'){F=b.L;q=quadroB('sacode',b.t);}
+  else if(b.est==='fareja'){F=b.A;q=quadroB('fareja',b.t);vira=b.esq;}   // o farejar da folha olha para a direita
+  else{F=b.A;q=({frente:0,esquerda:1,direita:2,costas:3}[b.dir]||0)*4+(b.est==='anda'?Math.floor(b.dist/2.6)%4:0);}
+  if(!F.i.complete)return;F.x=b.x;F.y=b.y;F.esq=vira;F.cao=!deit;F.deitado=deit;sombraVendedor(F,q);
+  ctx.save();ctx.translate(b.x,b.y);if(vira)ctx.scale(-1,1);ctx.drawImage(F.i,q*F.w,0,F.w,F.h,-F.ax*F.s,-F.ay*F.s,F.w*F.s,F.h*F.s);ctx.restore();}
+// GALINHAS do Chiqueiro (2026-11-27; ref/vila2/galinha.png 4x6, de lado viradas para a DIREITA): 0-5 andam, 6-8 ciscam,
+// 9-11 bicam, 12-14 andam de frente, 15-17 de costas, 18-19 olham assustadas, 20-23 correm batendo as asas.
+// Ciscam no patio do celeiro e andam pelo chao livre (caoCaminho). O Jux correndo perto (ou chegando muito perto): susto,
+// cacarejo e fogem para longe dele. Cacarejo de vez em quando (CC-BY, ver CREDITOS.txt)
+const GLD=V.galinhas||null;
+const GAL_SOM=[0,1].map(i=>arq('assets/vila/galinha_'+i)),GAL_SUSTO=arq('assets/vila/galinha_susto');
+const GAL_F=GLD?folhaSil(GLD.folha):null;
+const GALS=GLD?Array.from({length:GLD.n},(_,i)=>{const p=GLD.pontos[(i*7)%GLD.pontos.length];return {x:p[0],y:p[1],est:'cisca',t:rnd(0,3),dur:rnd(3,7),dir:'lado',esq:Math.random()<.5,rota:null,dist:0,vel:14,coco:rnd(4,14)};}):[];
+let galSustoT=-99;
+function galSom(g,a,v){const d=Math.hypot(hero.x-g.x,hero.y-g.y);if(d<260)som(a,v*clamp(1-d/260,.05,1));}
+function galRota(g,longe){const P=[...GLD.pontos].sort(()=>Math.random()-.5);
+  for(const p of P){const dg=Math.hypot(p[0]-g.x,p[1]-g.y);if(longe?Math.hypot(p[0]-hero.x,p[1]-hero.y)<90||dg<25:dg>45||dg<8)continue;const r=galCaminho(g.x,g.y,p[0],p[1]);if(r)return r;}return null;}
+function galFuga(g){   // para onde correr no susto: um ponto de chao livre em volta dela, longe do Jux e mais ou menos do lado oposto,
+  // longe do destino das outras (o bando se espalha), com caminho que nao chega mais perto dele e sem volta grande
+  // (o patio e pequeno: ela pode sair dele e depois volta andando). Correndo, prefere manter o rumo (nao fica indo e voltando)
+  const hx=hero.x,hy=hero.y,ax=g.x-hx,ay=g.y-hy,d=Math.hypot(ax,ay)||1,C=[];
+  const vx=g.rota&&g.rota.length?g.rota[g.rota.length-1][0]-g.x:0,vy=g.rota&&g.rota.length?g.rota[g.rota.length-1][1]-g.y:0,vn=Math.hypot(vx,vy);
+  for(const R of [90,65,45])for(let k=0;k<16;k++){const an=k*Math.PI/8,c=Math.cos(an),sn=Math.sin(an),px=g.x+c*R,py=g.y+sn*R*.7;if(!galChao(px,py))continue;
+    let s_=Math.min(130,Math.hypot(px-hx,py-hy))+(c*ax+sn*ay)/d*45+R*.15+rnd(0,15);
+    if(vn>5)s_+=(c*vx+sn*vy)/vn*35;
+    for(const o of GALS)if(o!==g&&o.alvo&&o.est==='susto')s_-=Math.max(0,40-Math.hypot(px-o.alvo[0],py-o.alvo[1]))*1.5;
+    C.push({p:[px,py],R,s:s_});}
+  C.sort((a,b)=>b.s-a.s);
+  for(const [ev,f] of [[24,1.8],[9,2.6]])   // 2a vez: encurralada num canto com ele na saida -> passa rente a ele
+    for(let i=0;i<Math.min(8,C.length);i++){const r=galCaminho(g.x,g.y,C[i].p[0],C[i].p[1],[hx,hy,ev,ev>10?d-2:null]);if(!r||!r.length)continue;
+      let L=0,px=g.x,py=g.y;for(const q of r){L+=Math.hypot(q[0]-px,q[1]-py);px=q[0];py=q[1];}if(L<C[i].R*f){g.alvo=r[r.length-1];return r;}}
+  return null;}
+// chao proprio das galinhas (V.chao_galinha, 2026-11-27): o do cachorro e para o tamanho do Jux e deixava so uma faixa
+// estreita do patio (elas corriam espremidas, uma empurrando a outra). Grade de 4 com busca em largura, igual a do cachorro
+let GAL_CHAO=null;if(V.chao_galinha){const m=new Image();m.onload=()=>{const k=document.createElement('canvas');k.width=V.w;k.height=V.h;const g=k.getContext('2d');g.drawImage(m,0,0,V.w,V.h);
+  const d=g.getImageData(0,0,V.w,V.h).data;GAL_CHAO=new Uint8Array(V.w*V.h);for(let i=0;i<GAL_CHAO.length;i++)GAL_CHAO[i]=d[i*4]>127?1:0;GGR=null;};m.src=V.chao_galinha;}
+const galPx=(x,y)=>{if(!GAL_CHAO)return caoChao(x,y);x=Math.round(x);y=Math.round(y);return x>=0&&y>=0&&x<V.w&&y<V.h&&GAL_CHAO[y*V.w+x]===1;};
+function galChao(x,y){return galPx(x,y)&&galPx(x-5,y)&&galPx(x+5,y)&&galPx(x,y-3);}
+const GG=4;let GGR=null,GGW=0,GGH=0;
+function galGrade(){if(GGR)return GGR;if(!GAL_CHAO&&!CAO_CHAO)return null;GGW=Math.ceil(V.w/GG);GGH=Math.ceil(V.h/GG);GGR=new Uint8Array(GGW*GGH);
+  for(let gy=0;gy<GGH;gy++)for(let gx=0;gx<GGW;gx++)GGR[gy*GGW+gx]=galChao(gx*GG+GG/2,gy*GG+GG/2)?1:0;return GGR;}
+function galCelula(x,y){const G=galGrade();if(!G)return -1;const gx=clamp(Math.floor(x/GG),0,GGW-1),gy=clamp(Math.floor(y/GG),0,GGH-1);
+  if(G[gy*GGW+gx])return gy*GGW+gx;let m=-1,md=1e9;for(let r=1;r<5&&m<0;r++)for(let yy=gy-r;yy<=gy+r;yy++)for(let xx=gx-r;xx<=gx+r;xx++){if(xx<0||yy<0||xx>=GGW||yy>=GGH||!G[yy*GGW+xx])continue;const dd=Math.hypot(xx-gx,yy-gy);if(dd<md){md=dd;m=yy*GGW+xx;}}return m;}
+function galCaminho(x0,y0,x1,y1,ev){const G=galGrade();const a=galCelula(x0,y0),b=galCelula(x1,y1);if(!G||a<0||b<0)return null;if(a===b)return [[x1,y1]];   // ev=[x,y,r,dmin]: nao chega a menos de r do Jux (nem mais perto do que dmin)
+  const vem=new Int32Array(GGW*GGH).fill(-1);vem[a]=a;const fila=[a];let h=0;const viz=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  while(h<fila.length){const k=fila[h++];if(k===b)break;const kx=k%GGW,ky=(k/GGW)|0;
+    for(const [ex,ey] of viz){const nx=kx+ex,ny=ky+ey;if(nx<0||ny<0||nx>=GGW||ny>=GGH)continue;const n=ny*GGW+nx;if(vem[n]>=0||!G[n])continue;
+      if(ev){const de=Math.hypot(nx*GG+GG/2-ev[0],ny*GG+GG/2-ev[1]);if(de<ev[2]&&(ev[3]==null||de<ev[3]))continue;}
+      if(ex&&ey&&(!G[ky*GGW+nx]||!G[ny*GGW+kx]))continue;vem[n]=k;fila.push(n);}}
+  if(vem[b]<0)return null;const pts=[];for(let k=b;k!==a;k=vem[k])pts.push(k);pts.reverse();
+  const out=[];let ld=null;for(let i=0;i<pts.length;i++){const k=pts[i],nk=pts[i+1];const dd=nk==null?null:(nk-k);if(dd!==ld||nk==null)out.push([(k%GGW)*GG+GG/2,((k/GGW)|0)*GG+GG/2]);ld=dd;}
+  if(galChao(x1,y1))out.push([x1,y1]);return out;}
+function galinhasAtualiza(dt){
+  for(let i=0;i<GALS.length;i++)for(let j=i+1;j<GALS.length;j++){const a=GALS[i],b=GALS[j],ex=b.x-a.x,ey=b.y-a.y,dd=Math.hypot(ex,ey);   // nao ficam uma em cima da outra
+    if(dd<14){const ux=dd>.01?ex/dd:1,uy=dd>.01?ey/dd:0,m=(14-dd)*.5;
+      const vb=galChao(b.x+ux*m,b.y+uy*m),va=galChao(a.x-ux*m,a.y-uy*m);
+      if(vb&&va){b.x+=ux*m;b.y+=uy*m;a.x-=ux*m;a.y-=uy*m;}else if(vb&&galChao(b.x+ux*2*m,b.y+uy*2*m)){b.x+=ux*2*m;b.y+=uy*2*m;}else if(va&&galChao(a.x-ux*2*m,a.y-uy*2*m)){a.x-=ux*2*m;a.y-=uy*2*m;}
+      else for(const sg of [1,-1]){const px=-uy*sg*m*2,py=ux*sg*m*2;if(galChao(b.x+px,b.y+py)){b.x+=px;b.y+=py;break;}}}}   // sem chao para o lado: empurra de lado
+  for(const g of GALS){g.t+=dt;const dh=Math.hypot(hero.x-g.x,(hero.y-g.y)*1.2);
+  g.coco-=dt;if(g.coco<0){g.coco=rnd(8,20);if(g.est!=='susto')galSom(g,GAL_SOM[Math.floor(Math.random()*2)],.35);}
+  // SUSTO (refeito de novo 2026-11-27, "meio estranha, bugada"): antes ela fugia em linha reta e, quando batia na cerca,
+  // tentava um lado num quadro e o outro no seguinte (tremia no lugar). Agora, no susto, ela ESCOLHE um ponto do patio longe
+  // do Jux e corre ate la por um caminho livre que nao passa perto dele (galFuga); arranca rapido e freia chegando.
+  // Depois para e fica olhando para ele (so foge de novo se ele chegar mais perto do que estava)
+  if(g.est!=='susto'&&((g.est!=='olha'&&(dh<40||(hero.corre&&dh<80)))||(g.est==='olha'&&g.dOlha!=null&&(dh<14||dh<g.dOlha-12)))){
+      g.dOlha=null;g.pr=null;g.est='susto';g.rota=galFuga(g);g.vel=0;g.salto=0;g.preso=0;g.fase=0;g.voa=false;g.replan=t;
+      if(g.rota&&g.rota.length){const dx=g.rota[0][0]-g.x;if(Math.abs(dx)>2)g.esq=dx<0;}else g.esq=hero.x>g.x;
+      g.t=dh<30?.15:0;   // muito perto: quase sem pulinho, ja sai correndo
+      if(t-galSustoT>1.5){galSustoT=t;galSom(g,GAL_SUSTO,.55);}continue;}
+  if(g.est==='susto'){if(g.t<.3)continue;   // o pulinho de susto antes de correr
+    if(dh<26&&t-g.replan>.5&&g.rota&&g.rota.length&&Math.hypot(g.rota[0][0]-hero.x,g.rota[0][1]-hero.y)<dh-1){g.replan=t;const r=galFuga(g);if(r&&r.length)g.rota=r;}   // ele foi atras: muda o rumo
+    if(!g.rota||!g.rota.length){
+      if(!g.rota){g.preso=(g.preso||0)+dt;g.fase+=dt*12;g.voa=true;g.salto=Math.abs(Math.sin(g.t*12))*5;if(g.preso<.8)continue;}   // encurralada: bate asa no lugar
+      g.est='olha';g.t=0;g.vel=0;g.salto=0;g.voa=false;g.preso=0;g.dur=rnd(1.2,2.2);g.dOlha=dh;continue;}
+    if(!g.pr||t-g.pr.t>.8){if(g.pr&&Math.hypot(g.x-g.pr.x,g.y-g.pr.y)<4){g.pr=null;g.rota=[];continue;}g.pr={x:g.x,y:g.y,t};}   // travou correndo: para e fica olhando
+    let L=0,px=g.x,py=g.y;for(const q of g.rota){L+=Math.hypot(q[0]-px,q[1]-py);px=q[0];py=q[1];}
+    const alvo=Math.min(85,22+L*1.4);g.vel+=(alvo-g.vel)*Math.min(1,dt*(alvo>g.vel?7:4));   // arranca rapido, freia chegando
+    let st=g.vel*dt;const x0=g.x,y0=g.y;
+    while(st>0&&g.rota.length){const [tx,ty]=g.rota[0],ax=tx-g.x,ay=ty-g.y,d=Math.hypot(ax,ay);if(d<=st||(g.rota.length===1&&d<3)){if(d<=st){g.x=tx;g.y=ty;st-=d;}else st=0;g.rota.shift();}else{g.x+=ax/d*st;g.y+=ay/d*st;st=0;}}
+    const mv=Math.hypot(g.x-x0,g.y-y0);g.dist+=mv;
+    if(g.voa?g.vel<28:g.vel>40)g.voa=!g.voa;   // correndo de asa aberta ou ja andando (com folga, nao fica trocando)
+    if(g.voa){g.fase+=dt*11;g.salto=Math.abs(Math.sin(g.fase*Math.PI/2))*2.5;}else g.salto=0;
+    if(mv>.01){const hx=(g.x-x0)/mv;if(Math.abs(hx)>.4&&(hx<0)!==g.esq){g.vira=(g.vira||0)+dt;if(g.vira>.12){g.esq=hx<0;g.vira=0;}}else g.vira=0;}   // so vira com folga (correndo para baixo nao fica trocando)
+    continue;}
+  if(g.est==='olha'){if(g.dOlha==null)g.dOlha=dh;if(Math.abs(hero.x-g.x)>10)g.esq=hero.x<g.x;if(g.t>g.dur){if(dh<60)g.dur=g.t+1;else{g.dOlha=null;g.t=0;g.dur=rnd(3,8);g.vel=14;const r=galRota(g,true);if(r){g.est='anda';g.rota=r;}else g.est='cisca';}}continue;}   // passou o susto: volta andando para o patio
+  if(g.est==='anda'){
+    if(!g.rota||!g.rota.length){g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(3,8);g.vel=14;continue;}
+    if(!g.pr||t-g.pr.t>1.2){if(g.pr&&Math.hypot(g.x-g.pr.x,g.y-g.pr.y)<3){g.pr=null;g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(3,8);continue;}g.pr={x:g.x,y:g.y,t};}   // travou (outra no caminho empurrando): desiste e cisca ali
+    const [tx,ty]=g.rota[0],ax=tx-g.x,ay=ty-g.y,d=Math.hypot(ax,ay);if(d<2){g.rota.shift();continue;}
+    const st=Math.min(d,g.vel*dt);g.x+=ax/d*st;g.y+=ay/d*st;g.dist+=st;
+    if(g.est==='susto'||Math.abs(ax)>Math.abs(ay)*.8){g.dir='lado';g.esq=ax<0;}else g.dir=ay>0?'frente':'costas';continue;}
+  if(g.t>g.dur){const r=galRota(g,Math.min(...GLD.pontos.map(p=>Math.hypot(p[0]-g.x,p[1]-g.y)))>45);if(r&&Math.random()<.6){g.est='anda';g.rota=r;g.t=0;g.vel=14;}else{g.t=0;g.dur=rnd(3,7);g.esq=Math.random()<.5;}}}}
+function desenhaGalinha(g){const F=GAL_F;if(!F||!F.i.complete)return;let q;
+  if(g.est==='susto')q=g.t<.3?(g.t<.12?18:19):g.voa?20+Math.floor(g.fase||0)%4:Math.floor(g.dist/2.2)%6;   // asa batendo no tempo (antes ia pela distancia: rapido demais)
+  else if(g.est==='olha')q=g.t<.45?19:18;   // o "!" so no comeco, depois fica olhando
+  else if(g.est==='anda')q=(g.dir==='frente'?12:g.dir==='costas'?15:0)+Math.floor(g.dist/1.6)%(g.dir==='lado'?6:3);
+  else{const c=g.t%3.2;q=c<1.4?[6,7,8,7][Math.floor(c/.35)]:c<2.6?[9,10,11,10][Math.floor((c-1.4)/.3)]:0;}
+  const vira=g.esq&&(g.est!=='anda'||g.dir==='lado');
+  F.x=g.x;F.y=g.y;F.esq=vira;F.cao=true;F.deitado=false;sombraVendedor(F,q);
+  ctx.save();ctx.translate(g.x,g.y-(g.est==='susto'?(g.t<.3?Math.sin(g.t/.3*Math.PI)*8:(g.salto||0)):0));if(vira)ctx.scale(-1,1);ctx.drawImage(F.i,q*F.w,0,F.w,F.h,-F.ax*F.s,-F.ay*F.s,F.w*F.s,F.h*F.s);ctx.restore();}
 // quem fica ATRAS de um objeto (o Borin atras da bigorna): o objeto e redesenhado por cima dele, so da linha 'corte' para
 // baixo (o tampo da bigorna fica livre para o martelo bater em cima dele)
 function frenteSobre(o,A,q){if(o.na_frente==null)return;const f=V.frentes[o.na_frente];if(!f)return;const F=FR.find(z=>z.x===f.x&&z.y===f.y)||null;const im=F?F.i:null;if(!im||!im.complete)return;
@@ -1320,15 +1489,16 @@ const FALAS_PRACA={pao:['Ensopado de raiz-de-neve! Quentinho!','Pão de centeio,
   vovo:['Hmpf.','Na minha época a gente carregava lenha descalço.','O festival não se prepara sozinho, sabia?','Esse chá tá frio. Tudo nessa vila tá frio.','Tico! Sai da neve antes que pegue uma gripe!'],
   halvard:['O Tico não me solta nem para dormir. Eu não reclamo.','Couro bom de alce. Vai virar bota pro inverno.','Os lobos andam inquietos lá no vale.','Tico! Não corre na neve de meia!'],
   ingrid:['Aquele porco levou meu melhor pão de mel!','Se achar o Sir Bacon, me avisa!','O forno tá quentinho hoje.','Pão de centeio pra festa… e mais um pra você.'],
+  bacon:['Oinc!','Oinc, oinc!','*fuuunga fuuunga*','Oinc… (feliz da vida na lama)'],
   tico:['Ei, Jux! Aposto que você não me pega!','O Oskar falou que vai ter uma fogueira GIGANTE!','A Vovó Hilda tá de olho em mim…','Jux! Me ensina a lutar com espada?']};
 let falaPracaT=2.5;
 // 2026-11-27 ("tô sentindo falta das falas"): 1) quem o Jux ENCONTRA (chega a < 55) fala na hora, uma vez a cada 25 s;
 // 2) conversa de fundo: alguem por perto (< 150) fala a cada 3,5-6 s. Continua UM por vez e sem cobrir a fala do Jux
 function falasPracaAtualiza(dt){if(fala||uiAberto())return;
   const fal=baloes.some(b=>b.quem!==hero&&b.v<(b.dur||2.6)-.3);
-  const todos=[...VEND,...ANDV].filter(o=>FALAS_PRACA[o.id]&&!(o.id==='halvard'&&halvardMorto()));
+  const todos=[...VEND,...ANDV,...(BACON_L?[BACON_L]:[])].filter(o=>FALAS_PRACA[o.id]&&!(o.id==='halvard'&&halvardMorto()));
   const diz=o=>{const L=FALAS_PRACA[o.id];o.fi=((o.fi==null?Math.floor(Math.random()*L.length):o.fi)+1)%L.length;
-    o.alt=o.id==='velho_cachimbo'||o.id==='moca_trico'?36:o.id==='tico'||o.id==='vovo'?40:48;for(let k=baloes.length-1;k>=0;k--)if(baloes[k].quem!==hero)baloes.splice(k,1);balao(o,L[o.fi]);o.falou=t;};
+    o.alt=o.id==='bacon'?24:o.id==='velho_cachimbo'||o.id==='moca_trico'?36:o.id==='tico'||o.id==='vovo'?40:48;for(let k=baloes.length-1;k>=0;k--)if(baloes[k].quem!==hero)baloes.splice(k,1);balao(o,o.id==='bacon'&&o.est==='dorme'?'Zzz…':L[o.fi]);o.falou=t;};
   if(!fal){const novo=todos.find(o=>Math.hypot(hero.x-o.x,(hero.y-o.y)*1.2)<55&&t-(o.encontro||-99)>25&&t-(o.falou||-99)>4);
     if(novo){novo.encontro=t;diz(novo);falaPracaT=rnd(3.5,6);return;}}
   falaPracaT-=dt;if(falaPracaT>0||fal)return;
@@ -1352,7 +1522,7 @@ function desenhaCao(){const c=CAO;if(!c||!c.i.complete)return;
     if(R){img=R;qc=q<=2?Math.floor(c.t*6)%2:q<=4?2+Math.floor(c.t*4)%2:q===5?4+Math.floor(c.t*6)%2:q===6?6+Math.floor(c.t*7)%2:Math.floor(c.t*6)%2;}
     c.esq=!esp;if(img===c)sombraVendedor(c,qc);else{img.x=c.x;img.y=c.y;img.esq=c.esq;sombraVendedor(img,qc);}
     ctx.save();ctx.translate(c.x,c.y);if(c.esq)ctx.scale(-1,1);ctx.drawImage(img.i,qc*img.w,0,img.w,img.h,-img.ax*img.s,-img.ay*img.s,img.w*img.s,img.h*img.s);ctx.restore();
-    ctx.save();ctx.translate(c.x+(esp?-CAR.pe:CAR.pe),c.y+.5);if(esp)ctx.scale(-1,1);ctx.drawImage(CAR.i,CAR_JUXQ[q]*CAR.w,0,CAR.w,CAR.h,-CAR.ax*CAR.s,-CAR.ay*CAR.s,CAR.w*CAR.s,CAR.h*CAR.s);ctx.restore();return;}
+    {const C=carJux();ctx.save();ctx.translate(c.x+(esp?-C.pe:C.pe),c.y+.5);if(esp)ctx.scale(-1,1);ctx.drawImage(C.i,CAR_JUXQ[q]*C.w,0,C.w,C.h,-C.ax*C.s,-C.ay*C.s,C.w*C.s,C.h*C.s);ctx.restore();}return;}
   const q=quadroCao(c);
   const andando=['anda','volta','segue'].includes(c.est)&&!(c.est==='segue'&&c.parado);
   if(andando&&CAO_FB&&CAO_FB.i.complete&&(c.dir==='frente'||c.dir==='costas')){   // de frente / de costas
@@ -2141,7 +2311,7 @@ function passo(dt){
   // mundo novo: SENTAR no banco (V.bancos): ENTER perto de um banco senta; qualquer direcao levanta
   if(hero.carinho){hero.carinho.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.carinho.t>=CAR_DUR){hero.olha=hero.carinho.esp?'esquerda':'direita';hero.carinho=null;}}
   if(hero.poco){hero.poco.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.poco.t>=4.6){hero.olha='cima';hero.poco=null;}}
-  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);falasPracaAtualiza(dt);}
+  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);bolasVAtualiza(dt);falasPracaAtualiza(dt);}
   if(V.saidas&&!hero.saiu&&!transicao&&t>2.2)for(const sd of V.saidas)if(sd.pagina&&Math.hypot(sd.x-hero.x,sd.y-hero.y)<sd.r){hero.saiu=true;try{sessionStorage.setItem('chega2',sd.chega);}catch(e){}vaiPara(sd.pagina);break;}   // mundo novo: andou ate a borda -> o bairro vizinho
   if(hero.vaiPoco){if(teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d'])hero.vaiPoco=false;else if(!hero.alvo||Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4){pocoJa();dx=0;dy=0;}}   // anda ate a frente do poco e so entao bebe   // bebendo agua no poco
   if(hero.vaiSentar){const b=hero.vaiSentar;if((teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d']))hero.vaiSentar=null;else if(!hero.alvo||Math.hypot(b[0]-hero.x,b[1]-hero.y)<50){sentaJa(b);dx=0;dy=0;}}   // dx/dy deste quadro ainda eram da caminhada: levantava na hora   // anda ate a frente do banco e senta (ou senta se travou perto)
@@ -2181,26 +2351,34 @@ function passo(dt){
     // escalada: o corpo so sobe do meio da animacao (quadros pendurado/puxando); descendo, fica em cima ate o salto e aterrissa na metade
     if(hero.esc==='subir'){const p=clamp((q-.22)/.56,0,1);qm=p*p*(3-2*p);if(q>.3&&!hero.escN){hero.escN=1;poeiraNeve(hero.px0,hero.py1+6,5);}}
     else if(hero.esc==='descer'){qm=clamp((q-.2)/.32,0,1);}
+    else if(CER){const a=clamp((q-PULO_AG)/(1-PULO_AG-PULO_AT),0,1);qm=a*a*(3-2*a);hero.puloA=a;}   // agacha parado, voa, aterrissa parado
     hero.x=hero.px0+(hero.px1-hero.px0)*qm;hero.y=hero.py0+(hero.py1-hero.py0)*qm;
     if(hero.esc==='descer'&&q>=.52&&!hero.escN){hero.escN=1;poeiraNeve(hero.x,hero.y,14);som(PASSOS[0],.8);}
-    if(hero.pulo<=0){hero.pulo=0;hero.x=hero.px1;hero.y=hero.py1;if(hero.esc==='subir'){hero.olha='cima';som(PASSOS[0],.6);}else if(hero.esc==='descer')hero.olha='baixo';else{poeiraNeve(hero.x,hero.y,10);som(PASSOS[0],.7);}hero.esc=null;hero.puloD=0;}   // pedido do usuario (2026-11-18): o Sir Bacon fica no chiqueiro, nao segue mais o Jux depois do pulo
+    if(hero.pulo<=0){hero.pulo=0;hero.x=hero.px1;hero.y=hero.py1;if(hero.esc==='subir'){hero.olha='cima';som(PASSOS[0],.6);}else if(hero.esc==='descer')hero.olha='baixo';else{poeiraNeve(hero.x,hero.y,10);som(PASSOS[0],.7);}hero.esc=null;hero.puloD=0;hero.puloA=0;}   // pedido do usuario (2026-11-18): o Sir Bacon fica no chiqueiro, nao segue mais o Jux depois do pulo
     moveu=true;
-  }else if(n){const hx0=hero.x,hy0=hero.y;dx/=n;dy/=n;hero.corre=!!(teclas['shift']||(hero.alvo&&hero.alvoLonge));const v=(hero.corre?VELC:VEL)*dt,nx=hero.x+dx*v,ny=hero.y+dy*v*(NOVO2?(hero.corre?.78:.7):1);
-    const pp=Math.abs(dx)>.5&&!livre(nx,hero.y)?pouso(hero.x,hero.y,dx>0?1:-1):Math.abs(dy)>.5&&!livre(hero.x,ny)?pousoV(hero.x,hero.y,dy>0?1:-1):null;
-    if(pp!==null){   // chegou na cerca andando de lado: pula por cima
-      hero.pulo=PULO;hero.puloD=PULO;hero.esc=null;hero.escN=0;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;hero.alvo=null;
+  }else if(n){const hx0=hero.x,hy0=hero.y;hero.direto=false;if(hero._ux0==null||Math.hypot(hero.x-hero._ux0,hero.y-hero._uy0)>12){hero._ux0=hero.x;hero._uy0=hero.y;}else{hero._ux0+=(hero.x-hero._ux0)*.35;hero._uy0+=(hero.y-hero._uy0)*.35;}hero.escorrega=false;dx/=n;dy/=n;hero.lama=naLamaJux(hero.x,hero.y)&&!!(PAR2.mov&&PAR2.mov.quadros.lama);hero.corre=!hero.lama&&!!(teclas['shift']||(hero.alvo&&hero.alvoLonge));const v=(hero.corre?VELC:VEL)*(hero.lama?.55:1)*dt,nx=hero.x+dx*v,ny=hero.y+dy*v*(NOVO2?(hero.corre?.78:.7):1);
+    let pp=null,segura=false;
+    if(CER){if(!livre(nx,ny)){const rc=rumoCerca(hero.x,hero.y),deFrente=rc&&(dx*rc[0]+dy*rc[1])>.6;   // so pula empurrando a cerca DE FRENTE (andar rente a ela nao pula)
+        const p=deFrente?puloCerca(hero.x,hero.y,dx,dy)||puloCerca(hero.x,hero.y,rc[0],rc[1]):null;
+        if(p){const dd=dx*rc[0]+dy*rc[1];hero.empurra=(hero.empurra||0)+dt;if(hero.empurra>=(dd>.85?.2:.5))pp=p;else if(dd>.85)segura=true;}else hero.empurra=0;}else hero.empurra=0;}   // 2026-11-28 ("ruim de passar"): andando de LADO para a cerca (subindo o caminho) ele escorrega por ela; so pula empurrando de frente, ou segurando meio segundo   // empurrando a cerca por um instante: pula
+    else pp=Math.abs(dx)>.5&&!livre(nx,hero.y)?pouso(hero.x,hero.y,dx>0?1:-1):Math.abs(dy)>.5&&!livre(hero.x,ny)?pousoV(hero.x,hero.y,dy>0?1:-1):null;
+    if(pp!==null){hero.empurra=0;   // chegou na cerca andando de lado: pula por cima
+      hero.pulo=PULO;hero.puloD=CER?PULO_C:PULO;hero.pulo=hero.puloD;hero.esc=null;hero.escN=0;hero.px0=hero.x;hero.px1=pp.x;hero.py0=hero.y;hero.py1=pp.y;hero.alvo=null;
       if(ESCALAR&&hero.espada&&Math.abs(pp.y-hero.y)>Math.abs(pp.x-hero.x)){hero.esc=pp.y<hero.y?'subir':'descer';hero.puloD=hero.pulo=hero.esc==='subir'?1.05:.8;hero.olha=hero.esc==='subir'?'cima':'baixo';som(SOM.whoosh,.4);}
-      else{if(Math.abs(dx)>.5){hero.dir=dx<0?-1:1;}hero.olha=hero.dir<0?'esquerda':'direita';som(SOM.whoosh,.55);
+      else{if(Math.abs(dx)>.5){hero.dir=dx<0?-1:1;}hero.olha=(PAR2.mov&&PAR2.mov.quadros.pulo&&Math.abs(pp.y-hero.y)*1.4>Math.abs(pp.x-hero.x))?(pp.y<hero.y?'cima':'baixo'):hero.dir<0?'esquerda':'direita';som(SOM.whoosh,.55);
       if(!puloFalado&&NA_VILA){puloFalado=true;setTimeout(()=>abreFala('pulo'),450);}}
-    }else if(livre(nx,ny)){hero.x=nx;hero.y=ny;moveu=true;}
+    }else if(segura){}   // encostado na cerca: um instante parado antes de pular (nao escorrega pelo lado)
+    else if(livre(nx,ny)){hero.x=nx;hero.y=ny;moveu=true;hero.direto=true;}
     else if(dx&&livre(nx,hero.y)){hero.x=nx;moveu=true;}
     else if(dy&&livre(hero.x,ny)){hero.y=ny;moveu=true;}
     else{   // quina ou borda torta: procura o lado livre mais perto (ate 14 px) e desliza para la, em vez de travar
-      const px=-dy,py=dx;let melhor=null;
-      for(let k=1;k<=24&&!melhor;k++)for(const sg of [1,-1]){if(livre(hero.x+px*sg*k+dx*v,hero.y+py*sg*k+dy*v)){melhor=sg;break;}}
-      if(melhor!==null){const nx2=hero.x+px*melhor*v,ny2=hero.y+py*melhor*v;
-        if(livre(nx2,ny2)){hero.x=nx2;hero.y=ny2;moveu=true;}
-        else if(px&&livre(nx2,hero.y)){hero.x=nx2;moveu=true;}else if(py&&livre(hero.x,ny2)){hero.y=ny2;moveu=true;}}
+      const px=-dy,py=dx;let melhor=(hero.quinaT>t&&hero.quinaSg)?hero.quinaSg:null;
+      for(let k=1;k<=40&&!melhor;k++)for(const sg of [1,-1]){if(livre(hero.x+px*sg*k+dx*v,hero.y+py*sg*k+dy*v)){melhor=sg;break;}}
+      const tenta=sg=>{const nx2=hero.x+px*sg*v,ny2=hero.y+py*sg*v;
+        if(livre(nx2,ny2)){hero.x=nx2;hero.y=ny2;return true;}
+        if(px&&livre(nx2,hero.y)){hero.x=nx2;return true;}if(py&&livre(hero.x,ny2)){hero.y=ny2;return true;}return false;};
+      if(melhor!==null&&!tenta(melhor)){melhor=null;for(let k=1;k<=40&&melhor===null;k++)for(const sg of [1,-1]){if(livre(hero.x+px*sg*k+dx*v,hero.y+py*sg*k+dy*v)&&tenta(sg)){melhor=sg;break;}}}   // 2026-11-28: o lado lembrado nao anda (prendia o Jux para sempre): procura de novo
+      if(melhor!==null){hero.escorrega=true;hero.quinaSg=melhor;hero.quinaT=t+.3;moveu=true;}
     }
     // os moradores tem CORPO (2026-11-20: 'o Jux atravessa as pessoas'): nao entra no corpo de ninguem; escorrega de lado se der
     // e se bater de frente, CONTORNA a pessoa sozinho (2026-11-20: travava atras do Sir Bacon como parede invisivel)
@@ -2216,19 +2394,31 @@ function passo(dt){
     if(!moveu)hero.alvo=null;
     if(dx)hero.dir=dx<0?-1:1;
     const ax=Math.abs(dx),ay=Math.abs(dy),hz=dx<0?'esquerda':'direita',vt=dy<0?'cima':'baixo';
-    if(ax>ay+.3)hero.olha=hz;else if(ay>ax+.3)hero.olha=vt;else if(hero.olha!==hz&&hero.olha!==vt)hero.olha=ax>=ay?hz:vt;   // diagonal: mantem
+    let oIn=hero.olha;if(ax>ay+.3)oIn=hz;else if(ay>ax+.3)oIn=vt;else if(hero.olha!==hz&&hero.olha!==vt)oIn=ax>=ay?hz:vt;   // diagonal: mantem
+    let oSl=null;{const mx=hero.x-hero._ux0,my=hero.y-hero._uy0,md=Math.hypot(mx,my);if(moveu&&!hero.direto&&md>.2&&(mx*dx+my*dy)/md<.5)oSl=Math.abs(mx)>Math.abs(my)?(mx<0?'esquerda':'direita'):(my<0?'cima':'baixo');}   // escorregando na quina: olha para onde vai (sem "moonwalk")
+    // ENCOSTADO NAS COISAS (2026-11-27, "fica tremendo"): na quina ele alterna quadro sim, quadro nao entre andar direto e
+    // escorregar, e virava para um lado e para o outro a cada quadro. Agora: virou para o lado do escorregao, fica assim
+    // enquanto a tecla for a mesma; e so troca de lado se o novo lado durar um instante (tecla nova vira na hora)
+    const chave=Math.round(dx*4)+','+Math.round(dy*4),novaTecla=chave!==hero.olhaK;hero.olhaK=chave;if(novaTecla){hero._ux0=hero.x;hero._uy0=hero.y;hero.olhaSl=0;}
+    let oQ=oSl||oIn;if(oSl){hero.olhaSl=t+.35;}else if(hero.olhaSl>t&&!novaTecla)oQ=hero.olha;
+    if(novaTecla||oQ===hero.olha){hero.olha=oQ;hero.olhaN=null;hero.olhaNT=0;}
+    else{if(hero.olhaN!==oQ){hero.olhaN=oQ;hero.olhaNT=0;}hero.olhaNT+=dt;if(hero.olhaNT>.14){hero.olha=oQ;hero.olhaN=null;}}
   }
+  if(moveu&&hero.pulo<=0&&hero._ux!=null&&Math.hypot(hero.x-hero._ux,hero.y-hero._uy)<.25){hero.pePreso=(hero.pePreso||0)+dt;if(hero.pePreso>.12)moveu=false;}else if(moveu)hero.pePreso=0;   // pe no lugar (empurrando quina): parado, nao "anda no lugar" (com folga: um quadro curto no meio do escorregao nao pisca)
+  if(!moveu)hero.escorrega=false;
+  const mdReal=hero._ux!=null?Math.hypot(hero.x-hero._ux,hero.y-hero._uy):0;
+  hero._ux=hero.x;hero._uy=hero.y;
   hero.anda=moveu&&hero.pulo<=0;
   if(hero.senta&&(hero.senta.fase==='entra'||hero.senta.fase==='sai')){hero.anda=true;hero.corre=false;}   // os passos ate o banco/para fora dele usam a animacao de andar
   if(hero.pulo>0){hero.t+=dt;hero.dist+=VEL*dt;}
-  const vv=hero.corre?VELC:VEL;
-  if(hero.anda){hero.t+=dt;hero.passo+=vv*dt;hero.dist+=vv*dt;hero.pose=null;hero.parado=0;}else if(hero.pulo<=0&&!fala){hero.parado=(hero.parado||0)+dt;if(hero.parado>7&&!hero.pose&&hero.espada&&!VH)hero.pose='confiante';}   // folha nova de poses (acoes3, cores certas)
+  const vv=(hero.corre?VELC:VEL)*(hero.lama?.55:1);
+  if(hero.anda){const dv=hero.escorrega?Math.min(vv*dt,mdReal):vv*dt;hero.t+=dt;hero.passo+=dv;hero.dist+=dv;hero.pose=null;hero.parado=0;}else if(hero.pulo<=0&&!fala){hero.parado=(hero.parado||0)+dt;if(hero.parado>7&&!hero.pose&&hero.espada&&!VH)hero.pose='confiante';}   // folha nova de poses (acoes3, cores certas)
   if(hero.anda){
     if(hero.passo>passoDist()){hero.passo=0;hero.lado*=-1;
       const neve=ter(hero.x,hero.y)&2;
       const ponte=naPonte(hero.x,hero.y),k=(Math.random()*4)|0;
-      if(ponte)som(PASSOS_MAD[k],.75);else if(neve)som(PASSOS_NEVE[k],hero.corre?.6:.5);else som(PASSOS[k],.4);
-      if(neve&&!ponte){pegadas.push({x:hero.x+hero.lado*2.6,y:hero.y-.5,d:hero.dir,v:0,o:hero.olha});
+      if(hero.lama)som(PASSOS_LAMA[k],.6);else if(ponte)som(PASSOS_MAD[k],.75);else if(neve)som(PASSOS_NEVE[k],hero.corre?.6:.5);else som(PASSOS[k],.4);
+      if(neve&&!ponte&&!hero.lama){pegadas.push({x:hero.x+hero.lado*2.6,y:hero.y-.5,d:hero.dir,v:0,o:hero.olha});
         {let tn=null;for(const q of trilhasNeve)if(Math.abs(q.x-hero.x)<9&&Math.abs(q.y-hero.y)<7){tn=q;break;}
          if(tn){tn.n++;tn.v=0;tn.hz=hero.olha==='direita'||hero.olha==='esquerda';}else trilhasNeve.push({x:hero.x,y:hero.y,n:1,v:0,hz:hero.olha==='direita'||hero.olha==='esquerda'});if(trilhasNeve.length>500)trilhasNeve.shift();}poeiraNeve(hero.x,hero.y,hero.corre?7:3);}}}
   if(hero.anda&&hero.corre){hero.rt=(hero.rt||0)+dt;if(hero.rt>.05){hero.rt=0;hero.rastro.push({x:hero.x,y:hero.y,q:quadroHeroi().q});if(hero.rastro.length>4)hero.rastro.shift();}}else hero.rastro.length=0;
@@ -2266,6 +2456,11 @@ function passo(dt){
   if(fogoG&&NA_VILA){const d=Math.hypot(hero.x-515,hero.y-484),df=Math.hypot(hero.x-905,hero.y-440);fogoG.gain.value=clamp(1-d/150,0,1)*.35+clamp(1-df/120,0,1)*.25;}
   if(rioG&&NA_VILA){let dm=1e9;for(let i=0;i<rioPx.length;i+=40){const k=rioPx[i],d=Math.hypot(hero.x-k%V.w,hero.y-((k/V.w)|0));if(d<dm)dm=d;}rioG.gain.value=clamp(1-dm/170,0,1)*.22;}
 }
+// BOLA DE NEVE do Tico no mundo novo (assets/vila/bola_neve.png = a bola recortada da folha dele, ref/vila2/tico_acoes.png)
+const BOLAS_V=[],BOLA_IMG=(()=>{const i=new Image();i.src='assets/vila/bola_neve.png';return i;})();
+function bolasVAtualiza(dt){for(let i=BOLAS_V.length-1;i>=0;i--){const b=BOLAS_V[i];b.v+=dt;if(b.v>=b.d){BOLAS_V.splice(i,1);poeiraNeve(b.x1,b.y1+12,14);som(PASSOS_NEVE[0],.5);
+  if(Math.hypot(hero.x-b.x1,hero.y-14-b.y1)<10&&!fala&&!baloes.length)balao(hero,'Ei!');}}}
+function desenhaBolasV(){if(!BOLA_IMG.complete)return;for(const b of BOLAS_V){const q=b.v/b.d,x=b.x0+(b.x1-b.x0)*q,y=b.y0+(b.y1-b.y0)*q-Math.sin(Math.PI*q)*14;ctx.drawImage(BOLA_IMG,x-2.6,y-2.6,5.2,5.2);}}
 function poeiraNeve(x,y,n){for(let i=0;i<n;i++)poeira.push({x:x+rnd(-4,4),y:y-1,vx:rnd(-14,14),vy:rnd(-22,-8),v:0});}
 
 /* ---------- desenho */
@@ -2273,23 +2468,28 @@ function poeiraNeve(x,y,n){for(let i=0;i<n;i++)poeira.push({x:x+rnd(-4,4),y:y-1,
 // passada 1,7x mais rapida, corpo inclinado para frente, quique forte a cada passo, casaco esticado (escala), rastro
 // azulado atras e neve levantando a cada pisada
 // som e pegada a cada pisada: o ciclo tem 2 pisadas
-function passoDist(){if(hero.corre&&folhaCorrida())return folhaCorrida().ciclos[hero.olha].length/2*PASSO_R;const S=ANDAR[hero.espada?'espada':'sem'],n=S.ciclos[hero.olha].length;return n/2*(hero.corre?PASSO_C:PASSO_A);}
+function movJux(){return (!hero.espada&&PAR2.mov_sem)?PAR2.mov_sem:PAR2.mov;}   // SEM ESPADA (2026-11-27): antes de pegar a espada ele usa as folhas *_sem (mesmos movimentos, sem a espada nas costas)
+function passoDist(){if(hero.lama&&PAR2.mov&&PAR2.mov.quadros.lama)return 21;   // na lama: 6 quadros a cada 7 px -> uma pisada a cada 3 quadros
+  if(hero.corre&&folhaCorrida())return folhaCorrida().ciclos[hero.olha].length/2*PASSO_R;const S=ANDAR[hero.espada?'espada':'sem'],n=S.ciclos[hero.olha].length;return n/2*(hero.corre?PASSO_C:PASSO_A);}
 // corrida desenhada (folha de 8 quadros com a passada inteira, ja inclinada e saltando): usada quando existe para a
 // direcao; senao a corrida e feita por codigo em cima da caminhada
 function folhaCorrida(){const S=ANDAR[hero.espada?'correr_espada':'correr'];return S&&S.ciclos[hero.olha]?S:null;}
 function quadroHeroi(){
   let S,q,corre=false;
   if(hero.pulo>0&&hero.esc&&ESCALAR){S=ESCALAR;const qs=S.anims[hero.esc];q=qs[clamp(Math.floor((1-hero.pulo/hero.puloD)*qs.length),0,qs.length-1)];}
+  else if(hero.pulo>0&&PAR2.mov&&PAR2.mov.quadros.pulo){S=movJux();const P=S.quadros.pulo,qs=P[hero.olha]||P[hero.dir<0?'esquerda':'direita'];const qf=1-hero.pulo/(hero.puloD||PULO);
+    q=CER?(qf<PULO_AG?qs[0]:qf>1-PULO_AT?qs[qs.length-1]:qs[1+Math.min(qs.length-3,Math.floor(hero.puloA*(qs.length-2)))]):qs[Math.min(qs.length-1,Math.floor(qf*qs.length))];}   // mundo novo: pulo do desenho novo (ref/vila2/jux_pulo.png; de lado, de costas e de frente)
   else if(hero.pulo>0){S=hero.espada&&ANDAR.pulo_espada?ANDAR.pulo_espada:ANDAR.pulo;const qs=S.anims[hero.olha==='esquerda'?'esquerda':'direita'];q=qs[Math.min(qs.length-1,Math.floor((1-hero.pulo/PULO)*qs.length))];}
   else if(VH&&hero.espada&&hero.anda){S=VH;const cs=VH.ciclos[hero.olha];q=cs[Math.floor(hero.dist/(hero.corre?PASSO_C:PASSO_A)*.5)%cs.length];corre=hero.corre?'folha':false;}
-  else if(PAR2.mov&&(!hero.senta||hero.senta.fase!=='fica')&&!hero.poco&&(!hero.pose||NOVO2)){S=PAR2.mov;const Q=S.quadros,o=hero.olha;   // mundo novo: parado, andando e correndo do MESMO desenho (ref/vila2/jux_mov_*.png)
+  else if(PAR2.mov&&(!hero.senta||hero.senta.fase!=='fica')&&!hero.poco&&(!hero.pose||NOVO2)){S=movJux();const Q=S.quadros,o=hero.olha;   // mundo novo: parado, andando e correndo do MESMO desenho (ref/vila2/jux_mov_*.png)
     if(hero.anda&&hero.corre){const cs=Q.correr[o],pr=(o==='baixo'||o==='cima')?10:PASSO_R;q=cs[Math.floor(hero.dist/pr)%cs.length];corre='folha';}
+    else if(hero.anda&&hero.lama&&Q.lama&&Q.lama[o]){const cs=Q.lama[o];q=cs[Math.floor(hero.dist/7)%cs.length];}   // na lama: passo pesado da folha da lama
     else if(hero.anda){const cs=Q.andar[o],pa=(o==='baixo'||o==='cima')?56/cs.length:PASSO_A;q=cs[Math.floor(hero.dist/pa)%cs.length];}   // de frente/costas: 8 quadros a 10 por segundo e o passo do tamanho certo (2026-11-26: com 8.6 e .78 a perna andava devagar para o chao que passava = deslizava)
     else{const ps=Q.parado[o];q=ps[Math.floor(t*5)%ps.length];}}
-  else if(hero.poco&&PAR2.mov&&PAR2.mov.quadros.poco){S=PAR2.mov;const qs=PAR2.mov.quadros.poco.cima;q=qs[Math.min(qs.length-1,Math.floor(hero.poco.t/4.6*qs.length))];}
+  else if(hero.poco&&PAR2.mov&&PAR2.mov.quadros.poco){S=(movJux().quadros.poco?movJux():PAR2.mov);const qs=S.quadros.poco.cima;q=qs[Math.min(qs.length-1,Math.floor(hero.poco.t/4.6*qs.length))];}
   else if(hero.senta&&hero.senta.fase==='fica'&&PAR2.jux_sentar){const S0=hero.senta,tp=S0.b[2];   // tipos do banco: tools/lab_bancos.py
     let g=tp==='baixo'?'baixo':tp.startsWith('dbaixo')?'dbaixo':tp.startsWith('dcima')?'dcima':'lado';
-    const P=(PAR2.jux_sentar_diag&&PAR2.jux_sentar_diag.quadros['fica_'+g])?PAR2.jux_sentar_diag:PAR2.jux_sentar;S=P;if(!P.quadros['fica_'+g])g='baixo';
+    const P=(PAR2.jux_sentar_diag&&PAR2.jux_sentar_diag.quadros['fica_'+g])?PAR2.jux_sentar_diag:(!hero.espada&&PAR2.jux_sentar_sem)?PAR2.jux_sentar_sem:PAR2.jux_sentar;S=P;if(!P.quadros['fica_'+g])g='baixo';   // sem espada: folha *_sem
     const qs=P.quadros[(S0.fase==='fica'?'fica_':'desce_')+g]||P.quadros['fica_'+g];
     q=S0.fase==='fica'?qs[Math.floor(t*2.4)%4]:S0.fase==='desce'?qs[Math.min(3,Math.floor(S0.t/.5*4))]:qs[3-Math.min(3,Math.floor(S0.t/.4*4))];
     hero._espelho=tp==='esquerda'||tp.endsWith('_esq');}
@@ -2314,7 +2514,7 @@ function desenhaHeroi(c,alpha,semRastro){if(hero.carinho)return;   // fazendo ca
   const fase=hero.dist/(corre?PASSO_C:PASSO_A)*Math.PI;
   const quique=hero.anda&&corre!=='folha'?-Math.abs(Math.sin(fase))*(codigo?2.6:.7):hero.pose?0:Math.sin(t*2.2)*.25;
   // a folha de pulo sem espada ja tem a altura desenhada (chao = grama da folha); a com espada ainda usa o arco
-  const arco=0;   // as duas folhas de pulo ja tem a altura desenhada
+  const arco=CER&&hero.pulo>0&&!hero.esc?-Math.sin(Math.PI*(hero.puloA||0))*9:0;   // a folha ja tem a altura do salto; na cerca sobe um pouco mais (passa por cima dela)
   const lado=hero.olha==='direita'?1:hero.olha==='esquerda'?-1:0;
   const incl=codigo?lado*.13:desl?lado*Math.min(.3,hero.desliza/520)+Math.sin(t*3)*.015:0,estica=codigo&&!lado?1+Math.abs(Math.sin(fase))*.05:1;
   // rastro: copias apagadas nas posicoes anteriores
@@ -2435,7 +2635,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);desenhaBancoFrente();
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -2443,10 +2643,13 @@ function desenha(){
   // (arvore, casa ou torre ficam meio transparentes so ali: da para ver o Jux inteiro sem perder o objeto)
   const tr=ctx.getTransform();octx.setTransform(1,0,0,1,0,0);octx.clearRect(0,0,oc.width,oc.height);octx.setTransform(tr);
   const hyD=hero.esc?Math.max(hero.py0,hero.py1)+2:hero.y;   // escalando: fica NA FRENTE do paredao
-  for(const f of FR){if(hyD>=f.base)continue;
+  const noAr=hero.pulo>0&&(!CER||((hero.puloA||0)>0&&(hero.puloA||0)<.55));   // subindo: passa por cima da cerca; descendo, a cerca volta a cobrir as pernas
+  for(const f of FR){if(hyD>=baseF(f,hero.x)||(noAr&&f.baixa))continue;   // pulando a cerca baixa: ele passa POR CIMA dela
+    
     if(hb[2]<f.x||hb[0]>f.x+f.w||hb[3]<f.y||hb[1]>f.y+f.h){ctx.drawImage(f.i,f.x,f.y,f.w,f.h);continue;}
-    if(!cobre(f)){ctx.drawImage(f.i,f.x,f.y,f.w,f.h);continue;}
+    if(f.baixa||!cobre(f)){ctx.drawImage(f.i,f.x,f.y,f.w,f.h);continue;}
     octx.drawImage(f.i,f.x,f.y,f.w,f.h);escondido=true;}
+  if(escondido&&hero.pulo>0&&CER){escondido=false;furo=0;ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(oc,0,0);ctx.restore();}   // no ar: sem fantasma
   if(escondido){
     furo=Math.min(1,furo+.12);
     ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(oc,0,0);ctx.restore();   // o objeto inteiro, sem buraco (2026-11-25)
