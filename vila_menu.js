@@ -74,7 +74,7 @@ function uiCarrega(){
   if(typeof colheBestiario==='function')setTimeout(colheBestiario,1200);
   if(typeof pontosChefes==='function'&&!NA_VILA){pontosChefes();setTimeout(()=>{if(typeof colheChefe==='function'&&!fala)colheChefe();},900);}
   if(JOGO.vila){const v=JOGO.vila;if(v.x&&NA_VILA){hero.x=v.x;hero.y=v.y;}if(v.espada){hero.espada=true;espadaSobe=99;}}
-  if(!NA_VILA&&JOGO[REGIAO]&&JOGO[REGIAO].x){hero.x=JOGO[REGIAO].x;hero.y=JOGO[REGIAO].y;cam.x=hero.x;cam.y=hero.y;}
+  if(!NA_VILA&&!(typeof NOVO2!=='undefined'&&NOVO2)&&JOGO[REGIAO]&&JOGO[REGIAO].x){hero.x=JOGO[REGIAO].x;hero.y=JOGO[REGIAO].y;cam.x=hero.x;cam.y=hero.y;}
 }
 function pegaTesouro(id){
   const s=TESOUROS.find(t=>t.id===id);if(!s||pegou(id))return;JOGO.pegos.push(id);

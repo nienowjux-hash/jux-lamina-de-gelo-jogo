@@ -17,7 +17,7 @@ const hc=document.createElement('canvas');hc.width=W*HD;hc.height=H*HD;const hct
 const sc=document.createElement('canvas');sc.width=W*HD;sc.height=H*HD;const sctx=sc.getContext('2d');
 const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';
-const NOVO2=['praca','casas','forja','chiqueiro'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
+const NOVO2=['praca','casas','forja','chiqueiro','portao'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MAPA=new Image();MAPA.src=V.mapa;
 // ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
@@ -1279,7 +1279,16 @@ const ACOES_BORIN={espera:[[0,1.2],[5,1]],martela:[...MART,...MART,...MART,...MA
 // MERCADORES da Forja (ref/vila2/mercadores.png 3x6, uma pessoa por fileira; o.lin = a fileira): 0-1 parado, 2-3 chama /
 // joga a maca / oferece o pao, 4-5 mostra o pote / acena / bate a farinha. Quadros 0-5 + 6*o.lin
 const ACOES_MERC={espera:[[0,.7],[1,.7]],chama:[[2,.35],[3,.45],[2,.35],[3,.45],[2,.35],[3,.6]],mostra:[[4,.6],[5,.8],[4,.6],[5,.9]],oi:[[4,.4],[5,.5],[4,.4],[5,.6]]};
-const ACOES_POR={oskar:ACOES_OSKAR,tico:ACOES_TICO,ingrid:ACOES_INGRID,halvard:ACOES_HALVARD,vovo:ACOES_VOVO,borin:ACOES_BORIN,miudezas:ACOES_MERC,verdureiro:ACOES_MERC,padeiro_f:ACOES_MERC};
+// FAZENDEIRO do Chiqueiro (ref/vila2/fazendeiro_acoes.png 3x6, de lado para a direita): 0-1 parado com o balde no chao,
+// 2-5 acena; 6-11 despeja a lavagem (no cocho do Sir Bacon); 12-17 joga milho (as galinhas vem correndo comer)
+const ACOES_FAZ={espera:[[0,.9],[1,.9]],oi:[[0,.25],[2,.25],[3,.3],[4,.3],[5,.3],[4,.3],[5,.4],[1,.4]],
+  lavagem:[[6,.6],[7,.5],[8,.45],[9,.9],[10,.7],[11,.7]],
+  milho:[[12,.5],[13,.4],[14,.35],[15,.3],[16,.6],[17,.5],[13,.4],[14,.35],[15,.3],[16,.6],[17,.8]]};
+// GUARDA DO PORTAO (ref/vila2/guarda_acoes.png 3x6, de frente): 0-1 vigia, 2-5 acena; 6-11 sopra as maos; 12-17 bate a lanca
+const ACOES_GUARDA={espera:[[0,1],[1,1]],oi:[[0,.3],[2,.25],[3,.3],[4,.3],[5,.3],[4,.3],[5,.4],[1,.4]],
+  sopra:[[6,.4],[7,.5],[8,.6],[9,.8],[10,.4],[9,.6],[10,.4],[11,.6]],
+  bate:[[12,.5],[13,.35],[14,.6],[15,.35],[16,.6],[17,.7]]};
+const ACOES_POR={guarda:ACOES_GUARDA,fazendeiro:ACOES_FAZ,oskar:ACOES_OSKAR,tico:ACOES_TICO,ingrid:ACOES_INGRID,halvard:ACOES_HALVARD,vovo:ACOES_VOVO,borin:ACOES_BORIN,miudezas:ACOES_MERC,verdureiro:ACOES_MERC,padeiro_f:ACOES_MERC};
 const FAISCAS_B=[];   // faiscas da bigorna: pontinhos laranjas que pulam e caem
 function acaoLista(o){return (ACOES_POR[o.id]||ACOES_OSKAR)[o.acao];}
 function acaoQuadro(o){const L=acaoLista(o);let a=0;const tot=L.reduce((x,y)=>x+y[1],0),tt=o.acao==='espera'?o.t%tot:o.t;for(const [q,d] of L){a+=d;if(tt<a)return q+6*(o.lin||0);}return null;}
@@ -1299,6 +1308,8 @@ function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvar
       else if(o.id==='vovo'){o.acao=Math.random()<.25?'ri':'oi';o.dur=acaoDur(o.acao,o);if(!baloes.length&&!fala){o.alt=40;balao(o,o.acao==='ri'?'Hehe. Até que você é bonzinho, forasteiro.':(Math.random()<.5?'Hmpf. Voltaram inteiros. Ótimo.':'Hmpf. Limpe as botas antes de entrar.'));o.falou=t;}}
       else if(o.id==='halvard'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=48;balao(o,Math.random()<.5?'Que bom que voltou inteiro, Jux.':'Viu o Tico por aí? Ele não para quieto.');o.falou=t;}}
       else if(o.id==='ingrid'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=46;balao(o,Math.random()<.5?'Leva pão, Jux! Tá quentinho.':'Oi, Jux! Fiz pão de mel de novo.');o.falou=t;}}
+      else if(o.id==='guarda'){o.acao='oi';o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=50;const F=['O portão só abre com ordem do conselho, Jux.','Frio de rachar, hein? Mas a vigia não para.','Lá fora só tem lobo e neve. Fica aqui dentro.','Tudo calmo por aqui. Do jeito que eu gosto.'];balao(o,F[Math.floor(Math.random()*F.length)]);o.falou=t;}}
+      else if(o.id==='fazendeiro'){o.tarefa=null;o.acao='oi';o.esq=hero.x<o.x;o.dur=acaoDur('oi',o);if(!baloes.length&&!fala){o.alt=44;const F=['Bom dia, Jux! O Sir Bacon tá com fome de novo.','Cuidado com as galinhas, elas são medrosas!','Essa lama não congela nem no inverno, acredita?','Ô, rapaz! Veio ajudar na fazenda?'];balao(o,F[Math.floor(Math.random()*F.length)]);o.falou=t;}}
       else if(o.id==='tico'){o.acao=Math.random()<.35?'bola':'oi';o.alvoJux=o.acao==='bola';o.dur=acaoDur(o.acao,o);if(!baloes.length&&!fala){o.alt=40;balao(o,o.acao==='bola'?'Pega essa, Jux!':'JUX! Oi, Jux!');o.falou=t;}}
       else{o.acao='acena';o.dur=acaoDur('acena',o);if(!baloes.length&&!fala){o.alt=48;balao(o,'Hm.');o.falou=t;}}
       continue;}
@@ -1309,14 +1320,29 @@ function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvar
   if(o.est==='acao'&&o.acao==='racha'){const q=acaoQuadro(o);if(q===9&&o.qAnt!==9){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(MACHADO[Math.floor(Math.random()*3)],.8*clamp(1-d/330,.06,1));}o.qAnt=q;}   // o machado bate na tora
   if(o.est==='acao'&&o.acao==='bola'&&o.alvoJux){const q=acaoQuadro(o);if(q===10&&o.qAnt!==10){   // 2026-11-28 ("a bola nao vai para lugar nenhum"): a bola SAI da mao dele e voa ate o Jux
       const sg=hero.x<o.x?-1:1,bx=o.x+sg*16.5,by=o.y-21;BOLAS_V.push({x0:bx,y0:by,x1:hero.x+rnd(-3,3),y1:hero.y-14,v:0,d:clamp(Math.hypot(hero.x-bx,hero.y-by)/170,.35,.8)});som(SOM.whoosh,.3);}o.qAnt=q;}
-  if(o.est==='acao'){if(o.t>=o.dur){o.est='para';o.t=0;o.dur=rnd(1,3);o.dir='frente';}continue;}
+  if(o.id==='guarda'&&o.est==='acao'&&o.acao==='bate'){const q=acaoQuadro(o);if((q===14||q===16)&&o.qAnt!==q){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(PASSOS_NEVE[Math.floor(Math.random()*4)],.6*clamp(1-d/300,.05,1));}o.qAnt=q;}   // a lanca bate na neve
+  if(o.id==='fazendeiro'&&o.est==='acao'){const q=acaoQuadro(o);
+    if(o.acao==='lavagem'&&q===9&&o.qAnt!==9){const d=Math.hypot(hero.x-o.x,hero.y-o.y);som(PASSOS_LAMA[Math.floor(Math.random()*4)],.5*clamp(1-d/300,.05,1));   // a lavagem cai no cocho
+      const b=BACON_L;if(b&&b.est!=='rola'){const cx=1050/1.8,cy=290/1.8,P=[...BLD.pontos].sort((p,q)=>Math.hypot(p[0]-cx,p[1]-cy)-Math.hypot(q[0]-cx,q[1]-cy));   // o Sir Bacon vem comer: vai ate perto do cocho, em linha reta ou passando por um ponto no meio
+        let R=null;for(const T of P.slice(0,24)){R=baconRota(b.x,b.y,T);if(R)break;}if(R&&R.length&&Math.hypot(R[R.length-1][0]-cx,R[R.length-1][1]-cy)<90){b.est='anda';b.alvo=R.shift();b.prox=R;b.t=0;b.comer=true;oincB(.6);}}}
+    if(o.acao==='milho'&&q===15&&o.qAnt!==15){const sg=o.esq?-1:1,mx=o.x+sg*22,my=o.y+rnd(-4,4);   // as galinhas vem correndo comer o milho
+      GALS.forEach((g,ix)=>{if(g.est==='susto'||Math.hypot(g.x-o.x,g.y-o.y)>150)return;const an=ix*2.4+rnd(-.3,.3),r=galCaminho(g.x,g.y,mx+sg*12+Math.cos(an)*11,my+Math.sin(an)*7);if(r){g.est='anda';g.rota=r;g.vel=30;g.t=0;}});}   // cada uma para um ponto em volta do milho (todas no mesmo ponto se empurravam e tremiam)
+    o.qAnt=q;}
+  if(o.est==='acao'){if(o.t>=o.dur){o.est='para';o.t=0;o.dur=rnd(1,3);if(o.id!=='fazendeiro')o.dir='frente';
+    if(o.id==='fazendeiro'&&o.acao==='lavagem'&&o.cocho_p&&Math.hypot(o.x-o.cocho_p[0],o.y-o.cocho_p[1])<3){o.rota=[o.cocho];o.est='anda';o.t=0;}}continue;}   // despejou: volta para o caminho
+  if(o.id==='fazendeiro'&&o.est==='para'){if(o.t<o.dur)continue;   // FAZENDEIRO: anda ate o cocho (lavagem) ou pelo patio (milho / passeio)
+    if(o.tarefa==='cocho'){o.tarefa='lavagem';o.rota=[o.cocho_p||o.cocho];o.est='anda';o.t=0;continue;}   // chegou no caminho: da os ultimos passos ate a quina, colado no cocho
+    if(o.tarefa){const n=o.tarefa;o.tarefa=null;o.est='acao';o.acao=n;o.t=0;o.dur=acaoDur(n,o);o.dir='lado';o.qAnt=-1;
+      if(n==='lavagem')o.esq=false;else{const G=GALS.filter(g=>Math.hypot(g.x-o.x,g.y-o.y)<150);o.esq=G.length?G.reduce((a,g)=>a+g.x,0)/G.length<o.x:Math.random()<.5;}continue;}
+    const r=Math.random(),P=o.passeio;let p,tf=null;if(r<.35){p=o.cocho;tf='cocho';}else if(r<.75){p=P[Math.floor(Math.random()*P.length)];tf='milho';}else p=P[Math.floor(Math.random()*P.length)];
+    o.rota=fazCaminho(o.x,o.y,p[0],p[1]);if(o.rota&&o.rota.length){o.est='anda';o.t=0;o.tarefa=tf;}else o.dur=o.t+2;continue;}
   if(o.est==='para'&&o.t>o.dur&&o.ac&&!o.fezAcao){o.fezAcao=true;const r=Math.random();
-    const n=ACOES_POR[o.id]===ACOES_MERC?(r<.45?'chama':r<.8?'mostra':'espera'):o.id==='borin'?(r<.8?'martela':'espera'):o.id==='vovo'?(r<.35?'cha':r<.65?'pensa':r<.8?'oi':'espera'):o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(naNeve(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
+    const n=ACOES_POR[o.id]===ACOES_MERC?(r<.45?'chama':r<.8?'mostra':'espera'):o.id==='borin'?(r<.8?'martela':'espera'):o.id==='vovo'?(r<.35?'cha':r<.65?'pensa':r<.8?'oi':'espera'):o.id==='halvard'?(r<.4?'pele':r<.75?'armas':'espera'):o.id==='ingrid'?(r<.4?'forno':r<.75?'varre':'espera'):o.id==='tico'?(naNeve(o.x,o.y)?(r<.55?'anjo':'bola'):'espera'):o.id==='guarda'?(r<.35?'sopra':r<.7?'bate':'espera'):(r<.35?'racha':r<.6?'descansa':'espera');
     o.est='acao';o.acao=n;o.alvoJux=false;o.t=0;o.dur=n==='espera'?rnd(2,4):acaoDur(n,o);o.dir='frente';continue;}
   if(o.est==='para'&&o.fixo){if(o.id==='borin'&&o.dur>1)o.dur=.4;   // o Borin quase nao para: logo escolhe a proxima acao (martelar na maior parte)
     if(o.t>o.dur){o.fezAcao=false;o.t=0;o.dur=rnd(2,5);}continue;}   // fixo (Ingrid): fica na porta
   if(o.est==='para'){const PS=o.passeio||(CAO&&CAO.passeio);if(o.t>o.dur&&PS){o.fezAcao=false;const p=(o.id==='tico'&&NEVEC&&Math.random()<.45)?NEVEC.pontos[Math.floor(Math.random()*NEVEC.pontos.length)]:PS[Math.floor(Math.random()*PS.length)];o.rota=caoCaminho(o.x,o.y,p[0],p[1]);if(o.rota){o.est='anda';o.t=0;}else o.dur+=2;}continue;}
-  if(!o.rota||!o.rota.length){o.rota=null;o.est='para';o.t=0;o.dur=rnd(3,7);continue;}
+  if(!o.rota||!o.rota.length){o.rota=null;o.est='para';o.t=0;o.dur=o.tarefa?.3:rnd(3,7);continue;}
   const [tx,ty]=o.rota[0],ax=tx-o.x,ay=ty-o.y,d=Math.hypot(ax,ay);if(d<2.5){o.rota.shift();continue;}
   const st=Math.min(d,(o.vel||24)*dt);o.x+=ax/d*st;o.y+=ay/d*st;o.dist+=st;
   o.dir=Math.abs(ay)>Math.abs(ax)*1.15?(ay>0?'frente':'costas'):Math.abs(ax)>Math.abs(ay)*.87?'lado':o.dir;if(o.dir==='lado')o.esq=ax<0;}}
@@ -1338,6 +1364,11 @@ const durB=n=>ACOES_BACON[n].reduce((a,b)=>a+b[1],0);
 function quadroB(n,tt){const L=ACOES_BACON[n];if(n==='dorme')tt%=durB(n);let a=0;for(const [q,d] of L){a+=d;if(tt<a)return q;}return L[L.length-1][0];}
 function oincB(v){const b=BACON_L,d=Math.hypot(hero.x-b.x,hero.y-b.y);som(OINC[Math.floor(Math.random()*OINC.length)],v*clamp(1-d/300,.05,1));}
 function acaoB(n,dur){const b=BACON_L;b.est=n;b.t=0;b.dur=dur||durB(n);b.alvo=null;}
+function baconRota(x,y,T){   // caminho do Sir Bacon ate T pelos pontos da lama (trechos retos), busca em largura
+  const N=[...BLD.pontos,T],ti=N.length-1,vem=new Array(N.length).fill(-2),fila=[];
+  for(let i=0;i<N.length;i++)if(retoLama(x,y,N[i][0],N[i][1])){vem[i]=-1;fila.push(i);}
+  for(let h=0;h<fila.length;h++){const k=fila[h];if(k===ti)break;for(let i=0;i<N.length;i++)if(vem[i]===-2&&retoLama(N[k][0],N[k][1],N[i][0],N[i][1])){vem[i]=k;fila.push(i);}}
+  if(vem[ti]===-2)return null;const out=[];for(let k=ti;k!==-1;k=vem[k])out.unshift(N[k]);return out;}
 function baconLamaAtualiza(dt){const b=BACON_L;if(!b)return;b.t+=dt;const dx=hero.x-b.x,dy=hero.y-b.y,dh=Math.hypot(dx,dy*1.2);
   if(dh<75&&t-(b.viu||-99)>14&&b.est!=='rola'&&b.est!=='sacode'){b.viu=t;   // o Jux chegou perto
     if(b.est==='dorme'){acaoB('sacode');oincB(.55);}
@@ -1352,7 +1383,7 @@ function baconLamaAtualiza(dt){const b=BACON_L;if(!b)return;b.t+=dt;const dx=her
     if(r<.47){acaoB('fareja');b.esq=Math.random()<.5;return;}
     const P=[...BLD.pontos].sort(()=>Math.random()-.5).find(p=>Math.hypot(p[0]-b.x,p[1]-b.y)>18&&retoLama(b.x,b.y,p[0],p[1]));
     if(P){b.est='anda';b.alvo=P;b.t=0;}else b.dur=rnd(1,2);return;}
-  if(b.est==='anda'){const [tx,ty]=b.alvo,ax=tx-b.x,ay=ty-b.y,d=Math.hypot(ax,ay);if(d<1.5){acaoB('para',rnd(1,3));return;}
+  if(b.est==='anda'){const [tx,ty]=b.alvo,ax=tx-b.x,ay=ty-b.y,d=Math.hypot(ax,ay);if(d<1.5){if(b.prox&&b.prox.length){b.alvo=b.prox.shift();return;}b.prox=null;if(b.comer){b.comer=false;acaoB('fareja');b.dir='esquerda';b.esq=true;oincB(.5);return;}acaoB('para',rnd(1,3));return;}   // chegou no cocho: fareja a comida
     const st=Math.min(d,20*dt);b.x+=ax/d*st;b.y+=ay/d*st;b.dist+=st;
     if(Math.abs(ax)>Math.abs(ay)*.8){b.dir=ax<0?'esquerda':'direita';b.esq=ax<0;}else b.dir=ay>0?'frente':'costas';}}
 function desenhaBaconLama(){const b=BACON_L;if(!b)return;let F,q,vira=false,deit=false;
@@ -1374,6 +1405,19 @@ let galSustoT=-99;
 function galSom(g,a,v){const d=Math.hypot(hero.x-g.x,hero.y-g.y);if(d<260)som(a,v*clamp(1-d/260,.05,1));}
 function galRota(g,longe){const P=[...GLD.pontos].sort(()=>Math.random()-.5);
   for(const p of P){const dg=Math.hypot(p[0]-g.x,p[1]-g.y);if(longe?Math.hypot(p[0]-hero.x,p[1]-hero.y)<90||dg<25:dg>45||dg<8)continue;const r=galCaminho(g.x,g.y,p[0],p[1]);if(r)return r;}return null;}
+// caminho do FAZENDEIRO: pelo chao do Jux (livre), com folga de lado; grade de 4 e busca em largura (igual galCaminho)
+let FGR=null,FGW=0,FGH=0;
+function fazGrade(){if(FGR)return FGR;FGW=Math.ceil(V.w/4);FGH=Math.ceil(V.h/4);FGR=new Uint8Array(FGW*FGH);
+  for(let gy=0;gy<FGH;gy++)for(let gx=0;gx<FGW;gx++){const x=gx*4+2,y=gy*4+2;FGR[gy*FGW+gx]=livre(x,y)&&livre(x-6,y)&&livre(x+6,y)?1:0;}return FGR;}
+function fazCaminho(x0,y0,x1,y1){const G=fazGrade(),cel=(x,y)=>{const gx=clamp(Math.floor(x/4),0,FGW-1),gy=clamp(Math.floor(y/4),0,FGH-1);if(G[gy*FGW+gx])return gy*FGW+gx;
+    for(let r=1;r<5;r++)for(let yy=gy-r;yy<=gy+r;yy++)for(let xx=gx-r;xx<=gx+r;xx++)if(xx>=0&&yy>=0&&xx<FGW&&yy<FGH&&G[yy*FGW+xx])return yy*FGW+xx;return -1;};
+  const a=cel(x0,y0),b=cel(x1,y1);if(a<0||b<0)return null;if(a===b)return [[x1,y1]];
+  const vem=new Int32Array(FGW*FGH).fill(-1);vem[a]=a;const fila=[a];let h=0;const viz=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  while(h<fila.length){const k=fila[h++];if(k===b)break;const kx=k%FGW,ky=(k/FGW)|0;
+    for(const [ex,ey] of viz){const nx=kx+ex,ny=ky+ey;if(nx<0||ny<0||nx>=FGW||ny>=FGH)continue;const n=ny*FGW+nx;if(vem[n]>=0||!G[n])continue;if(ex&&ey&&(!G[ky*FGW+nx]||!G[ny*FGW+kx]))continue;vem[n]=k;fila.push(n);}}
+  if(vem[b]<0)return null;const pts=[];for(let k=b;k!==a;k=vem[k])pts.push(k);pts.reverse();
+  const out=[];let ld=null;for(let i=0;i<pts.length;i++){const k=pts[i],nk=pts[i+1];const dd=nk==null?null:(nk-k);if(dd!==ld||nk==null)out.push([(k%FGW)*4+2,((k/FGW)|0)*4+2]);ld=dd;}
+  out.push([x1,y1]);return out;}
 function galFuga(g){   // para onde correr no susto: um ponto de chao livre em volta dela, longe do Jux e mais ou menos do lado oposto,
   // longe do destino das outras (o bando se espalha), com caminho que nao chega mais perto dele e sem volta grande
   // (o patio e pequeno: ela pode sair dele e depois volta andando). Correndo, prefere manter o rumo (nao fica indo e voltando)
@@ -1411,10 +1455,20 @@ function galCaminho(x0,y0,x1,y1,ev){const G=galGrade();const a=galCelula(x0,y0),
   if(galChao(x1,y1))out.push([x1,y1]);return out;}
 function galinhasAtualiza(dt){
   for(let i=0;i<GALS.length;i++)for(let j=i+1;j<GALS.length;j++){const a=GALS[i],b=GALS[j],ex=b.x-a.x,ey=b.y-a.y,dd=Math.hypot(ex,ey);   // nao ficam uma em cima da outra
-    if(dd<14){const ux=dd>.01?ex/dd:1,uy=dd>.01?ey/dd:0,m=(14-dd)*.5;
+    if(dd<14){const ux=dd>.01?ex/dd:1,uy=dd>.01?ey/dd:0,m=(14-dd)*.5*Math.min(1,dt*7);   // empurrao SUAVE (de uma vez, brigava com o andar e tremia)
       const vb=galChao(b.x+ux*m,b.y+uy*m),va=galChao(a.x-ux*m,a.y-uy*m);
       if(vb&&va){b.x+=ux*m;b.y+=uy*m;a.x-=ux*m;a.y-=uy*m;}else if(vb&&galChao(b.x+ux*2*m,b.y+uy*2*m)){b.x+=ux*2*m;b.y+=uy*2*m;}else if(va&&galChao(a.x-ux*2*m,a.y-uy*2*m)){a.x-=ux*2*m;a.y-=uy*2*m;}
       else for(const sg of [1,-1]){const px=-uy*sg*m*2,py=ux*sg*m*2;if(galChao(b.x+px,b.y+py)){b.x+=px;b.y+=py;break;}}}}   // sem chao para o lado: empurra de lado
+  // CORPOS (2026-11-28, "o fazendeiro atravessa as galinhas"): o fazendeiro e o Jux tem corpo; a galinha encostada e empurrada
+  // para fora (pelo chao dela) e, se ele vem andando na direcao dela, ela da uns passinhos para o lado e sai do caminho
+  for(const C of [...ANDV.filter(o=>o.id==='fazendeiro'),hero]){const R=C===hero?13:15;
+    for(const g of GALS){const ex=g.x-C.x,ey=(g.y-C.y)*1.6,dd=Math.hypot(ex,ey);
+      if(dd<R){const ux=dd>.01?ex/dd:1,uy=dd>.01?ey/dd:0,m=R-dd;let ok=false;
+        for(const a of [0,.6,-.6,1.2,-1.2,1.8,-1.8]){const c=Math.cos(a),sn=Math.sin(a),vx=ux*c-uy*sn,vy=(ux*sn+uy*c)/1.6;if(galChao(g.x+vx*m,g.y+vy*m)){g.x+=vx*m;g.y+=vy*m;ok=true;break;}}
+        if(ok&&g.est==='anda'&&C!==hero){g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(2,5);}   // esbarrou no fazendeiro andando: desiste do caminho (nao fica brigando com o empurrao)
+        if(ok&&g.est!=='susto'){g.esq=ux<0;g.dir='lado';}}
+      if(C!==hero&&C.est==='anda'&&C.rota&&C.rota.length&&g.est!=='susto'&&g.est!=='anda'&&dd<34){const [tx,ty]=C.rota[0],vx=tx-C.x,vy=ty-C.y,vn=Math.hypot(vx,vy)||1;
+        if((ex*vx+ey/1.6*vy)/vn>0){const sg=(ex*vy-ey/1.6*vx)>0?1:-1;for(const k of [1,-1]){const px=g.x-vy/vn*sg*k*22,py=g.y+vx/vn*sg*k*22;const r=galCaminho(g.x,g.y,px,py);if(r&&r.length){g.est='anda';g.rota=r;g.vel=30;g.t=0;break;}}}}}}   // na frente dele: sai do caminho
   for(const g of GALS){g.t+=dt;const dh=Math.hypot(hero.x-g.x,(hero.y-g.y)*1.2);
   g.coco-=dt;if(g.coco<0){g.coco=rnd(8,20);if(g.est!=='susto')galSom(g,GAL_SOM[Math.floor(Math.random()*2)],.35);}
   // SUSTO (refeito de novo 2026-11-27, "meio estranha, bugada"): antes ela fugia em linha reta e, quando batia na cerca,
@@ -1445,14 +1499,17 @@ function galinhasAtualiza(dt){
   if(g.est==='anda'){
     if(!g.rota||!g.rota.length){g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(3,8);g.vel=14;continue;}
     if(!g.pr||t-g.pr.t>1.2){if(g.pr&&Math.hypot(g.x-g.pr.x,g.y-g.pr.y)<3){g.pr=null;g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(3,8);continue;}g.pr={x:g.x,y:g.y,t};}   // travou (outra no caminho empurrando): desiste e cisca ali
+    if(g.pausa>0){g.pausa-=dt;continue;}
     const [tx,ty]=g.rota[0],ax=tx-g.x,ay=ty-g.y,d=Math.hypot(ax,ay);if(d<2){g.rota.shift();continue;}
+    {const fr=GALS.find(h=>h!==g&&Math.hypot(h.x-g.x,h.y-g.y)<13&&((h.x-g.x)*ax+(h.y-g.y)*ay)/(d*Math.hypot(h.x-g.x,h.y-g.y)||1)>.5);if(fr){g.pausa=rnd(.3,.6);g.espera=(g.espera||0)+1;if(g.espera>4){g.espera=0;g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(2,5);}continue;}}   // outra galinha na frente: espera um pouquinho (nao empurra)
+    if(g.rota.length===1&&d<16&&(GALS.some(h=>h!==g&&Math.hypot(h.x-tx,h.y-ty)<11)||ANDV.some(o=>o.id==='fazendeiro'&&Math.hypot(o.x-tx,(o.y-ty)*1.6)<17))){g.rota=null;g.est='cisca';g.t=0;g.dur=rnd(3,8);continue;}   // o lugar ja tem outra: para e cisca ali (sem empurra-empurra)
     const st=Math.min(d,g.vel*dt);g.x+=ax/d*st;g.y+=ay/d*st;g.dist+=st;
     if(g.est==='susto'||Math.abs(ax)>Math.abs(ay)*.8){g.dir='lado';g.esq=ax<0;}else g.dir=ay>0?'frente':'costas';continue;}
   if(g.t>g.dur){const r=galRota(g,Math.min(...GLD.pontos.map(p=>Math.hypot(p[0]-g.x,p[1]-g.y)))>45);if(r&&Math.random()<.6){g.est='anda';g.rota=r;g.t=0;g.vel=14;}else{g.t=0;g.dur=rnd(3,7);g.esq=Math.random()<.5;}}}}
 function desenhaGalinha(g){const F=GAL_F;if(!F||!F.i.complete)return;let q;
   if(g.est==='susto')q=g.t<.3?(g.t<.12?18:19):g.voa?20+Math.floor(g.fase||0)%4:Math.floor(g.dist/2.2)%6;   // asa batendo no tempo (antes ia pela distancia: rapido demais)
   else if(g.est==='olha')q=g.t<.45?19:18;   // o "!" so no comeco, depois fica olhando
-  else if(g.est==='anda')q=(g.dir==='frente'?12:g.dir==='costas'?15:0)+Math.floor(g.dist/1.6)%(g.dir==='lado'?6:3);
+  else if(g.est==='anda')q=(g.dir==='frente'?12:g.dir==='costas'?15:0)+Math.floor(g.dist/((g.vel||14)>20?2.6:1.8))%(g.dir==='lado'?6:3);   // correndo para o milho: passo mais longo (nao fica um borrao)
   else{const c=g.t%3.2;q=c<1.4?[6,7,8,7][Math.floor(c/.35)]:c<2.6?[9,10,11,10][Math.floor((c-1.4)/.3)]:0;}
   const vira=g.esq&&(g.est!=='anda'||g.dir==='lado');
   F.x=g.x;F.y=g.y;F.esq=vira;F.cao=true;F.deitado=false;sombraVendedor(F,q);
@@ -1465,10 +1522,10 @@ function frenteSobre(o,A,q){if(o.na_frente==null)return;const f=V.frentes[o.na_f
     ctx.drawImage(A.i,q*A.w,0,A.w,A.h,o.x-A.ax*A.s,o.y-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();}}
 function desenhaAndarilho(o){if(o.id==='halvard'&&halvardMorto())return;
   if(o.est==='para'&&o.ac&&o.ac.i.complete){const A=o.ac,L=o.id==='oskar'?[0,1,2,1]:o.id==='borin'?[0]:[0,1],q=6*(o.lin||0)+L[Math.floor(o.t/(o.id==='oskar'?.9:.6))%L.length];   // parado: pose de parado da folha de acoes (a de corrida congelada ficava estranha)
-    A.x=o.x;A.y=o.y;A.esq=false;A.cao=o.id==='tico';A.deitado=false;sombraVendedor(A,q);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,o.x-A.ax*A.s,o.y-A.ay*A.s,A.w*A.s,A.h*A.s);frenteSobre(o,A,q);return;}
+    const vz=o.id==='fazendeiro'&&o.esq;A.x=o.x;A.y=o.y;A.esq=vz;A.cao=o.id==='tico';A.deitado=false;sombraVendedor(A,q);ctx.save();ctx.translate(o.x,o.y);if(vz)ctx.scale(-1,1);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,-A.ax*A.s,-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();frenteSobre(o,A,q);return;}
   if(o.est==='acao'&&o.ac&&o.ac.i.complete){const A=o.ac;let q=acaoQuadro(o);if(q==null)q=o.acao==='espera'?[0,1,2,1][Math.floor(o.t/.9)%4]:0;
     if(o.acao==='espera'&&o.id==='oskar')q=[0,1,2,1][Math.floor(o.t/.9)%4];
-    const vira=o.acao==='bola'&&o.alvoJux&&hero.x<o.x;   // joga para o lado do Jux
+    const vira=(o.acao==='bola'&&o.alvoJux&&hero.x<o.x)||(o.id==='fazendeiro'&&o.esq);   // joga para o lado do Jux / fazendeiro: de lado
     A.x=o.x;A.y=o.y;A.esq=vira;A.cao=o.id==='tico';A.deitado=o.id==='tico'&&q>=12&&q<=15;sombraVendedor(A,q);ctx.save();ctx.translate(o.x,o.y);if(vira)ctx.scale(-1,1);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,-A.ax*A.s,-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();
     frenteSobre(o,A,q);return;}
   if(!o.i.complete)return;const lin={frente:0,costas:1,lado:2}[o.dir]||0,q=lin*6+(o.est==='anda'?Math.floor(o.dist/(o.passo||4.5))%6:0);
@@ -1550,6 +1607,15 @@ function desenhaFumacaV(){const F=FUMV;if(!F||!F.i.complete)return;const f=t*3.2
 // FUMACA NAS CHAMINES (casas, C1 2026-11-26): a mesma fumaca da fogueira, menor, cinza (sem fogo), uma em cada chamine,
 // cada uma num ponto diferente do ciclo; desenhada por cima de tudo (sobe acima dos telhados)
 const CHAMV=V.chamines?(()=>{const i=new Image();i.src=V.chamines.atlas;return {...V.chamines,i};})():null;
+// RIO VIVO (Portao, 2026-11-28): ondinhas com brilho (ref/rio/agua_ondas.png) nascendo em pontos da agua (V.ondas.pontos),
+// ondulando ~2 s e sumindo; sempre umas 9 ao mesmo tempo, cada uma num lugar sorteado
+const ONDV=V.ondas?(()=>{const i=new Image();i.src=V.ondas.atlas;return {...V.ondas,i,o:[]};})():null;
+function ondasAtualiza(dt){const O=ONDV;if(!O)return;for(let k=O.o.length-1;k>=0;k--){const o=O.o[k];o.t+=dt;o.x+=dt*2.2;if(o.t>o.vida)O.o.splice(k,1);}
+  while(O.o.length<14){const p=O.pontos[Math.floor(Math.random()*O.pontos.length)];if(O.o.some(o=>Math.hypot(o.x-p[0],o.y-p[1])<30)&&Math.random()<.9)break;O.o.push({x:p[0],y:p[1],t:0,vida:rnd(1.8,2.8),q0:Math.floor(Math.random()*8),flip:Math.random()<.5,esc:rnd(.75,1.05)});}}
+function desenhaOndas(){const O=ONDV;if(!O||!O.i.complete)return;ctx.save();ctx.globalCompositeOperation='lighter';
+  for(const o of O.o){const k=o.t/o.vida,q=(o.q0+Math.floor(o.t*5))%8,w=O.w*O.s*o.esc,h=O.h*O.s*o.esc;ctx.globalAlpha=Math.min(1,k*4,(1-k)*4);
+    ctx.save();ctx.translate(o.x,o.y);if(o.flip)ctx.scale(-1,1);ctx.drawImage(O.i,q*O.w,0,O.w,O.h,-w/2,-h/2,w,h);ctx.drawImage(O.i,q*O.w,0,O.w,O.h,-w/2,-h/2,w,h);ctx.restore();}   // 2x em 'lighter': brilho forte o bastante para ver
+  ctx.restore();}
 function desenhaChaminesV(){const F=CHAMV;if(!F||!F.i.complete)return;F.lugares.forEach(([x,y],k)=>{const f=t*2.6+k*2.3,q=Math.floor(f)%8,q2=(q+1)%8,m=f-Math.floor(f);
   ctx.save();ctx.translate(x,y);ctx.transform(1,0,Math.sin(t*.6+k)*.05+(F.inclina||-.06),F.achata||1,0,0);   // forja: chamine colada no alto da tela -> a fumaca deita com o vento
   for(const [qq,a] of [[q,1-m],[q2,m]]){ctx.globalAlpha=Math.min(1,a*1.15);ctx.drawImage(F.i,qq*F.w,0,F.w,F.h,-F.ax*F.s,-F.ay*F.s,F.w*F.s,F.h*F.s);}ctx.restore();});}
@@ -2311,7 +2377,7 @@ function passo(dt){
   // mundo novo: SENTAR no banco (V.bancos): ENTER perto de um banco senta; qualquer direcao levanta
   if(hero.carinho){hero.carinho.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.carinho.t>=CAR_DUR){hero.olha=hero.carinho.esp?'esquerda':'direita';hero.carinho=null;}}
   if(hero.poco){hero.poco.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.poco.t>=4.6){hero.olha='cima';hero.poco=null;}}
-  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);bolasVAtualiza(dt);falasPracaAtualiza(dt);}
+  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);bolasVAtualiza(dt);ondasAtualiza(dt);falasPracaAtualiza(dt);}
   if(V.saidas&&!hero.saiu&&!transicao&&t>2.2)for(const sd of V.saidas)if(sd.pagina&&Math.hypot(sd.x-hero.x,sd.y-hero.y)<sd.r){hero.saiu=true;try{sessionStorage.setItem('chega2',sd.chega);}catch(e){}vaiPara(sd.pagina);break;}   // mundo novo: andou ate a borda -> o bairro vizinho
   if(hero.vaiPoco){if(teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d'])hero.vaiPoco=false;else if(!hero.alvo||Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4){pocoJa();dx=0;dy=0;}}   // anda ate a frente do poco e so entao bebe   // bebendo agua no poco
   if(hero.vaiSentar){const b=hero.vaiSentar;if((teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d']))hero.vaiSentar=null;else if(!hero.alvo||Math.hypot(b[0]-hero.x,b[1]-hero.y)<50){sentaJa(b);dx=0;dy=0;}}   // dx/dy deste quadro ainda eram da caminhada: levantava na hora   // anda ate a frente do banco e senta (ou senta se travou perto)
@@ -2583,6 +2649,7 @@ function desenha(){
   VIS.x0=vx0;VIS.y0=vy0;VIS.x1=vx1;VIS.y1=vy1;
   ctx.drawImage(MAPA,vx0*K,vy0*K,(vx1-vx0)*K,(vy1-vy0)*K,vx0,vy0,vx1-vx0,vy1-vy0);
   desenhaNeveChao();   // area de neve no chao (Casas)
+  desenhaOndas();   // brilho na agua do rio (Portao)
   desenhaFolhasChao();   // folhas paradas no chao
   desenhaLuzV();   // mundo novo: a luz da fogueira piscando no chao (por baixo dos bonecos)
   // aurora ondulando (so se o alto do mapa estiver na tela)
