@@ -2140,7 +2140,8 @@ let CENAS=[
 const VOZES={};for(let k=1;k<=8;k++)VOZES[k]=arq('assets/cine_intro/voz_'+k);
 // filmes: fora a abertura na vila, as imagens so baixam DEPOIS da tela de carregamento (nao seguram a entrada no mapa); tocaFilme espera chegarem
 function imgsFilme(urls){return urls.map(u=>{const im=new Image();(window.depois||(f=>f()))(()=>{im.src=u;});return im;});}
-let CENA_IMG=REGIAO==='vila'?CENAS.map((c,i)=>{const im=new Image();im.src='assets/cine_intro/cena_'+(i+1)+'.jpg';return im;}):imgsFilme(CENAS.map((c,i)=>'assets/cine_intro/cena_'+(i+1)+'.jpg'));
+const cenaIntroArq=i=>'assets/cine_intro/cena_'+(i+1)+(NOVO2&&i===7?'_laco':'')+'.jpg';   // mundo novo: a cena 8 com o Sir Bacon de laco azul (igual ao mapa)
+let CENA_IMG=(REGIAO==='vila'||NOVO2)?CENAS.map((c,i)=>{const im=new Image();im.src=cenaIntroArq(i);return im;}):imgsFilme(CENAS.map((c,i)=>cenaIntroArq(i)));
 const CENAS_INTRO=CENAS,IMG_INTRO=CENA_IMG;
 /* ---------- CINEMATICA DA ESPADA (assets/cine_espada, prompts em PROMPTS_CINE_ESPADA.md): toca ao chegar no altar sem a espada */
 const CENAS_ESPADA=[
@@ -3014,7 +3015,7 @@ function caixaFala(){
   if(fala.cena)desenhaCena();
   const [quem,L,ex]=fala.linhas[fala.i],x=110,y=H-150,w=W-220,h=126;
   if(fala.tele!==fala.i){fala.tele=fala.i;if(TELE_SOM[quem])som(TELE_SOM[quem],.5);}
-  let rk=RET_DE[quem];if(rk==='bacon'&&RET.bacon_laco&&typeof JOGO==='object'&&JOGO.cap3&&JOGO.cap3.barco)rk='bacon_laco';   // do Cap. 3 (barco) em diante: o laço azul
+  let rk=RET_DE[quem];if(rk==='bacon'&&RET.bacon_laco&&(NOVO2||(typeof JOGO==='object'&&JOGO.cap3&&JOGO.cap3.barco)))rk='bacon_laco';   // mundo novo: o Sir Bacon do mapa usa o laco azul desde o comeco   // do Cap. 3 (barco) em diante: o laço azul
   const R=rk&&RET[rk],RI=rk&&RETI[rk];
   ctx.save();ctx.fillStyle='rgba(6,16,40,.9)';ctx.strokeStyle='#8fdcff';ctx.lineWidth=2;
   ctx.beginPath();ctx.roundRect(x,y,w,h,10);ctx.fill();ctx.stroke();
