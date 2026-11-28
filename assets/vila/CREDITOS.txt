@@ -17,3 +17,7 @@ musica_caverna.ogg/.mp3 — "Dark Ambience Loop", Iwan Gabovitch (qubodup), Open
 - galinha_0, galinha_1, galinha_susto (galinhas do Chiqueiro; recortes): "Chicken Sound Effect" - IMadeIt - CC-BY 3.0 - opengameart.org/content/chicken-sound-effect
 - lama_passo_0..3 (Jux andando na lama do Chiqueiro; mud_10/13/19/20 cortados e normalizados): "25 CC0 mud sfx" - rubberduck - CC0 - opengameart.org/content/25-cc0-mud-sfx
 - bola_neve.png: recortada da folha do Tico (ref/vila2/tico_acoes.png), desenho do proprio jogo
+- riacho (agua correndo da Floresta): "Sea and river wave sounds" - RandomMind - CC0 - opengameart.org/content/sea-and-river-wave-sounds (o mesmo do rio do Cap. 3, normalizado)
+- raposa_espia, raposa_feliz, raposa_susto, raposa_pedra (raposinha da toca da Floresta; recortes/tom mudado): "Raccoon Chatter" - AntumDeluge (de video de jnargus) - CC-BY 3.0 - opengameart.org/content/raccoon-chatter
+- raposa_fareja (raposinha cheirando; recorte): "Hedgehog examples" - Felis Chaus - CC0 - opengameart.org/content/hedgehog-examples
+- raposa.png (folha da raposinha): desenho do proprio jogo

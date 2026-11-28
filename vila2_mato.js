@@ -1,0 +1,2 @@
+// gerado por tools/jux_mato.py - nao editar a mao
+window.JUX_MATO={"atlas": "m/1c5f0749de736a474102.webp", "w": 220, "h": 125, "ancora": [110.0, 122.6], "jux": [-31.7, -27.6, -18.9, -9.9, -11.7, -9.8, -3.8, -8.3, -0.1, -0.1, 10.9, 17.4, -9.5, -4.7, -5.2, -6.8, -4.0, -5.5, 7.4, 11.9], "tufos": {"atlas": "m/795fc938d5e1b57ba66f.webp", "w": 110, "h": 121, "ancora": [55.0, 121]}, "balanca": {"atlas": "m/72dda002411abca9aa26.webp", "w": 110, "h": 121, "ancora": [55.0, 121]}, "empurra": {"atlas": "m/9eb1cc6b5f2936433dbb.webp", "w": 121, "h": 139, "ancora": [60.5, 137.6]}};

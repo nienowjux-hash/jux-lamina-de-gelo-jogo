@@ -17,7 +17,7 @@ const hc=document.createElement('canvas');hc.width=W*HD;hc.height=H*HD;const hct
 const sc=document.createElement('canvas');sc.width=W*HD;sc.height=H*HD;const sctx=sc.getContext('2d');
 const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';
-const NOVO2=['praca','casas','forja','chiqueiro','portao','altar'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
+const NOVO2=['praca','casas','forja','chiqueiro','portao','altar','floresta'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MAPA=new Image();MAPA.src=V.mapa;
 // ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
@@ -190,7 +190,7 @@ const arq=n=>{const a=new Audio();a.src=n+ogg;a.preload='auto';return a;};
 const SOM={ui_mover:arq('assets/sfx/novos/ui_mover'),ui_vez:arq('assets/sfx/novos/ui_vez'),whoosh:arq('assets/sfx/novos/whoosh2')};
 const SOM_DESL=[0,1,2,3].map(i=>arq('assets/vila/deslize_'+i));let tDesl=0;   // raspadas de bota no gelo (amostras reais de passos, mais graves e lentas), uma a cada 0,25-0,45 s enquanto desliza
 const PASSOS=[0,1,2,3].map(i=>arq('assets/vila/passo_'+i)),PASSOS_NEVE=[0,1,2,3].map(i=>arq('assets/vila/passo_neve_'+i)),PASSOS_MAD=[0,1,2,3].map(i=>arq('assets/vila/passo_madeira_'+i));const PASSOS_LAMA=[0,1,2,3].map(i=>arq('assets/vila/lama_passo_'+i));   // passo na lama do chiqueiro (CC0, rubberduck, ver CREDITOS.txt)
-const naPonte=(x,y)=>(REGIAO==='trilha'&&x>722&&x<894&&y>340&&y<402)||(REGIAO==='garganta'&&x>588&&x<872&&y>370&&y<436);   // tabuas da ponte: som de madeira
+const naPonte=(x,y)=>(REGIAO==='floresta'&&x>425&&x<565&&y>262&&y<330)||(REGIAO==='trilha'&&x>722&&x<894&&y>340&&y<402)||(REGIAO==='garganta'&&x>588&&x<872&&y>370&&y<436);   // tabuas da ponte: som de madeira
 const som=(a,v)=>{try{const c=a.cloneNode();c.volume=clamp(v,0,1);c.play().catch(()=>{});}catch(e){}};
 const MUSICAS=[REGIAO==='brasaria'?['Brasária','../musica/brasaria']:REGIAO==='cinzas'?['Trilha das Cinzas','../musica/cinzas']:REGIAO==='pico'?['Vento do Pico (sem música)','vento_pico']:REGIAO==='caverna'?['Escuridão','musica_caverna']:REGIAO==='vale'?['Sussurro da Floresta','musica_trilha']:REGIAO==='garganta'?['Catedral na Floresta','musica_garganta']:REGIAO==='trilha'?['Sussurro da Floresta','musica_trilha']:NOVO2?['Terra da Neve','musica_vila_snowland']:['Manhã Gelada','musica_vila_2']];   // mundo novo: musica calma de ambiente (pedido do usuario 2026-11-26)   // cada regiao tem a sua musica (a trilha NAO usa a da vila)   // musica unica da vila (as outras foram removidas a pedido); o botao so liga/desliga
 let musI=0;try{const v=localStorage.getItem('jux_musica_vila3');if(v!==null)musI=+v;}catch(e){}
@@ -199,7 +199,7 @@ let MUS=null;function pegaMus(){if(MUS)MUS.pause();MUS=musI<MUSICAS.length?arq('
 const BIGORNA=[0,1,2].map(i=>arq('assets/vila/bigorna_'+i)),OINC=[0,1,2,3].map(i=>arq('assets/vila/porco_'+i)),GUINCHO=arq('assets/vila/porco_guincho');
 const VENTO=arq('assets/vila/vento');VENTO.loop=true;VENTO.volume=.22;
 
-let AC=null,fogoG=null,rioG=null,pasG=null;
+let AC=null,fogoG=null,rioG=null,pasG=null,riachoG=null;
 // pardais (2026-11-26): piados curtos e revoada (sons livres, ver assets/musica/CREDITOS.txt)
 const PIADOS=[0,1,2,3,4].map(i=>arq('assets/vila/piado_'+i)),REVOADA=arq('assets/vila/revoada');
 // UMA pagina por vez toca: ao abrir outra pagina do jogo (vila/trilha/luta), as outras ainda vivas calam a musica na hora (nada de musica da vila na trilha)
@@ -223,6 +223,7 @@ function ligaAudio(){if(window.__morta)return;   // so depois do primeiro toque/
     if(NOVO2){const el=arq('assets/vila/fogueira');el.loop=true;AC.createMediaElementSource(el).connect(fogoG);el.play().catch(()=>{});window.__fogoEl=el;}   // mundo novo: fogueira de verdade gravada (fire.wav, CC0), baixinha
     else{f.connect(fl);fl.connect(fogoG);f.start();}
     if(NOVO2&&V.passaros){pasG=AC.createGain();pasG.gain.value=0;pasG.connect(acSaida(AC));const el=arq('assets/vila/passaros_amb');el.loop=true;AC.createMediaElementSource(el).connect(pasG);el.play().catch(()=>{});window.__pasEl=el;}   // passarinhos ao fundo: so perto dos bandos que estao no chao
+    if(NOVO2&&V.agua_q){riachoG=AC.createGain();riachoG.gain.value=0;riachoG.connect(acSaida(AC));const el=arq('assets/vila/riacho');el.loop=true;AC.createMediaElementSource(el).connect(riachoG);el.play().catch(()=>{});window.__riachoEl=el;}   // barulho de agua do riacho (CC0)
     const r=AC.createBufferSource();r.buffer=ruido(4);r.loop=true;const rl=AC.createBiquadFilter();rl.type='bandpass';rl.frequency.value=650;rl.Q.value=.6;
     rioG=AC.createGain();rioG.gain.value=0;r.connect(rl);rl.connect(rioG);rioG.connect(acSaida(AC));r.start();
   }catch(e){}
@@ -400,6 +401,30 @@ let fala=null,perto=null,t=0,puloFalado=false;
 const teclas={};
 const flocos=[];for(let i=0;i<110;i++)flocos.push({x:rnd(0,W),y:rnd(0,H),v:rnd(18,55),s:rnd(1,2.8),o:rnd(0,6),z:rnd(.5,1.2)});
 const NEVE=window.JUX_NEVE||null,NEVEI=new Image();if(NEVE)NEVEI.src=NEVE.atlas;
+// RASTRO do mundo novo (vila2_rastro.js, ref/vila2/rastro_neve.png): pegada da bota por passo na neve (andando/correndo) e
+// a neve espirrando quando ele corre. Sem nada desenhado por codigo
+// ATRAVESSAR O MATO (Floresta, 2026-11-28; vila2_mato.js = ref/vila2/jux_mato.png): empurrando a faixa de mato (V.mato)
+// de lado por um instante, o Jux anda ate a beira, passa pelo mato com a animacao (cada quadro preso ao mato do mapa) e
+// sai andando do outro lado
+const MATO=window.JUX_MATO||null,MATOI=new Image();if(MATO)MATOI.src=MATO.atlas;const MT=V.mato||null,MATO_DUR=1.15,MATO_SEQ=[1,2,3,4,5,6,7,8,11];   // 2026-11-28 "lento, parece travando": em 2,3 s ele andava 7 un/s (o andar normal e 70) e cada pose ficava 1/4 s; agora ~8 quadros por segundo   // (os intermediarios de jux_mato_meio.png ficaram PIORES: o mato deles e outro desenho e pisca entre um quadro e outro; nao usados)   // 2026-11-28 'travado': sem o quadro parado do comeco e sem parar para sacudir a neve no fim
+function matoTenta(dx,nx,ny){if(!MT||!MATO||hero.mato||Math.abs(dx)<.6||livre(nx,ny)||hero.y<MT.y0||hero.y>MT.y1||Math.abs(hero.x-MT.x)>34||Math.sign(MT.x-hero.x)!==Math.sign(dx)){hero.empM=0;return false;}
+  hero.empM=0;hero.alvo=null;hero.mato={f:'passa',t:0,dir:dx>0?1:-1};return true;}
+// MATO v4 (2026-11-28, "o melhor possivel"): o Jux SEPARADO do mato. Ele anda de verdade, liso e continuo, de um lado ao
+// outro com a folha de andar abrindo caminho (MATO.empurra); os tufos (sempre o mesmo desenho) balancam quando ele passa
+// (MATO.balanca) e os que ficam na frente dele (mais baixo na tela) cobrem o corpo, como qualquer frente do mapa
+const MATO_VEL=34,EMPI=new Image(),BALI=new Image();if(MATO&&MATO.empurra){EMPI.src=MATO.empurra.atlas;BALI.src=MATO.balanca.atlas;}
+function matoPasso(dt){const M=hero.mato,d=M.dir;hero.dir=d;hero.olha=d>0?'direita':'esquerda';const alvo=d>0?MT.xb:MT.xa;
+  const st=MATO_VEL*dt,ax=alvo-hero.x;if(Math.abs(ax)<=st){hero.x=alvo;hero.mato=null;return;}hero.x+=Math.sign(ax)*st;M.dist=(M.dist||0)+st;M.t+=dt;
+  if(Math.abs(hero.x-MT.x)<16&&!M.toc){M.toc=t;}   // encostou no meio do mato: os tufos da altura dele balancam
+  const q=Math.floor(M.dist/3.4)%12;if(q!==M.q&&(q===0||q===6)){som(PASSOS_NEVE[(Math.random()*4)|0],.55);}M.q=q;}
+// a FILEIRA de mato: os tufos (vila2_mato.js tufos) empilhados em V.mato.tufos; os da altura do Jux balancam quando ele passa
+const TUFI=new Image();if(MATO&&MATO.tufos)TUFI.src=MATO.tufos.atlas;
+function desenhaTufo(u){const T=MATO.tufos;if(!TUFI.complete)return;const M=hero.mato,toc=u.toc;
+  if(M&&M.toc&&Math.abs(u[1]-hero.y)<26&&(!toc||t-toc>1.2))u.toc=M.toc,u.dir=M.dir;   // ele passou ao lado deste tufo
+  const b=u.toc!=null?Math.floor((t-u.toc)/.13):99;
+  if(b>=0&&b<6&&BALI.complete){const B=MATO.balanca;ctx.save();ctx.translate(u[0],u[1]);if(u.dir<0)ctx.scale(-1,1);ctx.drawImage(BALI,(u[2]*6+b)*B.w,0,B.w,B.h,-B.ancora[0]*ESC_H,-B.ancora[1]*ESC_H,B.w*ESC_H,B.h*ESC_H);ctx.restore();return;}
+  ctx.drawImage(TUFI,u[2]*T.w,0,T.w,T.h,u[0]-T.ancora[0]*ESC_H,u[1]-T.ancora[1]*ESC_H,T.w*ESC_H,T.h*ESC_H);}
+const RAS=window.JUX_RASTRO||null,RASI=new Image();if(RAS)RASI.src=RAS.atlas;const espirros=[];
 const trilhasNeve=[];   // neve BATIDA: onde o Jux passa varias vezes a marca fica funda (cada ponto conta as pisadas)
 const fumaca=[],pegadas=[],poeira=[],chamas=[],brilhoRio=[];
 /* ---------- vida no mapa (tools/vila_agua.py -> vila_agua.js): agua ondulando com reflexos correndo, cachoeiras com
@@ -1604,6 +1629,60 @@ function espadaPerto(){return ESPV&&!hero.espada&&!fala&&Math.hypot(hero.x-ESPV.
 function desenhaEspadaAltar(){const E=ESPV;if(!E||hero.espada||!E.i.complete)return;const q=Math.floor(t*6)%6;
   ctx.drawImage(E.i,q*E.w,0,E.w,E.h,E.x-E.ax*E.s,E.y-E.ay*E.s,E.w*E.s,E.h*E.s);
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+.25*Math.sin(t*2.6);ctx.drawImage(E.i,q*E.w,0,E.w,E.h,E.x-E.ax*E.s,E.y-E.ay*E.s,E.w*E.s,E.h*E.s);ctx.restore();}
+// ---------- RAPOSINHA DA TOCA (Floresta, 2026-11-28). Folha desenhada (vila2_raposa.js, tools/cut_raposa.py).
+// Ela espia quando o Jux chega perto; se ele se mexer perto, ela se esconde. Se ele ficar QUIETO um tempo, ela sai devagar,
+// cheira e volta. Cada visita em que ela sai conta confianca (JOGO.raposa.conf); com 2, na visita seguinte ela traz a pedrinha.
+const RAP=(REGIAO==='floresta'&&typeof RAPOSA!=='undefined')?(()=>{const i=new Image(),pi=new Image(),o={...RAPOSA,i,pi,sil:null,
+  boca:{x:256.7,y:391.5},x:256.7,y:391.5,est:'dentro',t:0,cool:1.5,quieto:0,esq:false,alvo:null,contou:false};
+  i.onload=()=>{const k=document.createElement('canvas');k.width=i.width;k.height=i.height;const x=k.getContext('2d');x.drawImage(i,0,0);
+    x.globalCompositeOperation='source-in';x.fillStyle='#0b0f1c';x.fillRect(0,0,k.width,k.height);o.sil=k;};
+  i.src=RAPOSA.atlas;pi.src=RAPOSA.pedra.img;return o;})():null;
+const RAP_SOM={espia:arq('assets/vila/raposa_espia'),susto:arq('assets/vila/raposa_susto'),fareja:arq('assets/vila/raposa_fareja'),
+  feliz:arq('assets/vila/raposa_feliz'),pega:arq('assets/vila/raposa_pedra')};
+function rapEstado(){JOGO.raposa=JOGO.raposa||{conf:0,presente:false,pedra:null,pegou:false};return JOGO.raposa;}
+function rapSom(a,v){const R=RAP;const d=Math.hypot(hero.x-R.x,hero.y-R.y);if(d<200)som(a,v*clamp(1-d/200,.15,1));}
+function rapVai(est){const R=RAP;R.est=est;R.t=0;}
+function rapPedraPerto(){const P=RAP&&rapEstado().pedra;return P&&!fala&&Math.hypot(hero.x-P[0],(hero.y-P[1])*1.2)<20;}
+function rapPegaPedra(){const S=rapEstado();S.pedra=null;S.pegou=true;daItem('pedra_raposa');som(SOM.ui_vez,.8);rapSom(RAP_SOM.pega,.7);
+  aviso('Você ganhou: Pedrinha da Raposa','#9fe8ff');salvaJogo();}
+function raposaAtualiza(dt){const R=RAP;if(!R)return;const S=rapEstado();R.t+=dt;R.cool-=dt;
+  R.quieto=hero.anda?0:R.quieto+dt;
+  const B=R.boca,dh=Math.hypot(hero.x-B.x,(hero.y-B.y)*1.2),mexe=hero.anda;
+  const anda=(vel,alvo)=>{const dx=alvo.x-R.x,dy=alvo.y-R.y,d=Math.hypot(dx,dy);if(d<1)return true;const p=Math.min(d,vel*dt);R.x+=dx/d*p;R.y+=dy/d*p;return d-p<1;};
+  const foge=()=>{rapVai('foge');rapSom(RAP_SOM.susto,.6);};
+  if(R.est==='dentro'){R.x=B.x;R.y=B.y;if(R.cool<=0&&dh<115){rapVai('espia');rapSom(RAP_SOM.espia,.45);}return;}
+  if(R.est==='espia'){
+    if(mexe&&dh<55||dh>135){rapVai('some');rapSom(RAP_SOM.susto,.4);return;}
+    if(R.t>1.2&&R.quieto>2.2&&dh>24){const dx=hero.x-B.x,dy=hero.y-B.y,d=Math.hypot(dx,dy)||1,k=Math.min(26,Math.max(8,d-24))/d;
+      R.alvo={x:B.x+dx*k,y:Math.max(B.y+7,B.y+dy*k)};R.esq=R.alvo.x<B.x;R.x=B.x;R.y=B.y+3;
+      rapVai(S.conf>=2&&!S.presente?'traz':'sai');}
+    return;}
+  if(R.est==='some'){if(R.t>.35){R.est='dentro';R.cool=5;}return;}
+  if(R.est==='sai'||R.est==='traz'){if(mexe&&dh<70){foge();return;}
+    if(anda(R.est==='sai'?11:13,R.alvo)){if(R.est==='sai'){rapVai('cheira');rapSom(RAP_SOM.fareja,.55);}else rapVai('solta');}return;}
+  if(R.est==='cheira'){if(mexe&&dh<70){foge();return;}
+    if(R.t>1.5&&!R.contou){R.contou=true;if(S.conf<2){S.conf++;salvaJogo();}}
+    if(R.t>3)rapVai('fica');return;}
+  if(R.est==='fica'){if(mexe&&dh<70){foge();return;}if(R.t>5)rapVai('volta');return;}
+  if(R.est==='solta'){if(R.t>.7){S.presente=true;const sx=R.esq?-1:1;S.pedra=[R.x+sx*R.pedra.dx/1.8,R.y+R.pedra.dy/1.8];salvaJogo();rapVai('feliz');rapSom(RAP_SOM.feliz,.6);}return;}
+  if(R.est==='feliz'){if(R.t>3.2)rapVai('volta');return;}
+  if(R.est==='foge'||R.est==='volta'){R.esq=B.x<R.x;if(anda(R.est==='foge'?60:34,B)){R.cool=R.est==='foge'?9:6;R.est='dentro';R.t=0;}return;}}
+function desenhaRaposa(){const R=RAP;if(!R||!R.i.complete)return;const S=rapEstado();
+  if(S.pedra&&R.pi.complete){const P=S.pedra,w=R.pedra.w/1.8,h=R.pedra.h/1.8;ctx.drawImage(R.pi,P[0]-w/2,P[1]-h,w,h);}
+  if(R.est==='dentro')return;const tt=R.t;let lin,q;
+  if(R.est==='espia'){lin=0;q=tt<.15?0:tt<.3?1:[2,3,4,3][Math.floor((tt-.3)*2.2)%4];}
+  else if(R.est==='some'){lin=0;q=tt<.18?5:0;}
+  else if(R.est==='sai'){lin=1;q=Math.floor(tt*7)%6;}
+  else if(R.est==='cheira'){lin=2;q=Math.min(5,Math.floor(tt*2.2));}
+  else if(R.est==='fica'){lin=2;q=[0,0,0,1,0,0,5,0][Math.floor(tt*2)%8];}
+  else if(R.est==='traz'){lin=4;q=Math.floor(tt*6)%3;}
+  else if(R.est==='solta'){lin=4;q=tt<.35?3:4;}
+  else if(R.est==='feliz'){lin=4;q=5;}
+  else {lin=3;q=Math.floor(tt*(R.est==='foge'?14:10))%6;}
+  const vira=lin===3?!R.esq:R.esq,fw=R.fw,fh=R.fh,s=1/1.8;
+  if(lin!==0&&R.sil){ctx.save();ctx.filter='blur(1.2px)';ctx.globalAlpha=.42;ctx.translate(R.x,R.y);ctx.transform(1,0,0,.2,0,0);if(vira)ctx.scale(-1,1);
+    ctx.drawImage(R.sil,q*fw,lin*fh,fw,fh,-R.ax*s,-R.ay*s,fw*s,fh*s);ctx.restore();}
+  ctx.save();ctx.translate(R.x,R.y);if(vira)ctx.scale(-1,1);ctx.drawImage(R.i,q*fw,lin*fh,fw,fh,-R.ax*s,-R.ay*s,fw*s,fh*s);ctx.restore();}
 function desenhaFaiscasB(){if(!FAISCAS_B.length)return;const dt=1/60;ctx.save();ctx.globalCompositeOperation='lighter';
   for(let i=FAISCAS_B.length-1;i>=0;i--){const f=FAISCAS_B[i];f.v+=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=160*dt;if(f.v>f.l){FAISCAS_B.splice(i,1);continue;}
     const a=1-f.v/f.l;ctx.fillStyle=`rgba(255,${170+Math.floor(80*a)},60,${a})`;ctx.fillRect(f.x-.6,f.y-.6,1.3,1.3);}ctx.restore();}
@@ -1619,6 +1698,48 @@ const CHAMV=V.chamines?(()=>{const i=new Image();i.src=V.chamines.atlas;return {
 const ONDV=V.ondas?(()=>{const i=new Image();i.src=V.ondas.atlas;return {...V.ondas,i,o:[]};})():null;
 function ondasAtualiza(dt){const O=ONDV;if(!O)return;for(let k=O.o.length-1;k>=0;k--){const o=O.o[k];o.t+=dt;o.x+=dt*2.2;if(o.t>o.vida)O.o.splice(k,1);}
   while(O.o.length<14){const p=O.pontos[Math.floor(Math.random()*O.pontos.length)];if(O.o.some(o=>Math.hypot(o.x-p[0],o.y-p[1])<30)&&Math.random()<.9)break;O.o.push({x:p[0],y:p[1],t:0,vida:rnd(1.8,2.8),q0:Math.floor(Math.random()*8),flip:Math.random()<.5,esc:rnd(.75,1.05)});}}
+// AGUA VIVA da Floresta (2026-11-28; V.agua de tools/floresta_mapa.py): a textura ref/vila2/agua_floresta.png corre rio
+// abaixo em 2 camadas (velocidades e tamanhos diferentes), so dentro da mascara da agua; a cachoeirinha (canal verde da
+// mascara) corre 4x mais rapido; e fiozinhos de correnteza (ref/rio/agua_corrente.png) descem nascendo e sumindo
+const AGV=V.agua?(()=>{const A=V.agua,o={...A,tex:new Image(),mi:new Image(),ci:new Image(),cv:document.createElement('canvas'),fios:[]};o.tex.src=A.textura;o.mi.src=A.mascara;o.ci.src=A.corrente.atlas;
+  o.mi.onload=()=>{const k=document.createElement('canvas');k.width=o.mi.width;k.height=o.mi.height;const g=k.getContext('2d');g.drawImage(o.mi,0,0);const d=g.getImageData(0,0,k.width,k.height);
+    const ma=document.createElement('canvas'),qa=document.createElement('canvas');ma.width=qa.width=k.width;ma.height=qa.height=k.height;const A1=ma.getContext('2d').createImageData(k.width,k.height),A2=qa.getContext('2d').createImageData(k.width,k.height);
+    for(let i=0;i<d.data.length;i+=4){A1.data[i+3]=d.data[i];A2.data[i+3]=d.data[i+1];}ma.getContext('2d').putImageData(A1,0,0);qa.getContext('2d').putImageData(A2,0,0);o.masc=ma;o.qmasc=qa;o.cv.width=k.width;o.cv.height=k.height;};return o;})():null;
+function aguaAtualiza(dt){const A=AGV;if(!A)return;for(let i=A.fios.length-1;i>=0;i--){const f=A.fios[i];f.t+=dt;f.x+=A.fluxo[0]*dt*14;f.y+=A.fluxo[1]*dt*14;if(f.t>f.vida)A.fios.splice(i,1);}
+  while(A.fios.length<16){const p=A.pontos[Math.floor(Math.random()*A.pontos.length)];A.fios.push({x:p[0],y:p[1],t:0,vida:rnd(1.4,2.4),q0:Math.floor(Math.random()*8),e:rnd(.8,1.1)});}}
+function desenhaAguaViva(){const A=AGV;if(!A||!A.masc||!A.tex.complete)return;const c=A.cv,g=c.getContext('2d'),W=c.width,H=c.height,K_=W/A.w;
+  g.setTransform(1,0,0,1,0,0);g.globalCompositeOperation='source-over';g.globalAlpha=1;g.clearRect(0,0,W,H);
+  const pat=g.createPattern(A.tex,'repeat'),L=A.lado*K_,s0=A.tex.width;
+  const camada=(esc,vel,al,dx)=>{const m=new DOMMatrix();m.translateSelf((A.fluxo[0]*t*vel+dx)%L,(A.fluxo[1]*t*vel)%L);m.scaleSelf(L*esc/s0,L*esc/s0);pat.setTransform(m);g.globalAlpha=al;g.fillStyle=pat;g.fillRect(0,0,W,H);};
+  camada(1,22*K_,.75,0);camada(1.35,34*K_,.45,L*.37);   // duas camadas: o desenho da agua nunca se repete igual
+  g.globalAlpha=1;g.globalCompositeOperation='destination-in';g.drawImage(A.masc,0,0);
+  // cachoeirinha: a mesma agua caindo rapido
+  g.globalCompositeOperation='source-over';const q=document.createElement('canvas');
+  ctx.save();ctx.globalAlpha=.62;ctx.drawImage(c,A.x,A.y,A.w,A.h);ctx.restore();
+  if(A.qmasc){g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);const m=new DOMMatrix();m.translateSelf(0,(t*110*K_)%L);m.scaleSelf(L*.6/s0,L*1.6/s0);pat.setTransform(m);g.globalAlpha=1;g.fillStyle=pat;g.fillRect(0,0,W,H);
+    g.globalCompositeOperation='destination-in';g.drawImage(A.qmasc,0,0);g.globalCompositeOperation='source-over';ctx.save();ctx.globalAlpha=.8;ctx.drawImage(c,A.x,A.y,A.w,A.h);ctx.restore();}
+  if(A.ci.complete){const C=A.corrente,sc=1/1.8;ctx.save();ctx.globalCompositeOperation='lighter';
+    for(const f of A.fios){const k=f.t/f.vida,qq=(f.q0+Math.floor(f.t*7))%8,w=C.fw*sc*f.e,h=C.fh*sc*f.e;ctx.globalAlpha=Math.min(1,k*3,(1-k)*3)*.7;
+      ctx.drawImage(A.ci,(qq%4)*C.fw,Math.floor(qq/4)*C.fh,C.fw,C.fh,f.x-w/2,f.y-h/2,w,h);}ctx.restore();}}
+// AGUA SO COM SPRITES (2026-11-28, 'nao quero efeito por codigo'): V.agua_viva = folhas desenhadas (ondas, correnteza,
+// espuma) e os lugares de cada uma na agua; cada sprite fica PARADO e so troca de quadro (com fase propria)
+const AGS=V.agua_viva?(()=>{const A=V.agua_viva,o={...A};for(const k of ['ondas','corrente','espuma']){const i=new Image();i.src=A[k].atlas;o[k+'I']=i;}return o;})():null;
+function desenhaAguaSprites(){const A=AGS;if(!A)return;const s=A.s;
+  const um=(k,P,fps)=>{const F=A[k],I=A[k+'I'];if(!I.complete)return;const w=F.fw*s,h=F.fh*s;for(const p of P){const q=(p[2]+Math.floor(t*fps))%(F.lin*F.col);
+    ctx.drawImage(I,(q%F.col)*F.fw,Math.floor(q/F.col)*F.fh,F.fw,F.fh,p[0]-w/2,p[1]-h/2,w,h);}};
+  um('ondas',A.p_ondas,6);um('corrente',A.p_corrente,8);um('corrente',A.p_queda,12);um('espuma',A.p_espuma,7);}
+// AGUA DESENHADA QUADRO A QUADRO (2026-11-28): V.agua_q = 8 ladrilhos de agua corrente desenhados (ref/vila2/agua_quadros.png).
+// Ao carregar, monta 8 imagens do riacho (o ladrilho repetido, recortado no formato da agua do mapa); no jogo so troca
+// uma imagem pela outra, ~8 por segundo (nada desliza nem se mistura)
+const AGQ=V.agua_q?(()=>{const A=V.agua_q,o={...A,f:[]},li=new Image(),mi=new Image();let ok=0;
+  const monta=()=>{if(++ok<2)return;const W=mi.width,H=mi.height,L=A.lado;const mk=document.createElement('canvas');mk.width=W;mk.height=H;const g=mk.getContext('2d');g.drawImage(mi,0,0);
+    const d=g.getImageData(0,0,W,H);for(let i=0;i<d.data.length;i+=4){d.data[i+3]=d.data[i];}g.putImageData(d,0,0);
+    for(let q=0;q<A.n;q++){const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+      for(let yy=0;yy<H;yy+=L)for(let xx=0;xx<W;xx+=L)x.drawImage(li,q*L,0,L,L,xx,yy,L,L);
+      x.globalCompositeOperation='destination-in';x.drawImage(mk,0,0);o.f.push(c);}};
+  li.onload=monta;mi.onload=monta;li.src=A.quadros;mi.src=A.mascara;if(A.sobre){o.so=new Image();o.so.src=A.sobre;}return o;})():null;
+function desenhaAguaQuadros(){const A=AGQ;if(!A||A.f.length<A.n)return;ctx.drawImage(A.f[Math.floor(t*8)%A.n],A.x,A.y,A.w,A.h);if(A.so&&A.so.complete)ctx.drawImage(A.so,A.x,A.y,A.w,A.h);
+  const Q=A.queda;if(Q){if(!A.qi){A.qi=new Image();A.qi.src=Q.atlas;}if(A.qi.complete){const q=Math.floor(t*10)%6,w=Q.fw*Q.s,h=Q.fh*Q.s;ctx.drawImage(A.qi,q*Q.fw,0,Q.fw,Q.fh,Q.x-w/2,Q.y-h,w,h);}}}   // a cachoeirinha caindo (ref/vila2/cachoeirinha.png)   // o pinheiro/pedras/espuma do mapa por cima da agua
 function desenhaOndas(){const O=ONDV;if(!O||!O.i.complete)return;ctx.save();ctx.globalCompositeOperation='lighter';
   for(const o of O.o){const k=o.t/o.vida,q=(o.q0+Math.floor(o.t*5))%8,w=O.w*O.s*o.esc,h=O.h*O.s*o.esc;ctx.globalAlpha=Math.min(1,k*4,(1-k)*4);
     ctx.save();ctx.translate(o.x,o.y);if(o.flip)ctx.scale(-1,1);ctx.drawImage(O.i,q*O.w,0,O.w,O.h,-w/2,-h/2,w,h);ctx.drawImage(O.i,q*O.w,0,O.w,O.h,-w/2,-h/2,w,h);ctx.restore();}   // 2x em 'lighter': brilho forte o bastante para ver
@@ -2345,7 +2466,7 @@ addEventListener('keydown',e=>{ligaAudio();const k=e.key.toLowerCase();
   if(ab.on){e.preventDefault();if(ab.esperando){if(k==='enter'||k===' ')abToca();}else if(k==='escape')abTermina();else if(k==='enter'||k===' '||k==='e')abContinua();return;}
   teclas[k]=true;
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
-  if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(espadaPerto())ganhaEspada();else if(caoPerto())caoCarinho();else if(perto)abreFala(perto.id);else if(pocoPerto()&&(PAR2.mov&&PAR2.mov.quadros.poco&&PAR2.mov.quadros.poco.cima)){if(Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4)pocoJa();else{hero.vaiPoco=true;hero.alvo={x:POCO_V.pe[0],y:POCO_V.pe[1]};hero._ad=1e9;hero._at=0;hero.alvoLonge=false;}}else if(bancoPerto()&&!hero.senta)senta(bancoPerto());}});
+  if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(espadaPerto())ganhaEspada();else if(rapPedraPerto())rapPegaPedra();else if(caoPerto())caoCarinho();else if(perto)abreFala(perto.id);else if(pocoPerto()&&(PAR2.mov&&PAR2.mov.quadros.poco&&PAR2.mov.quadros.poco.cima)){if(Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4)pocoJa();else{hero.vaiPoco=true;hero.alvo={x:POCO_V.pe[0],y:POCO_V.pe[1]};hero._ad=1e9;hero._at=0;hero.alvoLonge=false;}}else if(bancoPerto()&&!hero.senta)senta(bancoPerto());}});
 addEventListener('keyup',e=>{teclas[e.key.toLowerCase()]=false;});
 // tecla 'presa' (bug 2026-11-19: 'o boneco sai caminhando sozinho'): se a janela perde o foco com uma tecla apertada, o keyup nunca chega
 function soltaTudo(){for(const k in teclas)teclas[k]=false;hero.alvo=null;hero.pontoAlvo=null;}
@@ -2384,7 +2505,7 @@ function passo(dt){
   // mundo novo: SENTAR no banco (V.bancos): ENTER perto de um banco senta; qualquer direcao levanta
   if(hero.carinho){hero.carinho.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.carinho.t>=CAR_DUR){hero.olha=hero.carinho.esp?'esquerda':'direita';hero.carinho=null;}}
   if(hero.poco){hero.poco.t+=dt;dx=0;dy=0;hero.alvo=null;if(hero.poco.t>=4.6){hero.olha='cima';hero.poco=null;}}
-  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);bolasVAtualiza(dt);ondasAtualiza(dt);falasPracaAtualiza(dt);}
+  folhasChaoAtualiza(dt);passarosAtualiza(dt);vendedoresAtualiza(dt);caoAtualiza(dt);gatoAtualiza(dt);if(NOVO2){andarilhosAtualiza(dt);baconLamaAtualiza(dt);galinhasAtualiza(dt);raposaAtualiza(dt);bolasVAtualiza(dt);ondasAtualiza(dt);aguaAtualiza(dt);falasPracaAtualiza(dt);}
   if(V.saidas&&!hero.saiu&&!transicao&&t>2.2)for(const sd of V.saidas)if(sd.pagina&&Math.hypot(sd.x-hero.x,sd.y-hero.y)<sd.r){hero.saiu=true;try{sessionStorage.setItem('chega2',sd.chega);}catch(e){}vaiPara(sd.pagina);break;}   // mundo novo: andou ate a borda -> o bairro vizinho
   if(hero.vaiPoco){if(teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d'])hero.vaiPoco=false;else if(!hero.alvo||Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4){pocoJa();dx=0;dy=0;}}   // anda ate a frente do poco e so entao bebe   // bebendo agua no poco
   if(hero.vaiSentar){const b=hero.vaiSentar;if((teclas['arrowup']||teclas['arrowdown']||teclas['arrowleft']||teclas['arrowright']||teclas['w']||teclas['a']||teclas['s']||teclas['d']))hero.vaiSentar=null;else if(!hero.alvo||Math.hypot(b[0]-hero.x,b[1]-hero.y)<50){sentaJa(b);dx=0;dy=0;}}   // dx/dy deste quadro ainda eram da caminhada: levantava na hora   // anda ate a frente do banco e senta (ou senta se travou perto)
@@ -2419,7 +2540,7 @@ function passo(dt){
     if(hero.desliza){hero.gt=(hero.gt||0)+dt;if(hero.gt>.05){hero.gt=0;(hero.rastroG=hero.rastroG||[]).push({x:hero.x,y:hero.y,v:0});}}
     moveu=false;
   }else if(hero.gv){hero.gv=null;hero.desliza=0;}
-  if(emGelo){}else if(hero.pulo>0){   // pulo na cerca: arco rapido, passa por cima
+  if(emGelo){}else if(hero.mato&&MATO){matoPasso(dt);moveu=true;}else if(hero.pulo>0){   // pulo na cerca: arco rapido, passa por cima
     hero.pulo-=dt;const q=1-clamp(hero.pulo/(hero.puloD||PULO),0,1);let qm=q;
     // escalada: o corpo so sobe do meio da animacao (quadros pendurado/puxando); descendo, fica em cima ate o salto e aterrissa na metade
     if(hero.esc==='subir'){const p=clamp((q-.22)/.56,0,1);qm=p*p*(3-2*p);if(q>.3&&!hero.escN){hero.escN=1;poeiraNeve(hero.px0,hero.py1+6,5);}}
@@ -2431,6 +2552,7 @@ function passo(dt){
     moveu=true;
   }else if(n){const hx0=hero.x,hy0=hero.y;hero.direto=false;if(hero._ux0==null||Math.hypot(hero.x-hero._ux0,hero.y-hero._uy0)>12){hero._ux0=hero.x;hero._uy0=hero.y;}else{hero._ux0+=(hero.x-hero._ux0)*.35;hero._uy0+=(hero.y-hero._uy0)*.35;}hero.escorrega=false;dx/=n;dy/=n;hero.lama=naLamaJux(hero.x,hero.y)&&!!(PAR2.mov&&PAR2.mov.quadros.lama);hero.corre=!hero.lama&&!!(teclas['shift']||(hero.alvo&&hero.alvoLonge));const v=(hero.corre?VELC:VEL)*(hero.lama?.55:1)*dt,nx=hero.x+dx*v,ny=hero.y+dy*v*(NOVO2?(hero.corre?.78:.7):1);
     let pp=null,segura=false;
+    if(matoTenta(dx,nx,ny))segura=true;   // empurrando a faixa de mato: um instante parado e atravessa
     if(CER){if(!livre(nx,ny)){const rc=rumoCerca(hero.x,hero.y),deFrente=rc&&(dx*rc[0]+dy*rc[1])>.6;   // so pula empurrando a cerca DE FRENTE (andar rente a ela nao pula)
         const p=deFrente?puloCerca(hero.x,hero.y,dx,dy)||puloCerca(hero.x,hero.y,rc[0],rc[1]):null;
         if(p){const dd=dx*rc[0]+dy*rc[1];hero.empurra=(hero.empurra||0)+dt;if(hero.empurra>=(dd>.85?.2:.5))pp=p;else if(dd>.85)segura=true;}else hero.empurra=0;}else hero.empurra=0;}   // 2026-11-28 ("ruim de passar"): andando de LADO para a cerca (subindo o caminho) ele escorrega por ela; so pula empurrando de frente, ou segurando meio segundo   // empurrando a cerca por um instante: pula
@@ -2491,9 +2613,12 @@ function passo(dt){
       const neve=ter(hero.x,hero.y)&2;
       const ponte=naPonte(hero.x,hero.y),k=(Math.random()*4)|0;
       if(hero.lama)som(PASSOS_LAMA[k],.6);else if(ponte)som(PASSOS_MAD[k],.75);else if(neve)som(PASSOS_NEVE[k],hero.corre?.6:.5);else som(PASSOS[k],.4);
-      if(neve&&!ponte&&!hero.lama){pegadas.push({x:hero.x+hero.lado*2.6,y:hero.y-.5,d:hero.dir,v:0,o:hero.olha});
+      if(neve&&!ponte&&!hero.lama){const hz=hero.olha==='direita'||hero.olha==='esquerda';if(!RAS)pegadas.push({x:hero.x+hero.lado*2.6,y:hero.y-.5,d:hero.dir,v:0,o:hero.olha});
         {let tn=null;for(const q of trilhasNeve)if(Math.abs(q.x-hero.x)<9&&Math.abs(q.y-hero.y)<7){tn=q;break;}
-         if(tn){tn.n++;tn.v=0;tn.hz=hero.olha==='direita'||hero.olha==='esquerda';}else trilhasNeve.push({x:hero.x,y:hero.y,n:1,v:0,hz:hero.olha==='direita'||hero.olha==='esquerda'});if(trilhasNeve.length>500)trilhasNeve.shift();}poeiraNeve(hero.x,hero.y,hero.corre?7:3);}}}
+         if(tn){tn.n++;tn.v=0;tn.hz=hero.olha==='direita'||hero.olha==='esquerda';}else trilhasNeve.push({x:hero.x,y:hero.y,n:1,v:0,hz:hero.olha==='direita'||hero.olha==='esquerda'});if(trilhasNeve.length>500)trilhasNeve.shift();}if(!RAS)poeiraNeve(hero.x,hero.y,hero.corre?7:3);}}}
+  if(RAS&&hero.anda&&!hero.lama&&(ter(hero.x,hero.y)&2)&&!naPonte(hero.x,hero.y)){hero.pegD=(hero.pegD||0)+(hero.corre?VELC:VEL)*dt;   // RASTRO: um pe de cada vez, passada curta (andando ~7, correndo ~10 unidades)
+    if(hero.pegD>(hero.corre?10:7)){hero.pegD=0;hero.pegL=-(hero.pegL||1);const hz=hero.olha==='direita'||hero.olha==='esquerda',l=hero.pegL;
+      pegadas.push({x:hero.x+(hz?0:l*2.4),y:hero.y-.5+(hz?l*1.4:0),d:hero.dir,v:0,o:hero.olha,c:!!hero.corre,l});if(hero.corre&&l>0)espirros.push({x:hero.x+(hz?0:l*2.4),y:hero.y-.5+(hz?l*1.4:0),v:0});}}
   if(hero.anda&&hero.corre){hero.rt=(hero.rt||0)+dt;if(hero.rt>.05){hero.rt=0;hero.rastro.push({x:hero.x,y:hero.y,q:quadroHeroi().q});if(hero.rastro.length>4)hero.rastro.shift();}}else hero.rastro.length=0;
   perto=pontoPerto();
   if(hero.pontoAlvo&&hero.alvo){hero.alvo.x=hero.pontoAlvo.x;hero.alvo.y=hero.pontoAlvo.y+4;}   // clicou num morador que anda: o heroi segue ele ate chegar perto
@@ -2509,6 +2634,7 @@ function passo(dt){
   if(NA_VILA&&Math.random()<dt*9)chamas.push({x:1300+rnd(-8,8),y:520,v:0,vx:rnd(-5,5),s:rnd(1.5,3),q:true});
   for(const c of chamas){c.v+=dt;c.y-=dt*(c.q?30:20);c.x+=c.vx*dt;c.s*=1-dt*1.2;}
   for(let i=chamas.length-1;i>=0;i--)if(chamas[i].v>(chamas[i].q?1.3:.75))chamas.splice(i,1);
+  for(let i=espirros.length-1;i>=0;i--){espirros[i].v+=dt;if(espirros[i].v>.42)espirros.splice(i,1);}
   for(const p of pegadas)p.v+=dt;while(pegadas.length&&(pegadas[0].v>70||pegadas.length>420))pegadas.shift();
   for(const q of trilhasNeve)q.v+=dt;for(let i=trilhasNeve.length-1;i>=0;i--)if(trilhasNeve[i].v>200)trilhasNeve.splice(i,1);
   for(const p of poeira){p.v+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=40*dt;}while(poeira.length&&poeira[0].v>.6)poeira.shift();
@@ -2525,6 +2651,7 @@ function passo(dt){
   for(const b of brilhoRio){b.v+=dt;b.x+=dt*10;b.y-=dt*3;}while(brilhoRio.length&&brilhoRio[0].v>1.4)brilhoRio.shift();
   // sons de ambiente pela distancia
   if(pasG&&PAS){let dm=1e9;for(const B of PAS.b)if(!B.voa)for(const p of B.p)dm=Math.min(dm,Math.hypot(hero.x-p.x,hero.y-p.y));pasG.gain.value+=(Math.pow(clamp(1-dm/280,0,1),1.4)*.35-pasG.gain.value)*Math.min(1,dt*2);}   // passarinhos ao fundo, mais alto perto de um bando no chao (suave)
+  if(riachoG&&V.agua_q&&V.agua_q.pontos){let dm=1e9;for(const p of V.agua_q.pontos)dm=Math.min(dm,Math.hypot(hero.x-p[0],hero.y-p[1]));riachoG.gain.value+=(Math.pow(clamp(1-dm/260,0,1),1.3)*.7-riachoG.gain.value)*.08;}   // mais alto perto da agua
   if(fogoG&&NOVO2&&FOGOS_V.length){const [fx,fy]=FOGOS_V[0].lugares[0],d=Math.hypot(hero.x-fx,hero.y-fy);fogoG.gain.value=Math.pow(clamp(1-d/230,0,1),1.6)*.55;}   // suave: alto so perto da fogueira
   if(fogoG&&NA_VILA){const d=Math.hypot(hero.x-515,hero.y-484),df=Math.hypot(hero.x-905,hero.y-440);fogoG.gain.value=clamp(1-d/150,0,1)*.35+clamp(1-df/120,0,1)*.25;}
   if(rioG&&NA_VILA){let dm=1e9;for(let i=0;i<rioPx.length;i+=40){const k=rioPx[i],d=Math.hypot(hero.x-k%V.w,hero.y-((k/V.w)|0));if(d<dm)dm=d;}rioG.gain.value=clamp(1-dm/170,0,1)*.22;}
@@ -2580,6 +2707,8 @@ const DESL=window.JUX_DESLIZE||null,DESLI=new Image();if(DESL)DESLI.src=DESL.atl
 function desenhaHeroi(c,alpha,semRastro){if(hero.carinho)return;   // fazendo carinho: o Jux esta desenhado na cena do cachorro
 
   const desl=hero.desliza>0;
+  if(hero.mato&&MATO&&MATO.empurra&&EMPI.complete){const E=MATO.empurra,q=Math.floor((hero.mato.dist||0)/3.4)%12,d=hero.mato.dir;   // abrindo caminho no mato
+    c.save();c.globalAlpha=alpha;c.translate(hero.x,hero.y);c.scale(d*ESC_H,ESC_H);c.drawImage(EMPI,q*E.w,0,E.w,E.h,-E.ancora[0],-E.ancora[1],E.w,E.h);c.restore();return q;}   // entrando/saindo: o Jux andando some aos poucos
   if(desl&&DESL&&DESLI.complete&&(hero.olha==='direita'||hero.olha==='esquerda')){   // folha desenhada do deslize (so de lado; de frente/costas usa a pose por codigo)
     const v=hero.desliza,g=DESL[hero.olha],fr=v>95?g[1+(Math.floor(t*3)%2)]:v>45?g[2]:g[3],sc=ESC_H;
     c.save();c.globalAlpha=alpha;c.translate(hero.x,hero.y);c.scale(sc,sc);c.drawImage(DESLI,fr*DESL.w,0,DESL.w,DESL.h,-DESL.ancora[0],-DESL.ancora[1],DESL.w,DESL.h);c.restore();return fr;}
@@ -2657,6 +2786,7 @@ function desenha(){
   ctx.drawImage(MAPA,vx0*K,vy0*K,(vx1-vx0)*K,(vy1-vy0)*K,vx0,vy0,vx1-vx0,vy1-vy0);
   desenhaNeveChao();   // area de neve no chao (Casas)
   desenhaOndas();   // brilho na agua do rio (Portao)
+  desenhaAguaQuadros();   // agua do corrego (floresta_v4): 8 quadros DESENHADOS trocando (ref/vila2/agua_quadros.png) — nome proprio: ja existe um desenhaAgua (o rio da vila antiga) que passava por cima
   desenhaFolhasChao();   // folhas paradas no chao
   desenhaLuzV();   // mundo novo: a luz da fogueira piscando no chao (por baixo dos bonecos)
   // aurora ondulando (so se o alto do mapa estiver na tela)
@@ -2694,7 +2824,13 @@ function desenha(){
   if(typeof vidaDesenha==='function')vidaDesenha('chao');   // vida da regiao (vida_garganta.js)
   // pegadas na neve (somem devagar)
   // neve pisada: decalques desenhados (ref/trilha/neve_pisada.png). 1 pisada = pegada; 3+ = trilha batida; 7+ = neve revirada
-  if(NEVE&&NEVEI.complete){
+  if(RAS&&RASI.complete){const w=RAS.w*RAS.s,h=RAS.h*RAS.s;   // pegadas da bota (somem devagar em ~60 s) e a neve espirrando
+    for(const p of pegadas){const a=clamp(1-p.v/60,0,1)*Math.min(1,p.v*6+.3);if(a<=0)continue;
+      const fr=(p.o==='direita'?4:p.o==='esquerda'?5:p.o==='cima'?(p.l<0?0:1):(p.l<0?2:3))+(p.c?6:0);
+      ctx.globalAlpha=a*.92;ctx.drawImage(RASI,fr*RAS.w,0,RAS.w,RAS.h,p.x-w/2,p.y-h/2,w,h);}
+    for(const e of espirros){const fr=12+Math.min(5,Math.floor(e.v/.42*6));ctx.globalAlpha=1;ctx.drawImage(RASI,fr*RAS.w,0,RAS.w,RAS.h,e.x-w/2,e.y-h/2-1,w,h);}
+    ctx.globalAlpha=1;
+  }else if(NEVE&&NEVEI.complete){
     for(const q of trilhasNeve){if(q.n<3)continue;const a=clamp(1-q.v/200,0,1)*.9,fr=q.n>=7?7:(q.hz?4:5);
       ctx.globalAlpha=a;ctx.drawImage(NEVEI,fr*NEVE.w,0,NEVE.w,NEVE.h,q.x-NEVE.w/2,q.y-NEVE.h/2,NEVE.w,NEVE.h);}
     for(const p of pegadas){const a=clamp(1-p.v/70,0,1)*Math.min(1,p.v*4+.35),fr=p.o==='direita'?0:p.o==='esquerda'?1:p.o==='cima'?3:2;
@@ -2709,7 +2845,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(ESPV?[[ESPV.y,desenhaEspadaAltar]]:[]),...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(RAP?[[RAP.est==='dentro'||RAP.est==='espia'||RAP.est==='some'?RAP.boca.y-12:RAP.y,desenhaRaposa]]:[]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(MT&&MT.tufos&&MATO&&MATO.tufos?MT.tufos.map(u=>[u[1],()=>desenhaTufo(u)]):[]),...(ESPV?[[ESPV.y,desenhaEspadaAltar]]:[]),...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);desenhaBancoFrente();
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -2758,6 +2894,7 @@ function desenha(){
   else if(perto&&!fala&&!uiAberto())texto(nomePonto(perto.id)+'  ·  ENTER / toque para examinar',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(!fala&&!uiAberto()&&pocoPerto())texto('Poço  ·  ENTER para beber água',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(!fala&&!uiAberto()&&bancoPerto())texto('Banco  ·  ENTER para sentar',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
+  else if(rapPedraPerto())texto('E para pegar a pedrinha',W/2,H-20,NOVO2?12:15,'#cfe6f5','center');
   else if(espadaPerto())texto('E para pegar a espada',W/2,H-20,NOVO2?12:15,'#cfe6f5','center');
   else if(hero.senta&&hero.senta.fase==='fica'&&!fala)texto('Setas / WASD para levantar',W/2,H-20,NOVO2?12:15,'#cfe6f5','center');
   if(NOVO2)ctx.restore();
