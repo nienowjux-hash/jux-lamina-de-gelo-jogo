@@ -1633,7 +1633,7 @@ function desenhaEspadaAltar(){const E=ESPV;if(!E||hero.espada||!E.i.complete)ret
 // Ela espia quando o Jux chega perto; se ele se mexer perto, ela se esconde. Se ele ficar QUIETO um tempo, ela sai devagar,
 // cheira e volta. Cada visita em que ela sai conta confianca (JOGO.raposa.conf); com 2, na visita seguinte ela traz a pedrinha.
 const RAP=(REGIAO==='floresta'&&typeof RAPOSA!=='undefined')?(()=>{const i=new Image(),pi=new Image(),o={...RAPOSA,i,pi,sil:null,
-  boca:{x:256.7,y:391.5},x:256.7,y:391.5,est:'dentro',t:0,cool:1.5,quieto:0,esq:false,alvo:null,contou:false};
+  boca:{x:258.4,y:393.3},x:258.4,y:393.3,est:'dentro',t:0,cool:1.5,quieto:0,esq:false,alvo:null,contou:false};
   i.onload=()=>{const k=document.createElement('canvas');k.width=i.width;k.height=i.height;const x=k.getContext('2d');x.drawImage(i,0,0);
     x.globalCompositeOperation='source-in';x.fillStyle='#0b0f1c';x.fillRect(0,0,k.width,k.height);o.sil=k;};
   i.src=RAPOSA.atlas;pi.src=RAPOSA.pedra.img;return o;})():null;
@@ -1654,7 +1654,7 @@ function raposaAtualiza(dt){const R=RAP;if(!R)return;const S=rapEstado();R.t+=dt
   if(R.est==='espia'){
     if(mexe&&dh<55||dh>135){rapVai('some');rapSom(RAP_SOM.susto,.4);return;}
     if(R.t>1.2&&R.quieto>2.2&&dh>24){const dx=hero.x-B.x,dy=hero.y-B.y,d=Math.hypot(dx,dy)||1,k=Math.min(26,Math.max(8,d-24))/d;
-      R.alvo={x:B.x+dx*k,y:Math.max(B.y+7,B.y+dy*k)};R.esq=R.alvo.x<B.x;R.x=B.x;R.y=B.y+3;
+      R.alvo={x:B.x+dx*k,y:Math.max(B.y+7,B.y+dy*k)};R.esq=R.alvo.x<B.x;R.x=B.x;R.y=B.y+2;
       rapVai(S.conf>=2&&!S.presente?'traz':'sai');}
     return;}
   if(R.est==='some'){if(R.t>.35){R.est='dentro';R.cool=5;}return;}
@@ -1666,11 +1666,11 @@ function raposaAtualiza(dt){const R=RAP;if(!R)return;const S=rapEstado();R.t+=dt
   if(R.est==='fica'){if(mexe&&dh<70){foge();return;}if(R.t>5)rapVai('volta');return;}
   if(R.est==='solta'){if(R.t>.7){S.presente=true;const sx=R.esq?-1:1;S.pedra=[R.x+sx*R.pedra.dx/1.8,R.y+R.pedra.dy/1.8];salvaJogo();rapVai('feliz');rapSom(RAP_SOM.feliz,.6);}return;}
   if(R.est==='feliz'){if(R.t>3.2)rapVai('volta');return;}
-  if(R.est==='foge'||R.est==='volta'){R.esq=B.x<R.x;if(anda(R.est==='foge'?60:34,B)){R.cool=R.est==='foge'?9:6;R.est='dentro';R.t=0;}return;}}
+  if(R.est==='foge'||R.est==='volta'){R.esq=B.x<R.x;if(anda(R.est==='foge'?40:28,B)){R.cool=R.est==='foge'?9:6;R.est='dentro';R.t=0;}return;}}
 function desenhaRaposa(){const R=RAP;if(!R||!R.i.complete)return;const S=rapEstado();
   if(S.pedra&&R.pi.complete){const P=S.pedra,w=R.pedra.w/1.8,h=R.pedra.h/1.8;ctx.drawImage(R.pi,P[0]-w/2,P[1]-h,w,h);}
   if(R.est==='dentro')return;const tt=R.t;let lin,q;
-  if(R.est==='espia'){lin=0;q=tt<.15?0:tt<.3?1:[2,3,4,3][Math.floor((tt-.3)*2.2)%4];}
+  if(R.est==='espia'){lin=0;q=tt<.18?0:tt<.36?1:[2,2,4,4,2,3,3,2][Math.floor((tt-.36)*3)%8];}
   else if(R.est==='some'){lin=0;q=tt<.18?5:0;}
   else if(R.est==='sai'){lin=1;q=Math.floor(tt*7)%6;}
   else if(R.est==='cheira'){lin=2;q=Math.min(5,Math.floor(tt*2.2));}
@@ -1678,8 +1678,8 @@ function desenhaRaposa(){const R=RAP;if(!R||!R.i.complete)return;const S=rapEsta
   else if(R.est==='traz'){lin=4;q=Math.floor(tt*6)%3;}
   else if(R.est==='solta'){lin=4;q=tt<.35?3:4;}
   else if(R.est==='feliz'){lin=4;q=5;}
-  else {lin=3;q=Math.floor(tt*(R.est==='foge'?14:10))%6;}
-  const vira=lin===3?!R.esq:R.esq,fw=R.fw,fh=R.fh,s=1/1.8;
+  else {lin=3;q=Math.floor(tt*(R.est==='foge'?16:12))%6;}
+  const vira=lin===0?false:lin===3?!R.esq:R.esq,fw=R.fw,fh=R.fh,s=1/1.8;
   if(lin!==0&&R.sil){ctx.save();ctx.filter='blur(1.2px)';ctx.globalAlpha=.42;ctx.translate(R.x,R.y);ctx.transform(1,0,0,.2,0,0);if(vira)ctx.scale(-1,1);
     ctx.drawImage(R.sil,q*fw,lin*fh,fw,fh,-R.ax*s,-R.ay*s,fw*s,fh*s);ctx.restore();}
   ctx.save();ctx.translate(R.x,R.y);if(vira)ctx.scale(-1,1);ctx.drawImage(R.i,q*fw,lin*fh,fw,fh,-R.ax*s,-R.ay*s,fw*s,fh*s);ctx.restore();}
