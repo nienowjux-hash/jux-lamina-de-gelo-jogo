@@ -309,6 +309,9 @@ const FALAS={
   oskar:[['Oskar','Hm.'],['Jux','Bela lenha.'],['Oskar','Hm.'],['Jux','Muito... cilíndrica.'],['Oskar','...Você é estranho. Gostei.']],
   borin:[['Borin','HA! Um forasteiro! Veio ver o maior ferreiro de Invernália?'],['Jux','Vim ver se o fogo esquenta. Está nevando dentro da minha alma.'],['Borin','...Isso foi bonito.'],['Borin','*funga*'],['Jux','Você vai chorar?'],['Borin','NÃO! É fuligem no olho!']],
   tico:[['Tico','É VOCÊ! O cara que caiu do céu no chiqueiro!'],['Jux','Tecnicamente eu caí no Sir Bacon. Ele amorteceu.'],['Tico','Você é um deus? Um deus de verdade?'],['Jux','Sou estrategista. Deuses não sabem fazer planilha.'],['Tico','O QUE É PLANILHA?!'],['Jux','Uma magia antiga e terrível. Não pergunte mais.']],
+  guarda:[['Guarda','Alto lá. O portão fica fechado: ordem do conselho.'],['Jux','E se eu pedir com educação?'],['Guarda','Continua fechado. Mas eu agradeço a educação.'],['Guarda','Lá fora só tem lobo, neve e coisa pior. Fica aqui dentro, forasteiro.']],
+  fazendeiro:[['Fazendeiro','Ô, rapaz! Você é o que caiu no chiqueiro, né? O Sir Bacon não dormiu a noite toda.'],['Jux','Nem eu. Foi um pouso difícil para os dois.'],['Fazendeiro','Ele gostou de você. Porco não mente.'],['Sir Bacon','Oinc.']],
+  bino2:[['Bino','...'],['Jux','Bela marreta.'],['Bino','Hm.'],['Jux','Você fala pouco, né?'],['Bino','Falo o que precisa.']],
   bacon:[['Sir Bacon','Oinc.'],['Jux','Sir Bacon. Testemunha oficial do meu respawn. Nós temos uma história.'],['Sir Bacon','OINC.'],['Jux','Concordo. Ninguém precisa saber.']],
   vovo:[['Vovó Hilda','Hmpf. O forasteiro sem sombra. Caiu do céu no chiqueiro, foi?'],['Jux','Pouso estratégico. O Sir Bacon amorteceu.'],['Vovó Hilda','Um homem sem sombra só pode ser duas coisas: amaldiçoado ou escolhido.'],['Jux','E qual das duas ganha chá?'],['Vovó Hilda','...As duas. Mas o amaldiçoado lava a xícara.'],['Vovó Hilda','Suba até o altar, lá no alto. A espada vai dizer o que você é.']],
   altar:[['Aurora','Mil anos aqui em cima, e o primeiro que me entende chega por um chiqueiro.'],['Jux','Toda lenda começa humilde, Aurora.'],['Jux','A minha só começou mais cheirosa.']],
@@ -388,7 +391,7 @@ const FALAS={
   derrota:[['Vovó Hilda','Te acharam desmaiado lá fora, forasteiro. Arrastaram até aqui.'],['Jux','Recuo estratégico.'],['Vovó Hilda','Recuo de bunda na neve, isso sim. Vá se equipar direito.']],
   poco:[['Jux','Um poço congelado. Jogo uma moeda e faço um pedido?'],['Jux','…Sem moeda. Pedido negado. Esse mundo é consistente, pelo menos.']],
 };
-const NOMES={atq_1:'Sombra do Oskar',atq_2:'Sombra do Borin',atq_3:'Sombra da Ingrid',camara_alfa:'Câmara do Alfa',saida_caverna:'Saída da caverna',tunel_garras:'Túnel das correntes',caverna:'Caverna de gelo (entrada)',entrada_vale:'Trilha para o Vale dos Lobos',saida_vale:'Descida para a Garganta',floco:'Sr. Floco',capitao:'Capitão Dente-de-Ferro (mercador)',saida_garganta:'Caminho para a Garganta Gelada',entrada_trilha:'Arco de volta à trilha',caverna_fechada:'Caverna de gelo (bloqueada)',prova_pegadas:'Pegadas enormes',prova_fenrir:'Círculo de pedras',circulo_pico:'Círculo de pedras',entrada_pico:'Trilha do Pico do Uivo',saida_pico:'Descida para o Vale',mirante_pico:'Mirante',saida_vila:'Caminho de volta para a vila',caverna:'Caverna de gelo',santuario:'Santuário do cristal',acampamento:'Acampamento goblin',fogueira:'Fogueira',arvore:'Árvore das lanternas',barraca_comida:'Barraca de comida',barraca_bebida:'Barraca de bebida',
+const NOMES={vovo:'Vovó Hilda',tico:'Tico',ingrid:'Ingrid',halvard:'Halvard',borin:'Borin',oskar:'Oskar',bacon:'Sir Bacon',guarda:'Guarda do portão',fazendeiro:'Fazendeiro',bino2:'Bino',atq_1:'Sombra do Oskar',atq_2:'Sombra do Borin',atq_3:'Sombra da Ingrid',camara_alfa:'Câmara do Alfa',saida_caverna:'Saída da caverna',tunel_garras:'Túnel das correntes',caverna:'Caverna de gelo (entrada)',entrada_vale:'Trilha para o Vale dos Lobos',saida_vale:'Descida para a Garganta',floco:'Sr. Floco',capitao:'Capitão Dente-de-Ferro (mercador)',saida_garganta:'Caminho para a Garganta Gelada',entrada_trilha:'Arco de volta à trilha',caverna_fechada:'Caverna de gelo (bloqueada)',prova_pegadas:'Pegadas enormes',prova_fenrir:'Círculo de pedras',circulo_pico:'Círculo de pedras',entrada_pico:'Trilha do Pico do Uivo',saida_pico:'Descida para o Vale',mirante_pico:'Mirante',saida_vila:'Caminho de volta para a vila',caverna:'Caverna de gelo',santuario:'Santuário do cristal',acampamento:'Acampamento goblin',fogueira:'Fogueira',arvore:'Árvore das lanternas',barraca_comida:'Barraca de comida',barraca_bebida:'Barraca de bebida',
   ferraria:'Ferraria',bacon:'Sir Bacon',tico:'Tico',borin:'Borin',ingrid:'Ingrid, a padeira',oskar:'Oskar, o lenhador',halvard:'Halvard, o caçador',vovo:'Vovó Hilda',altar:'Altar da espada',portao:'Portão',poco:'Poço'};
 const COR={Jux:'#bff0ff',Aurora:'#c9b8ff','Sir Bacon':'#ffb6c8',Vendedora:'#ffd88a',Fenrir:'#9fe8ff',Skoll:'#c9a6ff',Halvard:'#ffd9a6','Bolotão':'#9fd8ff','Sr. Floco':'#cfeaff',Bino:'#d8b48a','Acólito':'#c9a6ff',Goblin:'#a6d96a'};
 
@@ -1330,7 +1333,9 @@ const naNeve=(x,y)=>!!(ter(x,y)&2);
 // o anjo e a bola so no MONTE de neve de verdade (V.neve_chao), com folga para o corpo deitado caber dentro dele
 const neveTico=(x,y)=>!!NEVEC&&x>NEVEC.x+16&&x<NEVEC.x+NEVEC.w-16&&y>NEVEC.y+8&&y<NEVEC.y+NEVEC.h-6&&naNeve(x,y)&&naNeve(x-14,y)&&naNeve(x+14,y);
 const halvardMorto=()=>!!(typeof JOGO!=='undefined'&&JOGO.cap2&&JOGO.cap2.halvardMorreu);   // historia: depois do Cap. 2 o Halvard nao aparece
-function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&halvardMorto())continue;o.t+=dt;const dx=hero.x-o.x,dy=hero.y-o.y,dh=Math.hypot(dx,dy*1.2);
+function andarilhosAtualiza(dt){for(const o of ANDV){if(o.id==='halvard'&&!halvardAqui2())continue;o.t+=dt;
+  if(FALA_COM===o.id){o.rota=null;o.est='para';o.t=0;o.dur=2;conv2Olha(o);continue;}   // conversando: para e olha para o Jux
+  const dx=hero.x-o.x,dy=hero.y-o.y,dh=Math.hypot(dx,dy*1.2);
   if(o.id==='vovo'&&hero.corre&&dh<70&&(o.est!=='acao'||o.acao!=='bronca')&&t-(o.bronca||-99)>6){o.bronca=t;o.est='acao';o.acao='bronca';o.t=0;o.dur=acaoDur('bronca',o);o.dir='frente';
     o.alt=40;baloes.length=0;balao(o,BRONCAS[Math.floor(Math.random()*BRONCAS.length)]);o.falou=t;continue;}   // a Vovo: correr perto dela = bronca
   if(dh<42&&!hero.carinho){o.rota=null;
@@ -1552,7 +1557,7 @@ function frenteSobre(o,A,q){if(o.na_frente==null)return;const f=V.frentes[o.na_f
   ctx.drawImage(im,f.x,f.y,f.w,f.h);   // a bigorna inteira na frente do corpo dele...
   if(A&&(q===0||q===3)){ctx.save();ctx.beginPath();ctx.rect(o.x+o.mao,f.y-40,60,o.corte-f.y+40);ctx.clip();   // ...e o martelo (a direita do corpo, acima do tampo) por cima dela
     ctx.drawImage(A.i,q*A.w,0,A.w,A.h,o.x-A.ax*A.s,o.y-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();}}
-function desenhaAndarilho(o){if(o.id==='halvard'&&halvardMorto())return;
+function desenhaAndarilho(o){if(o.id==='halvard'&&!halvardAqui2())return;
   if(o.est==='para'&&o.ac&&o.ac.i.complete){const A=o.ac,L=o.id==='oskar'?[0,1,2,1]:o.id==='borin'?[0]:[0,1],q=6*(o.lin||0)+L[Math.floor(o.t/(o.id==='oskar'?.9:.6))%L.length];   // parado: pose de parado da folha de acoes (a de corrida congelada ficava estranha)
     const vz=o.id==='fazendeiro'&&o.esq;A.x=o.x;A.y=o.y;A.esq=vz;A.cao=o.id==='tico';A.deitado=false;sombraVendedor(A,q);ctx.save();ctx.translate(o.x,o.y);if(vz)ctx.scale(-1,1);ctx.drawImage(A.i,q*A.w,0,A.w,A.h,-A.ax*A.s,-A.ay*A.s,A.w*A.s,A.h*A.s);ctx.restore();frenteSobre(o,A,q);return;}
   if(o.est==='acao'&&o.ac&&o.ac.i.complete){const A=o.ac;let q=acaoQuadro(o);if(q==null)q=o.acao==='espera'?[0,1,2,1][Math.floor(o.t/.9)%4]:0;
@@ -1699,7 +1704,7 @@ const BINM=(REGIAO==='praca'&&BAND&&PAR2.bino&&CAO&&CAO.passeio&&FOGOS_V&&FOGOS_
   const o={P,x:P[0][0],y:P[0][1],olha:'baixo',est:'para',t:0,dur:2,rota:null,dist:0,silA:null,silP:null,falou:-99};
   const a=()=>{if(BANDI.complete&&!o.silA)o.silA=silDe(BANDI);if(PAR2.bino.i.complete&&!o.silP)o.silP=silDe(PAR2.bino.i);};a();BANDI.addEventListener('load',a);PAR2.bino.i.addEventListener('load',a);return o;})():null;
 const BINO_FALAS=['Hm.','...','Jux.','Fogo bom.','*acena com a cabeça*'];
-function binoMoradorAtualiza(dt){const B=BINM;if(!B||SEG.ativo)return;B.t+=dt;const dx=hero.x-B.x,dy=hero.y-B.y,dh=Math.hypot(dx,dy*1.2);
+function binoMoradorAtualiza(dt){const B=BINM;if(!B||SEG.ativo)return;B.t+=dt;if(FALA_COM==='bino2'){B.rota=null;B.est='para';B.t=0;B.dur=2;conv2Olha(B);return;}const dx=hero.x-B.x,dy=hero.y-B.y,dh=Math.hypot(dx,dy*1.2);
   if(dh<40){B.rota=null;B.est='para';B.olha=Math.abs(dx)>Math.abs(dy)?(dx<0?'esquerda':'direita'):(dy>0?'baixo':'cima');B.t=0;B.dur=rnd(1.5,3);
     if(t-B.falou>14&&!baloes.length&&!fala){B.falou=t;B.alt=56;balao(B,BINO_FALAS[Math.floor(Math.random()*BINO_FALAS.length)]);}return;}
   if(B.est==='para'){if(B.t>B.dur){const p=B.P[Math.floor(Math.random()*B.P.length)];B.rota=caoCaminho(B.x,B.y,p[0],p[1]);if(B.rota&&B.rota.length){B.est='anda';B.t=0;}else B.dur+=2;}return;}
@@ -1714,6 +1719,19 @@ function desenhaBinoMorador(){const B=BINM;if(!B||SEG.ativo)return;const anda=B.
   if(sil){const s=D.escala;ctx.save();ctx.filter='blur(1.4px)';ctx.globalAlpha=.42;ctx.translate(B.x,B.y);ctx.transform(1,0,0,.22,0,0);ctx.scale(esp?-s:s,s);
     ctx.drawImage(sil,q*D.w,0,D.w,D.h,-D.ancora[0],-D.ancora[1],D.w,D.h);ctx.restore();}
   desenhaNpc(D,img,B.x,B.y,q,esp,14,54);}
+// ---------- CONVERSAR NOS BAIRROS (P7 parte 2, 2026-11-28): cada morador com historia ganha um ponto de conversa que ANDA com
+// ele (V.pontos). ENTER perto: abreFala(id) usa as mesmas falas, lojas e missoes da vila antiga. Durante a conversa (e a loja)
+// o morador para e olha para o Jux. O Halvard so aparece depois do resgate (Olhos Roxos feita) e some depois do Cap. 2.
+const CONV2={vovo:30,tico:26,ingrid:30,halvard:30,borin:32,oskar:32,guarda:32,fazendeiro:30};
+let FALA_COM=null,PONTOS2=null;
+const halvardAqui2=()=>!halvardMorto()&&(!NOVO2||(typeof estadoMissao==='function'&&estadoMissao('olhos_roxos')==='feita'));
+function pontos2Passo(){if(!NOVO2)return;
+  if(!PONTOS2){PONTOS2=[];for(const o of ANDV)if(CONV2[o.id]){const p={id:o.id,x:o.x,y:o.y,r:CONV2[o.id],npc:o,conv:true};PONTOS2.push(p);V.pontos.push(p);}
+    if(BACON_L){const p={id:'bacon',x:BACON_L.x,y:BACON_L.y,r:34,npc:BACON_L,conv:true};PONTOS2.push(p);V.pontos.push(p);}
+    if(BINM){const p={id:'bino2',x:BINM.x,y:BINM.y,r:30,npc:BINM,conv:true};PONTOS2.push(p);V.pontos.push(p);}}
+  for(const p of PONTOS2){const n=p.npc;p.x=n.x;p.y=n.y;p.r=(p.id==='halvard'&&!halvardAqui2())||(p.id==='bino2'&&SEG.ativo)?0:CONV2[p.id]||(p.id==='bacon'?34:30);}
+  if(FALA_COM&&!fala&&!uiAberto())FALA_COM=null;}
+function conv2Olha(o){const dx=hero.x-o.x,dy=hero.y-o.y;if(Math.abs(dx)>Math.abs(dy)){o.dir='lado';o.esq=dx<0;o.olha=dx<0?'esquerda':'direita';}else{o.dir=dy>0?'frente':'costas';o.olha=dy>0?'baixo':'cima';}}
 function desenhaFaiscasB(){if(!FAISCAS_B.length)return;const dt=1/60;ctx.save();ctx.globalCompositeOperation='lighter';
   for(let i=FAISCAS_B.length-1;i>=0;i--){const f=FAISCAS_B[i];f.v+=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=160*dt;if(f.v>f.l){FAISCAS_B.splice(i,1);continue;}
     const a=1-f.v/f.l;ctx.fillStyle=`rgba(255,${170+Math.floor(80*a)},60,${a})`;ctx.fillRect(f.x-.6,f.y-.6,1.3,1.3);}ctx.restore();}
@@ -2000,7 +2018,7 @@ function corposNpc(){if(!NA_VILA)return [];if(emAtaque()){const L=(JOGO.cap2&&JO
   const o=[tico,vovo,borin,...ANDARILHOS,...FIGURANTES];o.push(bacon);return o.filter(n=>n&&isFinite(n.x));}
 function npcBloqueia(x,y,x0,y0){for(const n of corposNpc()){const rx=n===bacon?11:8,ry=5,d=((x-n.x)/rx)**2+((y-n.y)/ry)**2;
   if(d<1&&d<((x0-n.x)/rx)**2+((y0-n.y)/ry)**2)return n;}return null;}
-function pontoPerto(){atqPontosPasso();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!atqPode(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
+function pontoPerto(){atqPontosPasso();pontos2Passo();MEMORIAL.r=emManha()?40:0;let m=null,md=1e9;for(const p of V.pontos){if(emAtaque()&&!atqPode(p.id))continue;const d=Math.hypot(hero.x-p.x,hero.y-p.y);if(d<p.r&&d<md){m=p;md=d;}}return m;}
 
 
 /* ---------- REGIÕES E ENCONTROS ALEATÓRIOS (SISTEMA_RPG.md §7b) ----------
@@ -2521,7 +2539,7 @@ addEventListener('keydown',e=>{ligaAudio();const k=e.key.toLowerCase();
   if(ab.on){e.preventDefault();if(ab.esperando){if(k==='enter'||k===' ')abToca();}else if(k==='escape')abTermina();else if(k==='enter'||k===' '||k==='e')abContinua();return;}
   teclas[k]=true;
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
-  if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(espadaPerto())ganhaEspada();else if(rapPedraPerto())rapPegaPedra();else if(caoPerto())caoCarinho();else if(perto)abreFala(perto.id);else if(pocoPerto()&&(PAR2.mov&&PAR2.mov.quadros.poco&&PAR2.mov.quadros.poco.cima)){if(Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4)pocoJa();else{hero.vaiPoco=true;hero.alvo={x:POCO_V.pe[0],y:POCO_V.pe[1]};hero._ad=1e9;hero._at=0;hero.alvoLonge=false;}}else if(bancoPerto()&&!hero.senta)senta(bancoPerto());}});
+  if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(espadaPerto())ganhaEspada();else if(rapPedraPerto())rapPegaPedra();else if(caoPerto())caoCarinho();else if(perto){if(perto.conv)FALA_COM=perto.id;abreFala(perto.id);}else if(pocoPerto()&&(PAR2.mov&&PAR2.mov.quadros.poco&&PAR2.mov.quadros.poco.cima)){if(Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4)pocoJa();else{hero.vaiPoco=true;hero.alvo={x:POCO_V.pe[0],y:POCO_V.pe[1]};hero._ad=1e9;hero._at=0;hero.alvoLonge=false;}}else if(bancoPerto()&&!hero.senta)senta(bancoPerto());}});
 addEventListener('keyup',e=>{teclas[e.key.toLowerCase()]=false;});
 // tecla 'presa' (bug 2026-11-19: 'o boneco sai caminhando sozinho'): se a janela perde o foco com uma tecla apertada, o keyup nunca chega
 function soltaTudo(){for(const k in teclas)teclas[k]=false;hero.alvo=null;hero.pontoAlvo=null;}
@@ -2677,7 +2695,7 @@ function passo(dt){
   if(hero.anda&&hero.corre){hero.rt=(hero.rt||0)+dt;if(hero.rt>.05){hero.rt=0;hero.rastro.push({x:hero.x,y:hero.y,q:quadroHeroi().q});if(hero.rastro.length>4)hero.rastro.shift();}}else hero.rastro.length=0;
   perto=pontoPerto();
   if(hero.pontoAlvo&&hero.alvo){hero.alvo.x=hero.pontoAlvo.x;hero.alvo.y=hero.pontoAlvo.y+4;}   // clicou num morador que anda: o heroi segue ele ate chegar perto
-  if(hero.pontoAlvo&&perto===hero.pontoAlvo){abreFala(perto.id);}
+  if(hero.pontoAlvo&&perto===hero.pontoAlvo){if(perto.conv)FALA_COM=perto.id;abreFala(perto.id);}
   cam.x+=(hero.x-cam.x)*Math.min(1,dt*6);cam.y+=(hero.y-12-cam.y)*Math.min(1,dt*6);
   const hw=W/2/Z,hh=H/2/Z;cam.x=clamp(cam.x,hw,V.w-hw);cam.y=clamp(cam.y,hh,V.h-hh);
   if(fala){const L=fala.linhas[fala.i][1];fala.letras=Math.min(L.length,fala.letras+dt*48*(typeof OPC==='object'?OPC.texto:1));}
@@ -2946,7 +2964,7 @@ function desenha(){
   const vg=ctx.createRadialGradient(W/2,H/2,H*.45,W/2,H/2,H*.95);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,4,16,.32)');ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
   if(NOVO2){ctx.save();ctx.globalAlpha=.62;}   // mundo novo (2026-11-26 "tem que ser mais sutil"): avisos menores e meio transparentes
   if(!fala&&!uiAberto()&&caoPerto())texto('Cachorro  ·  F para fazer carinho',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');   // o cachorro passa na frente dos pontos (ele dorme perto da fogueira)
-  else if(perto&&!fala&&!uiAberto())texto(nomePonto(perto.id)+'  ·  ENTER / toque para examinar',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
+  else if(perto&&!fala&&!uiAberto())texto(nomePonto(perto.id)+(perto.conv?'  ·  ENTER / toque para conversar':'  ·  ENTER / toque para examinar'),W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(!fala&&!uiAberto()&&pocoPerto())texto('Poço  ·  ENTER para beber água',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(!fala&&!uiAberto()&&bancoPerto())texto('Banco  ·  ENTER para sentar',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(rapPedraPerto())texto('E para pegar a pedrinha',W/2,H-20,NOVO2?12:15,'#cfe6f5','center');

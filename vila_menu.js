@@ -408,14 +408,15 @@ function desenhaDiario(cx,cy,w,h,y){const l=listaDiario(),sel=l[UI.sel]||'_histo
   if(st==='ativa'){if(M.principal)texto('★ Missão principal: sempre apontada no minimapa',x2,yy,13,COR_P);else{const on=JOGO.rastreio===sel;texto((on?'◆ Rastreando no minimapa  ·  ENTER: parar':'ENTER: rastrear no minimapa'),x2,yy,14,on?COR_S:'#9fe8ff');}}
 }
 // ---------- Mapa da região (por enquanto: a vila de Invernália)
-const POS_NPC=()=>{if(!NA_VILA)return {};const r={tico,vovo,borin,bacon};for(const a of ANDARILHOS)r[a.id]=a;return r;};
+const POS_NPC=()=>{if(typeof NOVO2!=='undefined'&&NOVO2){const r={};if(typeof PONTOS2!=='undefined'&&PONTOS2)for(const p of PONTOS2)if(p.r>0)r[p.id]=p.npc;return r;}   // mundo novo: quem tem conversa no bairro
+  if(!NA_VILA)return {};const r={tico,vovo,borin,bacon};for(const a of ANDARILHOS)r[a.id]=a;return r;};
 const NOME_NPC={halvard:'Halvard',tico:'Tico',vovo:'Vovó Hilda',borin:'Borin',bacon:'Sir Bacon',ingrid:'Ingrid',oskar:'Oskar'};
 // marca de missão em cima da cabeça dos moradores (no mapa do jogo)
-const ALT_NPC={tico:34,bacon:24,vovo:46,borin:52,ingrid:48,oskar:52};
+const ALT_NPC={tico:34,bacon:24,vovo:46,borin:52,ingrid:48,oskar:52,halvard:52,guarda:54,fazendeiro:48,bino2:58};
 // quem da missao FORA da vila (2026-11-20: o Capitao na Garganta nao tinha o '!', e a missao da Presa-Antiga passava batido)
 const MARCAS_FORA={garganta:()=>typeof chefeFeito==='function'&&chefeFeito('capitao')?{capitao:{x:430,y:430}}:{}};
 const ALT_FORA={capitao:70};
-function marcasNoMundo(){if(typeof emAtaque==='function'&&emAtaque())return;const pos=NA_VILA?POS_NPC():(MARCAS_FORA[REGIAO]?MARCAS_FORA[REGIAO]():{});for(const id in pos){const n=pos[id];if(!n)continue;const mk=marcaMissao(id);if(!mk||mk==='…')continue;
+function marcasNoMundo(){if(typeof emAtaque==='function'&&emAtaque())return;const pos=(NA_VILA||(typeof NOVO2!=='undefined'&&NOVO2))?POS_NPC():(MARCAS_FORA[REGIAO]?MARCAS_FORA[REGIAO]():{});for(const id in pos){const n=pos[id];if(!n)continue;const mk=marcaMissao(id);if(!mk||mk==='…')continue;
   const b=Math.sin(t*4)*3,x=W/2+(n.x-cam.x)*Z,y=H/2+(n.y-(ALT_FORA[id]||ALT_NPC[id]||46)-cam.y)*Z+b;ctx.save();ctx.fillStyle=mk==='!'?'#ffd84a':'#7dffa8';ctx.strokeStyle='#3a2a00';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-6,9,11,0,0,6.283);ctx.fill();ctx.stroke();
     ctx.beginPath();ctx.moveTo(x-4,y+3);ctx.lineTo(x,y+10);ctx.lineTo(x+4,y+3);ctx.fill();ctx.font='bold 15px "Trebuchet MS"';ctx.textAlign='center';ctx.fillStyle='#2a1a00';ctx.fillText(mk,x,y-1);ctx.restore();}}
 // ---------- entrada
