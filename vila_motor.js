@@ -17,7 +17,7 @@ const hc=document.createElement('canvas');hc.width=W*HD;hc.height=H*HD;const hct
 const sc=document.createElement('canvas');sc.width=W*HD;sc.height=H*HD;const sctx=sc.getContext('2d');
 const V=window.JUX_VILA,AND=window.JUX_ANDAR,K=V.k||1;
 const REGIAO=window.REGIAO||'vila',NA_VILA=REGIAO==='vila';
-const NOVO2=['praca','casas','forja','chiqueiro','portao'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
+const NOVO2=['praca','casas','forja','chiqueiro','portao','altar'].includes(REGIAO);   // mundo novo (PLANO_MUNDO_NOVO.md): bairros ligados pelas bordas   // qual mapa esta página mostra
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const MAPA=new Image();MAPA.src=V.mapa;
 // ---- CAPITULO 2 (FICHA_CAP2_FESTIVAL.md): JOGO.cap2.fase = 'noite' (festival) -> 'ataque' -> ... ----
@@ -1597,6 +1597,13 @@ function desenhaVendedor(v){if(!v.i.complete)return;
 // FUMVACA da fogueira (V5, 2026-11-26; ref/vila2/fumaca.png 2x4, fundo preto tirado pelo brilho): sobe do topo das chamas,
 // semi-transparente; cada quadro se mistura no seguinte (sem pulo) e balanca de leve com o vento
 const FUMV=V.fumaca?(()=>{const i=new Image();i.src=V.fumaca.atlas;return {...V.fumaca,i};})():null;
+// ESPADA NO PEDESTAL (Subida do altar, 2026-11-28; ref/vila2/espada_altar.png 1x6, so o brilho pulsando): fica no
+// pedestal enquanto o Jux nao tem a espada; perto dela, E pega (ganhaEspada: clarao, faiscas e a fala da Aurora)
+const ESPV=V.espada_altar?(()=>{const i=new Image();i.src=V.espada_altar.atlas;return {...V.espada_altar,i};})():null;
+function espadaPerto(){return ESPV&&!hero.espada&&!fala&&Math.hypot(hero.x-ESPV.x,(hero.y-(ESPV.y+24))*1.3)<44;}   // a volta do pedestal (o pe dele bloqueia: da para chegar ate ~40 da espada)
+function desenhaEspadaAltar(){const E=ESPV;if(!E||hero.espada||!E.i.complete)return;const q=Math.floor(t*6)%6;
+  ctx.drawImage(E.i,q*E.w,0,E.w,E.h,E.x-E.ax*E.s,E.y-E.ay*E.s,E.w*E.s,E.h*E.s);
+  ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+.25*Math.sin(t*2.6);ctx.drawImage(E.i,q*E.w,0,E.w,E.h,E.x-E.ax*E.s,E.y-E.ay*E.s,E.w*E.s,E.h*E.s);ctx.restore();}
 function desenhaFaiscasB(){if(!FAISCAS_B.length)return;const dt=1/60;ctx.save();ctx.globalCompositeOperation='lighter';
   for(let i=FAISCAS_B.length-1;i>=0;i--){const f=FAISCAS_B[i];f.v+=dt;f.x+=f.vx*dt;f.y+=f.vy*dt;f.vy+=160*dt;if(f.v>f.l){FAISCAS_B.splice(i,1);continue;}
     const a=1-f.v/f.l;ctx.fillStyle=`rgba(255,${170+Math.floor(80*a)},60,${a})`;ctx.fillRect(f.x-.6,f.y-.6,1.3,1.3);}ctx.restore();}
@@ -2338,7 +2345,7 @@ addEventListener('keydown',e=>{ligaAudio();const k=e.key.toLowerCase();
   if(ab.on){e.preventDefault();if(ab.esperando){if(k==='enter'||k===' ')abToca();}else if(k==='escape')abTermina();else if(k==='enter'||k===' '||k==='e')abContinua();return;}
   teclas[k]=true;
   if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();
-  if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(caoPerto())caoCarinho();else if(perto)abreFala(perto.id);else if(pocoPerto()&&(PAR2.mov&&PAR2.mov.quadros.poco&&PAR2.mov.quadros.poco.cima)){if(Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4)pocoJa();else{hero.vaiPoco=true;hero.alvo={x:POCO_V.pe[0],y:POCO_V.pe[1]};hero._ad=1e9;hero._at=0;hero.alvoLonge=false;}}else if(bancoPerto()&&!hero.senta)senta(bancoPerto());}});
+  if(k==='enter'||k===' '||k==='e'){if(fala)avanca();else if(espadaPerto())ganhaEspada();else if(caoPerto())caoCarinho();else if(perto)abreFala(perto.id);else if(pocoPerto()&&(PAR2.mov&&PAR2.mov.quadros.poco&&PAR2.mov.quadros.poco.cima)){if(Math.hypot(POCO_V.pe[0]-hero.x,POCO_V.pe[1]-hero.y)<4)pocoJa();else{hero.vaiPoco=true;hero.alvo={x:POCO_V.pe[0],y:POCO_V.pe[1]};hero._ad=1e9;hero._at=0;hero.alvoLonge=false;}}else if(bancoPerto()&&!hero.senta)senta(bancoPerto());}});
 addEventListener('keyup',e=>{teclas[e.key.toLowerCase()]=false;});
 // tecla 'presa' (bug 2026-11-19: 'o boneco sai caminhando sozinho'): se a janela perde o foco com uma tecla apertada, o keyup nunca chega
 function soltaTudo(){for(const k in teclas)teclas[k]=false;hero.alvo=null;hero.pontoAlvo=null;}
@@ -2702,7 +2709,7 @@ function desenha(){
   // heroi (sem sombra: em Elyria o Jux nao tem sombra) e as frentes por cima dele
   if(NA_VILA&&!mapaFesta()&&hero.y>=520)desenhaLanternas();
   uiMundo();
-  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
+  const npcs=[...(SEG.ativo?[[SEG.y,desenhaSeguidor]]:[]),...VEND.map(v=>[v.y,()=>desenhaVendedor(v)]),...(CAO?[[CAO.y,desenhaCao]]:[]),...(GATO?[[GATO.y,desenhaGato]]:[]),...ANDV.map(o=>[o.y,()=>desenhaAndarilho(o)]),...(BACON_L?[[BACON_L.y,desenhaBaconLama]]:[]),...GALS.map(g=>[g.y,()=>desenhaGalinha(g)]),...(PAS&&PAS.i.complete?PAS.b.flatMap(B=>B.p.map(p=>[p.y+(p.h>0?60:0),()=>desenhaPassaro(p,B)])):[]),...(FCH&&FCH.i.complete?FCH.m.filter(m=>m.a>=0).map(m=>[m.y,()=>desenhaMonte(m)]):[]),...FOGOS_V.map((f,i)=>[f.lugares[0][1],()=>desenhaFogoV(i)]),...(FUMV?[[FOGOS_V.length?FOGOS_V[0].lugares[0][1]-.5:FUMV.y,desenhaFumacaV]]:[]),...(CHAMV?[[1e9,desenhaChaminesV]]:[]),[1e9-1,desenhaFaiscasB],[1e9-2,desenhaBolasV],...(ESPV?[[ESPV.y,desenhaEspadaAltar]]:[]),...(BAND_V?BAND_V.lugares.map((l,i)=>[l[1],()=>desenhaBandeiraV(i)]):[]),...(LANT_V?LANT_V.lugares.map((l,i)=>[341.6,()=>desenhaLanternaV(i)]):[]),...(!NA_VILA?[[235,desenhaHalvardCaverna],...(typeof vidaNpcs==='function'?vidaNpcs():[])]:emAtaque()?[...ataqueDesenhos(),...atqMoradoresDesenhos()]:[[bacon.y,desenhaBacon],[tico.y,desenhaTico],[vovo.y,desenhaVovo],[borin.y,desenhaBorin],...ANDARILHOS.map(n=>[n.y,()=>desenhaAndarilho(n)]),...FIGURANTES.map(f=>[f.y,()=>desenhaFesta(f)]),...prepDesenhos(),...(BAN&&!mapaFesta()?BAN.lugares.map((l,i)=>[l[2]-6,()=>desenhaBandeira(i)]):[]),...(FOG&&!emManha()?FOG.lugares.map((l,i)=>[l[1],()=>desenhaFogo(i)]):[]),...(POS&&!mapaFesta()?POS.lugares.map((l,i)=>[l[1]+l[2]*1.6,()=>desenhaPoste(i)]):[])])].sort((a,b)=>a[0]-b[0]);   // quem esta atras do Jux vem antes
   for(const [y,f] of npcs)if(y<=hero.y)f();
   desenhaHeroi(ctx,1);desenhaBancoFrente();
   const hb=[hero.x-20,hero.y-54,hero.x+20,hero.y];let escondido=false;
@@ -2751,6 +2758,7 @@ function desenha(){
   else if(perto&&!fala&&!uiAberto())texto(nomePonto(perto.id)+'  ·  ENTER / toque para examinar',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(!fala&&!uiAberto()&&pocoPerto())texto('Poço  ·  ENTER para beber água',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
   else if(!fala&&!uiAberto()&&bancoPerto())texto('Banco  ·  ENTER para sentar',W/2,H-20,NOVO2?13:16,'#e8f6ff','center');
+  else if(espadaPerto())texto('E para pegar a espada',W/2,H-20,NOVO2?12:15,'#cfe6f5','center');
   else if(hero.senta&&hero.senta.fase==='fica'&&!fala)texto('Setas / WASD para levantar',W/2,H-20,NOVO2?12:15,'#cfe6f5','center');
   if(NOVO2)ctx.restore();
   if(t<6&&!fala)texto('Setas / WASD ou toque para andar',W/2,30,15,`rgba(220,240,255,${clamp(6-t,0,1)})`,'center');
